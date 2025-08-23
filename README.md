@@ -11,4 +11,4 @@ O projeto utiliza processamento de linguagem natural (NLP) e algoritmos de intel
 
 ## Status do Projeto
 
-* **Trabalho de Conclusão de Curso (TCC)**: [Em desenvolvimento, para defesa em 2025"]
+* **Trabalho de Conclusão de Curso (TCC)**: [Em desenvolvimento, para defesa em 2025]
