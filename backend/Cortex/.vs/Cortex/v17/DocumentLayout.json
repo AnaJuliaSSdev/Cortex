@@ -1,10 +1,14 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\ana.soares\\source\\repos\\Cortex\\",
+  "WorkspaceRootPath": "C:\\Users\\ana.soares\\Desktop\\TCC-Cortex\\backend\\Cortex\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|c:\\users\\ana.soares\\source\\repos\\cortex\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|c:\\users\\ana.soares\\desktop\\tcc-cortex\\backend\\cortex\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|solutionrelative:appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|c:\\users\\ana.soares\\desktop\\tcc-cortex\\backend\\cortex\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{F72126BA-D280-417B-9424-2B2E57DECD3B}|Cortex.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -67,14 +71,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\ana.soares\\source\\repos\\Cortex\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\ana.soares\\source\\repos\\Cortex\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABcAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-24T17:59:44.136Z",
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\ana.soares\\Desktop\\TCC-Cortex\\backend\\Cortex\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "appsettings.Development.json",
+              "ToolTip": "C:\\Users\\ana.soares\\Desktop\\TCC-Cortex\\backend\\Cortex\\appsettings.Development.json",
+              "RelativeToolTip": "appsettings.Development.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-24T19:00:20.695Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\ana.soares\\Desktop\\TCC-Cortex\\backend\\Cortex\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\ana.soares\\Desktop\\TCC-Cortex\\backend\\Cortex\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-24T19:00:16.36Z",
               "EditorCaption": ""
             }
           ]
