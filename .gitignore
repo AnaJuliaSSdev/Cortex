@@ -1,0 +1,103 @@
+# =========================================================================
+# Arquivo .gitignore para um projeto com Backend ASP.NET e Frontend React
+# =========================================================================
+
+# Arquivos de log e dependências de pacotes
+# -------------------------------------------------------------------------
+**/[Ll]ogs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+# =================================================
+# Node / React / TypeScript / Vite
+# =================================================
+
+# Dependências - a pasta mais importante a ser ignorada!
+node_modules/
+
+# Arquivos de build/distribuição
+/dist
+/build
+.next/
+/out/
+
+# Arquivos de ambiente - NUNCA comite segredos!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Você PODE comitar um arquivo de exemplo, se quiser
+!.env.example
+
+# Cache de ferramentas de build
+.npm
+.vite
+.yarn/cache
+.yarn/plug-n-play
+.yarn/unplugged
+.pnp.*
+
+
+# =================================================
+# .NET / C# / ASP.NET
+# =================================================
+
+# Pastas de build geradas pelo .NET - essencial ignorar!
+**/[Bb]in/
+**/[Oo]bj/
+
+# Arquivos de configuração do Visual Studio e IDEs
+.vs/
+.vscode/
+# Exceção: Permite compartilhar configurações de debug e extensões recomendadas
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Arquivos gerados pelo Rider
+.idea/
+
+# Arquivos específicos do usuário da IDE, que não devem ser compartilhados
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Arquivos do Resharper
+_ReSharper*/
+*.[Rr]esharper
+**/[Tt]est[Rr]esults/
+
+# Arquivos do User Secrets (Gerenciador de Segredos do .NET)
+secrets.json
+
+# Publicações e pacotes
+**/Properties/PublishProfiles/
+*.nupkg
+
+# Arquivos gerados pelo shadow-copy do VSIX (extensões do VS)
+.Vsix*
+
+# Arquivos do StyleCop
+StyleCopReport.xml
+
+
+# =================================================
+# Arquivos de Sistema Operacional
+# =================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
