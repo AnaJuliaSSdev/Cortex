@@ -15,8 +15,11 @@
     "@fontsource/montserrat": "^5.2.6",
     "@fontsource/roboto": "^5.2.6",
     "@mui/material": "^7.3.1",
+    "axios": "^1.11.0",
+    "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
