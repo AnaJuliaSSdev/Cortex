@@ -1,0 +1,41 @@
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--cor-fundo-secundario);
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    color: var(--cor-texto-forte);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-icon-span {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--cor-texto-secundario);
+    width: 20px;
+    height: 20px;
+}
+
+.input-icon-span:hover {
+    color: var(--cor-texto-principal);
+}
+
+.input-icon {
+    height: 20px;
+    width: 20px;
+}

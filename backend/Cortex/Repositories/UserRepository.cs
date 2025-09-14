@@ -17,10 +17,6 @@ public class UserRepository(AppDbContext context) : IUserRepository
     public async Task AddAsync(User user)
     {
         await _context.Users.AddAsync(user);
-    }
-
-    public async Task<bool> SaveChangesAsync()
-    {
-        return await _context.SaveChangesAsync() > 0;
+        await _context.SaveChangesAsync();
     }
 }

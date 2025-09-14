@@ -1,10 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-#login-body {
+#register-body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--cor-fundo-principal);
     min-height: 100vh;
@@ -22,7 +16,7 @@
     max-width: 450px;
 }
 
-.login-card {
+.register-card {
     background: white;
     border-radius: 7px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -32,7 +26,7 @@
     height: 100%;
 }
 
-.login-title {
+.register-title {
     font-size: 1.5rem;
     font-weight: 500;
     color: var(--cor-texto-forte);
@@ -40,7 +34,11 @@
     margin-bottom: 30px;
 }
 
-.forgot-password a, .register-link a {
+.login-link {
+    text-align: center;
+}
+
+.login-link a {
     color: var(--cor-texto-secundario);
     text-decoration: none;
     font-family: 'Roboto', sans-serif;
@@ -48,21 +46,7 @@
     transition: color 0.3s ease;
 }
 
-.forgot-password a:hover, .register-link a:hover {
+.login-link a:hover {
     color: var(--cor-texto-principal);
     text-decoration: underline;
-}
-
-.register-link, .forgot-password  {
-    text-align: center;
-}
-
-@media (max-width: 480px) {
-    .login-card {
-        padding: 30px 20px;
-    }
-
-    .logo-text {
-        font-size: 1.75rem;
-    }
 }

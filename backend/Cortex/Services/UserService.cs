@@ -32,7 +32,6 @@ public class UserService(IUserRepository userRepository, IConfiguration configur
         newUser.PasswordHash = passwordHash;
 
         await _userRepository.AddAsync(newUser);
-        await _userRepository.SaveChangesAsync();
 
         return newUser;
     }

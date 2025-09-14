@@ -19,7 +19,6 @@ public class UsersController(IUserService userService) : ControllerBase
         }
 
         var newUser = await _userService.RegisterAsync(userDto);
-
         return StatusCode(201, newUser);
     }
 
@@ -32,7 +31,6 @@ public class UsersController(IUserService userService) : ControllerBase
         }
 
         var token = await _userService.LoginAsync(loginDto);
-
         return Ok(new { token });
     }
 }
