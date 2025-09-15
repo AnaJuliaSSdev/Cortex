@@ -24,6 +24,12 @@ public class DocumentsController(DocumentService documentService) : ControllerBa
         return Ok(document);
     }
 
+
+    /// <summary>
+    /// This endpoint is for tests purposes only
+    /// </summary>
+    /// <param name="id">File id</param>
+    /// <returns>The file with this id</returns>
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download(int id)
     {

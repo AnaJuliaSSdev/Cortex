@@ -10,6 +10,7 @@ using System.Text;
 using Cortex.Middlewares;
 using Cortex.Services.Factories;
 using Cortex.Services.Strategies;
+using Cortex.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,9 @@ builder.Services.AddCors(options =>
     }
 });
 
+builder.Services.Configure<GeminiConfiguration>(
+    builder.Configuration.GetSection(GeminiConfiguration.SectionName));
+
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
@@ -85,6 +89,8 @@ builder.Services.AddScoped<DocumentProcessingStrategyFactory>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, TxtDocumentProcessingStrategy>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, PdfDocumentProcessingStrategy>();
 
+//Gemini
+builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
 
 var app = builder.Build();
 
