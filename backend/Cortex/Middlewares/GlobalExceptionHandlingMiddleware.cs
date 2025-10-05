@@ -71,6 +71,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
         {
             HttpStatusCode.BadRequest => "Bad Request",
             HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.InternalServerError => "Internal Server Error", 
             _ => "Error"
         };
 }
