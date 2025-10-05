@@ -3,6 +3,7 @@ using Cortex.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text;
+using Cortex.Exceptions;
 
 namespace Cortex.Services;
 
@@ -40,70 +41,67 @@ public class EmbeddingService : IEmbeddingService
         return dotProduct / (MathF.Sqrt(norm1) * MathF.Sqrt(norm2));
     }
 
-    public async Task<float[]> GenerateEmbeddingAsync(string text)
-    {
-        try
-        {
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={_settings.ApiKey}";
-
-            var requestBody = new
-            {
-                content = new
-                {
-                    parts = new[]
-                    {
-                        new { text }
-                    }
-                }
-            };
-
-            var json = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(url, content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogError($"Erro na API do Gemini: {response.StatusCode} - {errorContent}");
-                throw new Exception($"Erro na API do Gemini: {response.StatusCode}");
-            }
-
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var embeddingResponse = JsonSerializer.Deserialize<GeminiEmbeddingResponse>(jsonResponse, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-
-            return embeddingResponse?.Embedding?.Values ?? throw new Exception("Resposta inválida da API de embeddings");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao gerar embedding para o texto");
-            throw;
-        }
-    }
-
     public async Task<List<float[]>> GenerateEmbeddingsAsync(List<string> texts)
     {
-        var embeddings = new List<float[]>();
-
-        foreach (var text in texts)
+        if (texts == null || texts.Count == 0)
         {
-            var embedding = await GenerateEmbeddingAsync(text);
-            embeddings.Add(embedding);
+            return [];
+        }
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key={_settings.ApiKey}";
+
+        var requestBody = new
+        {
+            requests = texts.Select(text => new
+            {
+                model = "models/text-embedding-004",
+                content = new
+                {
+                    parts = new[] { new { text } }
+                }
+            }).ToArray()
+        };
+
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(url, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError(message: $"Gemini API Error (batch): {response.StatusCode} - {errorContent}");
+            throw new GeminiAPIErrorException(response.StatusCode.ToString());
         }
 
-        return embeddings;
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var batchEmbeddingResponse = JsonSerializer.Deserialize<GeminiBatchEmbeddingResponse>(jsonResponse, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        return batchEmbeddingResponse?.Embeddings?
+            .Select(e => e.Values)
+            .ToList() ?? [];
+    }
+
+    public async Task<float[]> GenerateEmbeddingAsync(string text)
+    {
+        var result = await GenerateEmbeddingsAsync([text]);
+        return result.FirstOrDefault() ?? throw new FailedToGenerateEmbeddingsException();
     }
 }
 
-public class GeminiEmbeddingResponse
+public class GeminiBatchEmbeddingResponse
 {
-    public EmbeddingData? Embedding { get; set; }
+    public List<EmbeddingData>? Embeddings { get; set; }
 }
 
 public class EmbeddingData
 {
     public float[] Values { get; set; } = Array.Empty<float>();
+}
+
+public class GeminiEmbeddingResponse
+{
+    public EmbeddingData? Embedding { get; set; }
 }

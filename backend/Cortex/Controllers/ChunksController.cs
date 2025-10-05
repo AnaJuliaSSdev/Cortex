@@ -22,7 +22,6 @@ public class ChunksController(IChunkRepository chunkRepository) : ControllerBase
             return NotFound($"Nenhum chunk encontrado para o Documento ID: {documentId}");
         }
 
-        // Mapeia as entidades Chunk para ChunkDto para não expor o modelo do banco
         var chunkDtos = chunks.Select(chunk => new ChunkDto
         {
             Id = chunk.Id,
@@ -30,7 +29,7 @@ public class ChunksController(IChunkRepository chunkRepository) : ControllerBase
             ChunkIndex = chunk.ChunkIndex,
             Content = chunk.Content,
             TokenCount = chunk.TokenCount,
-            EmbeddingPreview = $"Vetor com {chunk.Embedding.ToArray().Length} dimensões" // Cria a prévia
+            EmbeddingPreview = $"{chunk.Embedding.ToArray().Length}-dimensional vector"
         });
 
         return Ok(chunkDtos);

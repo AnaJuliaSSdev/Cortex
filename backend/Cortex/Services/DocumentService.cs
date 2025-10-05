@@ -38,12 +38,15 @@ public class DocumentService(DocumentProcessingStrategyFactory factory,
         await _repository.AddAsync(document);
 
         var chunksTexts = _chunkService.SplitIntoChunks(document.Content ?? "");
+
+        var embeddings = await _embeddingService.GenerateEmbeddingsAsync(chunksTexts);
+
+        if (embeddings.Count != chunksTexts.Count)
+        {
+            throw new FailedToGenerateEmbeddingsException();
+        }
+
         var chunks = new List<Chunk>();
-
-        var embeddingTasks = chunksTexts.Select(chunkText => _embeddingService.GenerateEmbeddingAsync(chunkText)).ToList();
-
-        var embeddings = await Task.WhenAll(embeddingTasks);
-
         for (int i = 0; i < chunksTexts.Count; i++)
         {
             var chunk = new Chunk

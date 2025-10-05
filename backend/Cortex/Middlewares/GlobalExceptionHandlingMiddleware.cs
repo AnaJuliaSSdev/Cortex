@@ -16,7 +16,9 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
             { typeof(InvalidCredentialsException), HttpStatusCode.BadRequest },
             { typeof(EntityNotFoundException), HttpStatusCode.NotFound },
             { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
-            { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized }
+            { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },
+            { typeof(GeminiAPIErrorException), HttpStatusCode.InternalServerError },
+            { typeof(FailedToGenerateEmbeddingsException), HttpStatusCode.InternalServerError }
         };
 
     public async Task InvokeAsync(HttpContext context)
