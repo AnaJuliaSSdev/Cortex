@@ -31,6 +31,7 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
     public async Task<AnalysisDto> CreateAsync(CreateAnalysisDto createDto, int userId)
     {
         Analysis analysis = Mapper.Map<Analysis>(createDto);
+        analysis.UserId = userId; 
         analysis.Status = AnalysisStatus.Draft;
 
         var createdAnalysis = await _analysisRepository.CreateAsync(analysis);

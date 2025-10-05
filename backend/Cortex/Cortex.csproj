@@ -13,19 +13,25 @@
     <PackageReference Include="itext" Version="9.3.0" />
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mscc.GenerativeAI" Version="2.8.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Pgvector" Version="0.3.2" />
+    <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="storage\documents\" />
   </ItemGroup>
 
 </Project>

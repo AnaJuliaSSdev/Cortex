@@ -8,30 +8,31 @@ using System.Text;
 namespace Cortex.Services.Strategies;
 public class PdfDocumentProcessingStrategy : IDocumentProcessingStrategy
 {
+    public string DocumentExtension => ".txt";
+
     public async Task<Document> ProcessAsync(IFormFile file)
     {
-        using var ms = new MemoryStream();
+        using MemoryStream ms = new();
         await file.CopyToAsync(ms);
-        var fileBytes = ms.ToArray();
+        byte[] fileBytes = ms.ToArray();
 
-        using var pdfReader = new PdfReader(new MemoryStream(fileBytes));
-        using var pdfDoc = new PdfDocument(pdfReader);
+        using PdfReader pdfReader = new(new MemoryStream(fileBytes));
+        using PdfDocument pdfDoc = new(pdfReader);
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
 
         for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++)
         {
             sb.Append(PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(i)));
         }
 
-        var text = sb.ToString().Replace("\0", "");
+        string text = sb.ToString().Replace("\0", "");
 
         return new Document
         {
             FileType = DocumentType.Pdf,
             Content = text,
-            FileName = file.FileName,
-            FileData = fileBytes
+            FileName = file.FileName
         };
     }
 }

@@ -7,6 +7,8 @@ namespace Cortex.Services.Strategies;
 
 public class TxtDocumentProcessingStrategy : IDocumentProcessingStrategy
 {
+    public string DocumentExtension => ".txt";
+
     public async Task<Document> ProcessAsync(IFormFile file)
     {
         using var ms = new MemoryStream();
@@ -20,8 +22,7 @@ public class TxtDocumentProcessingStrategy : IDocumentProcessingStrategy
         {
             FileType = DocumentType.Text,
             FileName = file.FileName,
-            Content = content,
-            FileData = fileBytes
+            Content = content
         };
     }
 }

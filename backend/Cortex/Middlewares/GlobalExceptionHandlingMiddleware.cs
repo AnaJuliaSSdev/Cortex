@@ -15,7 +15,8 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
             { typeof(EmailAlreadyInUseException), HttpStatusCode.BadRequest },
             { typeof(InvalidCredentialsException), HttpStatusCode.BadRequest },
             { typeof(EntityNotFoundException), HttpStatusCode.NotFound },
-            { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest }
+            { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
+            { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized }
         };
 
     public async Task InvokeAsync(HttpContext context)

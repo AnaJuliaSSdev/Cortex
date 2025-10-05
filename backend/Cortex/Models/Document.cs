@@ -25,9 +25,9 @@ public class Document
     [Required]
     public DocumentType FileType { get; set; }
 
-    [Required]
-    public byte[] FileData { get; set; }
+    public string FilePath { get; set; }
 
+    public long FileSize { get; set; }
 
     [MaxLength(500)]
     public string? Source { get; set; }
@@ -40,4 +40,5 @@ public class Document
 
     [ForeignKey("AnalysisId")]
     public virtual Analysis Analysis { get; set; }
+    public ICollection<Chunk> Chunks { get; set; } = [];
 }

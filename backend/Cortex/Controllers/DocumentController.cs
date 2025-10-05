@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Cortex.Models.DTO;
-using Cortex.Services;
-using Cortex.Models;
 using Cortex.Models.Enums;
+using Cortex.Services.Interfaces;
+using Cortex.Models;
+using StockApp2._0.Mapper;
 
 namespace Cortex.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class DocumentsController(DocumentService documentService) : ControllerBase
+public class DocumentsController(IDocumentService documentService, IFileStorageService fileStorageService) : ControllerBase
 {
-    private readonly DocumentService _documentService = documentService;
+    private readonly IDocumentService _documentService = documentService;
+    private readonly IFileStorageService _fileStorageService = fileStorageService;
 
     [HttpPost("upload/{analysisId}")]
     public async Task<IActionResult> Upload(int analysisId, [FromForm] CreateDocumentDto dto)
@@ -20,10 +22,10 @@ public class DocumentsController(DocumentService documentService) : ControllerBa
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var document = await _documentService.UploadAsync(dto, analysisId);
-        return Ok(document);
-    }
+        Document document = await _documentService.UploadAsync(dto, analysisId);
 
+        return Ok(Mapper.Map<ViewDocumentDTO>(document));
+    }
 
     /// <summary>
     /// This endpoint is for tests purposes only
@@ -33,8 +35,9 @@ public class DocumentsController(DocumentService documentService) : ControllerBa
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download(int id)
     {
-        Document? document = await _documentService.GetByIdAsync(id);
-        return File(document!.FileData, GetContentType(document.FileType), document.FileName);
+        var document = await _documentService.GetByIdAsync(id);
+        var fileBytes = await _fileStorageService.GetFileAsync(document!.FilePath);
+        return File(fileBytes, GetContentType(document.FileType), document.FileName);
     }
 
     private static string GetContentType(DocumentType type) => type switch

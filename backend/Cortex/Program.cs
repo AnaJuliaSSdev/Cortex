@@ -23,9 +23,14 @@ builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+Npgsql.NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString)
-);
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions => npgsqlOptions.UseVector()
+            )
+        );
 
 builder.Services.AddAuthentication(options =>
 {
@@ -82,15 +87,25 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 //Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
-builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 //Strategies
 builder.Services.AddScoped<DocumentProcessingStrategyFactory>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, TxtDocumentProcessingStrategy>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, PdfDocumentProcessingStrategy>();
 
+//Chunks
+builder.Services.AddScoped<IChunkRepository, ChunkRepository>();
+builder.Services.AddScoped<IChunkService, ChunkService>();
+builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+
 //Gemini
 builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
+builder.Services.AddHttpClient<EmbeddingService>();
+
+// Logging
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
