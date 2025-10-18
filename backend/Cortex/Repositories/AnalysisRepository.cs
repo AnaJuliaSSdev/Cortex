@@ -21,7 +21,6 @@ namespace Cortex.Repositories
             return await _context.Analyses
                 .Include(a => a.User)
                 .Include(a => a.Documents)
-                .Include(a => a.Questions)
                 .Include(a => a.Stages)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
@@ -30,7 +29,6 @@ namespace Cortex.Repositories
         {
             return await _context.Analyses
                 .Include(a => a.Documents)
-                .Include(a => a.Questions)
                 .Where(a => a.UserId == userId)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
