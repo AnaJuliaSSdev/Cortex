@@ -5,6 +5,7 @@ using Cortex.Models.Enums;
 using Cortex.Services.Interfaces;
 using Cortex.Models;
 using StockApp2._0.Mapper;
+using Cortex.Exceptions;
 
 namespace Cortex.Controllers;
 
@@ -35,8 +36,11 @@ public class DocumentsController(IDocumentService documentService, IFileStorageS
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download(int id)
     {
-        var document = await _documentService.GetByIdAsync(id);
-        var fileBytes = await _fileStorageService.GetFileAsync(document!.FilePath);
+        Document? document = await _documentService.GetByIdAsync(id);
+        if (document == null)
+            throw new EntityNotFoundException(nameof(document));
+                
+        byte[] fileBytes = await _fileStorageService.GetFileAsync(document!.FilePath);
         return File(fileBytes, GetContentType(document.FileType), document.FileName);
     }
 

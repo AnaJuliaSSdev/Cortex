@@ -45,14 +45,6 @@ public class AnalysisController(IAnalysisService analysisService) : ControllerBa
         return NoContent();
     }
 
-    [HttpPost("{id}/start")]
-    public async Task<ActionResult<AnalysisDto>> StartAnalysis(int id)
-    {
-        var userId = GetCurrentUserId();
-        var analysis = await _analysisService.StartAnalysisAsync(id, userId);
-        return Ok(analysis);
-    }
-
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
