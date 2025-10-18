@@ -30,7 +30,9 @@ public class Analysis
     [ForeignKey("UserId")]
     public virtual User User { get; set; }
 
+    [Required]
+    public string Question { get; set; }
+
     public virtual ICollection<Document> Documents { get; set; } = [];
-    public virtual ICollection<Question> Questions { get; set; } = [];
-    public virtual ICollection<Stage> Stages { get; set; } = new List<Stage>();
+    public virtual ICollection<Stage> Stages { get; set; } = [];
 }

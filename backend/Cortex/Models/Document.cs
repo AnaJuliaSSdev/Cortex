@@ -27,7 +27,7 @@ public class Document
 
     public string FilePath { get; set; }
 
-    public long FileSize { get; set; }
+    public long FileSize { get; set; } // File length in bytes
 
     [MaxLength(500)]
     public string? Source { get; set; }

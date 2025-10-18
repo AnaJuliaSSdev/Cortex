@@ -12,5 +12,5 @@ public class AnalysisDto
     public int UserId { get; set; }
     public string UserName { get; set; }
     public int DocumentsCount { get; set; }
-    public int QuestionsCount { get; set; }
+    public string Question { get; set; }
 }
