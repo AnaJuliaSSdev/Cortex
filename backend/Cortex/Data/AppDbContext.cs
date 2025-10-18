@@ -8,7 +8,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users { get; set; }
     public DbSet<Analysis> Analyses { get; set; }
     public DbSet<Document> Documents { get; set; }
-    public DbSet<Question> Questions { get; set; }
     public DbSet<Stage> Stages { get; set; }
     public DbSet<Chunk> Chunks { get; set; }
 
@@ -36,11 +35,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasMany(a => a.Documents)
                 .WithOne(d => d.Analysis)
                 .HasForeignKey(d => d.AnalysisId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(a => a.Questions)
-                .WithOne(q => q.Analysis)
-                .HasForeignKey(q => q.AnalysisId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(a => a.Stages)
@@ -81,19 +75,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-
-        modelBuilder.Entity<Question>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AnalysisId);
-        });
-
         modelBuilder.Entity<Stage>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.HasDiscriminator<string>("StageType")
-                .HasValue<FloatingReadingStage>("FloatingReading")
-                .HasValue<CodificationStage>("Codification")
+                .HasValue<PreAnalysisStage>("FloatingReading")
+                .HasValue<ExplorationOfMaterialStage>("Codification")
                 .HasValue<InferenceConclusionStage>("InferenceConclusion");
             entity.HasIndex(e => e.AnalysisId);
             entity.HasIndex(e => new { e.AnalysisId, e.Order });
