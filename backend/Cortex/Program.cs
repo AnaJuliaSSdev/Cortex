@@ -14,8 +14,6 @@ using Cortex.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -84,21 +82,34 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 
-//Services
+//User
 builder.Services.AddScoped<IUserService, UserService>();
+
+//Analysis
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
+builder.Services.AddScoped<IAnalysisOrchestrator, AnalysisOrchestrator>();
+
+//Documents
 builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IDocumentProcessingEmbeddingsService, DocumentProcessingEmbeddingsService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 //Strategies
-builder.Services.AddScoped<DocumentProcessingStrategyFactory>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, TxtDocumentProcessingStrategy>();
 builder.Services.AddScoped<IDocumentProcessingStrategy, PdfDocumentProcessingStrategy>();
 
 //Chunks
 builder.Services.AddScoped<IChunkRepository, ChunkRepository>();
 builder.Services.AddScoped<IChunkService, ChunkService>();
+
+//Embeddings
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+
+//Stages
+builder.Services.AddScoped<PreAnalysisStageService>();
+builder.Services.AddScoped<ExplorationOfMaterialStageService>();
+builder.Services.AddScoped<InferenceConclusionStageService>();
+builder.Services.AddScoped<StageStrategyFactory>();
 
 //Gemini
 builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
