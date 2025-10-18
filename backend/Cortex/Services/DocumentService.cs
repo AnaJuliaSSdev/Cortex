@@ -8,21 +8,16 @@ using Pgvector;
 
 namespace Cortex.Services;
 
-public class DocumentService(DocumentProcessingStrategyFactory factory, 
-    IDocumentRepository repository, IFileStorageService fileStorageService, IChunkService chunkService, IChunkRepository chunkRepository, IEmbeddingService embeddingService) : IDocumentService
+public class DocumentService(IDocumentRepository repository,
+    IFileStorageService fileStorageService, IDocumentProcessingEmbeddingsService documentProcessingEmbeddingsService) : IDocumentService
 {
-    private readonly DocumentProcessingStrategyFactory _factory = factory;
     private readonly IDocumentRepository _repository = repository;
     private readonly IFileStorageService _fileStorageService = fileStorageService;
-    private readonly IChunkService _chunkService = chunkService;
-    private readonly IChunkRepository _chunkRepository = chunkRepository;
-    private readonly IEmbeddingService _embeddingService = embeddingService;
-
+    private readonly IDocumentProcessingEmbeddingsService _documentProcessingEmbeddingsService = documentProcessingEmbeddingsService;
 
     public async Task<Document> UploadAsync(CreateDocumentDto dto, int analysisId)
     {
-        IDocumentProcessingStrategy? strategy = _factory.GetStrategy(dto.File);
-
+        IDocumentProcessingStrategy? strategy = DocumentProcessingStrategyFactory.GetStrategy(dto.File);
         Document? document = await strategy.ProcessAsync(dto.File);
 
         document.Title = dto.Title;
@@ -37,31 +32,7 @@ public class DocumentService(DocumentProcessingStrategyFactory factory,
 
         await _repository.AddAsync(document);
 
-        var chunksTexts = _chunkService.SplitIntoChunks(document.Content ?? "");
-
-        var embeddings = await _embeddingService.GenerateEmbeddingsAsync(chunksTexts);
-
-        if (embeddings.Count != chunksTexts.Count)
-        {
-            throw new FailedToGenerateEmbeddingsException();
-        }
-
-        var chunks = new List<Chunk>();
-        for (int i = 0; i < chunksTexts.Count; i++)
-        {
-            var chunk = new Chunk
-            {
-                DocumentId = document.Id,
-                ChunkIndex = i,
-                Content = chunksTexts[i],
-                Embedding = new Vector(embeddings[i]),
-                TokenCount = chunksTexts[i].Length
-            };
-            chunks.Add(chunk);
-        }
-
-        if (chunks.Count > 0)
-            await _chunkRepository.AddRangeAsync(chunks);
+        await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
 
         return document;
     }

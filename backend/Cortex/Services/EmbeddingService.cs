@@ -7,20 +7,13 @@ using Cortex.Exceptions;
 
 namespace Cortex.Services;
 
-public class EmbeddingService : IEmbeddingService
+public class EmbeddingService(IOptions<GeminiConfiguration> settings, ILogger<EmbeddingService> logger, HttpClient httpClient) : IEmbeddingService
 {
-    private readonly GeminiConfiguration _settings;
-    private readonly ILogger<EmbeddingService> _logger;
-    private readonly HttpClient _httpClient;
-
-
-    public EmbeddingService(IOptions<GeminiConfiguration> settings, ILogger<EmbeddingService> logger, HttpClient httpClient)
-    {
-        _settings = settings.Value;
-        _logger = logger;
-        _httpClient = httpClient;
-    }
-
+    private readonly GeminiConfiguration _settings = settings.Value;
+    private readonly ILogger<EmbeddingService> _logger = logger;
+    private readonly HttpClient _httpClient = httpClient;
+    private const string URL_GEMINI_EMBEDDING = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=";
+    private const string GEMINI_EMBEDDING_MODEL = "models/text-embedding-004";
 
     public float CalculateSimilarity(float[] embedding1, float[] embedding2)
     {
@@ -47,13 +40,15 @@ public class EmbeddingService : IEmbeddingService
         {
             return [];
         }
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key={_settings.ApiKey}";
+
+        StringBuilder url = new(URL_GEMINI_EMBEDDING);
+        url.Append($"{_settings.ApiKey}");
 
         var requestBody = new
         {
             requests = texts.Select(text => new
             {
-                model = "models/text-embedding-004",
+                model = GEMINI_EMBEDDING_MODEL,
                 content = new
                 {
                     parts = new[] { new { text } }
@@ -64,7 +59,7 @@ public class EmbeddingService : IEmbeddingService
         var json = JsonSerializer.Serialize(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync(url, content);
+        var response = await _httpClient.PostAsync(url.ToString(), content);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -74,7 +69,7 @@ public class EmbeddingService : IEmbeddingService
         }
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
-        var batchEmbeddingResponse = JsonSerializer.Deserialize<GeminiBatchEmbeddingResponse>(jsonResponse, new JsonSerializerOptions
+        GeminiBatchEmbeddingResponse? batchEmbeddingResponse = JsonSerializer.Deserialize<GeminiBatchEmbeddingResponse>(jsonResponse, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
@@ -89,19 +84,24 @@ public class EmbeddingService : IEmbeddingService
         var result = await GenerateEmbeddingsAsync([text]);
         return result.FirstOrDefault() ?? throw new FailedToGenerateEmbeddingsException();
     }
-}
 
-public class GeminiBatchEmbeddingResponse
-{
-    public List<EmbeddingData>? Embeddings { get; set; }
-}
+    public async Task<List<float[]>> SelectMostRelevantEmbeddingsToQuestion(List<float[]> embeddings, string question)
+    {
+        var questionEmbedding = await GenerateEmbeddingAsync(question);
 
-public class EmbeddingData
-{
-    public float[] Values { get; set; } = Array.Empty<float>();
-}
+        var similarities = embeddings
+           .Select(e => new
+           {
+               Embedding = e,
+               Similarity = CalculateSimilarity(questionEmbedding, e)
+           })
+           .OrderByDescending(x => x.Similarity)
+           .Take(5)
+           .Select(x => x.Embedding)
+           .ToList();
 
-public class GeminiEmbeddingResponse
-{
-    public EmbeddingData? Embedding { get; set; }
+        return similarities;
+    }
+
+    
 }

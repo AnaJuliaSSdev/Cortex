@@ -49,24 +49,4 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
         await _analysisRepository.DeleteAsync(id);
         return true;
     }
-
-    public async Task<AnalysisDto?> StartAnalysisAsync(int id, int userId)
-    {
-        var analysis = await _analysisRepository.GetByIdAsync(id);
-
-        if (analysis == null || analysis.UserId != userId)
-            throw new EntityNotFoundException("Analysis");
-
-        if (analysis.Status != AnalysisStatus.Draft)
-            throw new InvalidOperationException("Analysis can only be started from Draft status");
-
-        analysis.Status = AnalysisStatus.Running;
-        var updatedAnalysis = await _analysisRepository.UpdateAsync(analysis);
-
-        // TODO: IA Analysis
-
-        updatedAnalysis = await _analysisRepository.GetByIdWithDetailsAsync(updatedAnalysis.Id); //após o processamento
-        return Mapper.Map<AnalysisDto>(updatedAnalysis!);
-    }
-
 }

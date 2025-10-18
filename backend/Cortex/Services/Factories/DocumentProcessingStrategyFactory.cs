@@ -3,9 +3,9 @@ using Cortex.Services.Strategies;
 
 namespace Cortex.Services.Factories;
 
-public class DocumentProcessingStrategyFactory
+public  static class DocumentProcessingStrategyFactory
 {
-    public IDocumentProcessingStrategy GetStrategy(IFormFile file)
+    public static IDocumentProcessingStrategy GetStrategy(IFormFile file)
     {
         var ext = Path.GetExtension(file.FileName).ToLower();
 
