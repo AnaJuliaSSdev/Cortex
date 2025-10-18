@@ -35,6 +35,10 @@ namespace Cortex.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -159,32 +163,6 @@ namespace Cortex.Migrations
                     b.ToTable("Documents");
                 });
 
-            modelBuilder.Entity("Cortex.Models.Question", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AnalysisId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnalysisId");
-
-                    b.ToTable("Questions");
-                });
-
             modelBuilder.Entity("Cortex.Models.Stage", b =>
                 {
                     b.Property<int>("Id")
@@ -265,18 +243,11 @@ namespace Cortex.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Cortex.Models.CodificationStage", b =>
+            modelBuilder.Entity("Cortex.Models.ExplorationOfMaterialStage", b =>
                 {
                     b.HasBaseType("Cortex.Models.Stage");
 
                     b.HasDiscriminator().HasValue("Codification");
-                });
-
-            modelBuilder.Entity("Cortex.Models.FloatingReadingStage", b =>
-                {
-                    b.HasBaseType("Cortex.Models.Stage");
-
-                    b.HasDiscriminator().HasValue("FloatingReading");
                 });
 
             modelBuilder.Entity("Cortex.Models.InferenceConclusionStage", b =>
@@ -284,6 +255,13 @@ namespace Cortex.Migrations
                     b.HasBaseType("Cortex.Models.Stage");
 
                     b.HasDiscriminator().HasValue("InferenceConclusion");
+                });
+
+            modelBuilder.Entity("Cortex.Models.PreAnalysisStage", b =>
+                {
+                    b.HasBaseType("Cortex.Models.Stage");
+
+                    b.HasDiscriminator().HasValue("FloatingReading");
                 });
 
             modelBuilder.Entity("Cortex.Models.Analysis", b =>
@@ -319,17 +297,6 @@ namespace Cortex.Migrations
                     b.Navigation("Analysis");
                 });
 
-            modelBuilder.Entity("Cortex.Models.Question", b =>
-                {
-                    b.HasOne("Cortex.Models.Analysis", "Analysis")
-                        .WithMany("Questions")
-                        .HasForeignKey("AnalysisId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Analysis");
-                });
-
             modelBuilder.Entity("Cortex.Models.Stage", b =>
                 {
                     b.HasOne("Cortex.Models.Analysis", "Analysis")
@@ -344,8 +311,6 @@ namespace Cortex.Migrations
             modelBuilder.Entity("Cortex.Models.Analysis", b =>
                 {
                     b.Navigation("Documents");
-
-                    b.Navigation("Questions");
 
                     b.Navigation("Stages");
                 });
