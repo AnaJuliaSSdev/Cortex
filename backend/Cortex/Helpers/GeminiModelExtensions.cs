@@ -11,7 +11,7 @@ public static class GeminiModelExtensions
             GeminiModel.GeminiPro => "gemini-1.0-pro",
             GeminiModel.GeminiProVision => "gemini-pro-vision",
             GeminiModel.Gemini15Pro => "gemini-1.5-pro",
-            GeminiModel.Gemini15Flash => "gemini-1.5-flash",
+            GeminiModel.Gemini15Flash => "gemini-1.5-flash-latest",
             GeminiModel.Gemini25Pro => "gemini-2.5-pro",
             _ => throw new NotSupportedException($"The Gemini model '{model}' it is not supported.")
         };

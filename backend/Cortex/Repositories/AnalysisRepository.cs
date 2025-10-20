@@ -9,10 +9,41 @@ namespace Cortex.Repositories
     {
         private readonly AppDbContext _context = context;
 
+        public async Task<Analysis?> RevertLastStageAsync(int analysisId)
+        {
+            var analysis = await _context.Analyses
+                .Include(a => a.Stages)
+                .FirstOrDefaultAsync(a => a.Id == analysisId);
+
+            if (analysis == null)
+            {
+                return null; 
+            }
+
+            var lastStage = analysis.Stages.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
+
+            if (lastStage != null)
+            {
+                if (lastStage.GetType() == typeof(PreAnalysisStage))
+                {
+                    analysis.Status = Models.Enums.AnalysisStatus.Draft;
+                }
+                _context.Stages.Remove(lastStage);
+
+                analysis.UpdatedAt = DateTime.UtcNow;
+                _context.Analyses.Update(analysis);
+
+                await _context.SaveChangesAsync();
+            }
+
+            return analysis;
+        }
+
         public async Task<Analysis?> GetByIdAsync(int id)
         {
             return await _context.Analyses
                 .Include(a => a.User)
+                .Include(a => a.Stages)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
@@ -41,11 +72,10 @@ namespace Cortex.Repositories
             return analysis;
         }
 
-        public async Task<Analysis> UpdateAsync(Analysis analysis)
+        public Analysis UpdateAsync(Analysis analysis)
         {
             analysis.UpdatedAt = DateTime.UtcNow;
             _context.Analyses.Update(analysis);
-            await _context.SaveChangesAsync();
             return analysis;
         }
 

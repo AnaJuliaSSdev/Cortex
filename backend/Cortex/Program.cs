@@ -110,6 +110,7 @@ builder.Services.AddScoped<PreAnalysisStageService>();
 builder.Services.AddScoped<ExplorationOfMaterialStageService>();
 builder.Services.AddScoped<InferenceConclusionStageService>();
 builder.Services.AddScoped<StageStrategyFactory>();
+builder.Services.AddScoped<IStageRepository, StageRepository>();
 
 //Gemini
 builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
@@ -117,6 +118,9 @@ builder.Services.AddHttpClient<EmbeddingService>();
 
 // Logging
 builder.Services.AddLogging();
+
+//Indexes
+builder.Services.AddScoped<IIndexProcessingService, IndexProcessingService>();
 
 var app = builder.Build();
 

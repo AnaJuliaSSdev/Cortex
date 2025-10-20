@@ -83,7 +83,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasValue<ExplorationOfMaterialStage>("Codification")
                 .HasValue<InferenceConclusionStage>("InferenceConclusion");
             entity.HasIndex(e => e.AnalysisId);
-            entity.HasIndex(e => new { e.AnalysisId, e.Order });
+            entity.HasIndex(e => new { e.AnalysisId});
         });
 
         modelBuilder.Entity<Chunk>(entity =>

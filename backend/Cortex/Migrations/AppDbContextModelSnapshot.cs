@@ -177,21 +177,6 @@ namespace Cortex.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PartialResult")
-                        .HasColumnType("text");
-
                     b.Property<string>("StageType")
                         .IsRequired()
                         .HasMaxLength(21)
@@ -200,8 +185,6 @@ namespace Cortex.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnalysisId");
-
-                    b.HasIndex("AnalysisId", "Order");
 
                     b.ToTable("Stages");
 

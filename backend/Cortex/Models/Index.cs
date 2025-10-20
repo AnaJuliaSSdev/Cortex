@@ -26,4 +26,6 @@ public class Index
 
     [ForeignKey("AnalysisId")]
     public virtual Analysis Analysis { get; set; }
+
+    public virtual ICollection<IndexReference> References { get; set; } = [];
 }

@@ -8,7 +8,7 @@ using System.Text;
 namespace Cortex.Services.Strategies;
 public class PdfDocumentProcessingStrategy : IDocumentProcessingStrategy
 {
-    public string DocumentExtension => ".txt";
+    public string DocumentExtension => ".pdf";
 
     public async Task<Document> ProcessAsync(IFormFile file)
     {

@@ -1,5 +1,9 @@
-﻿using Cortex.Models.Enums;
-using Cortex.Models;
+﻿using Cortex.Models;
+using Cortex.Models.Enums;
+using GenerativeAI.Types;
+using System.Net.Http;
+using System.Text.Json;
+using static GeminiService.Api.Services.Implementations.GeminiService;
 
 namespace Cortex.Services.Interfaces;
 
@@ -17,4 +21,11 @@ public interface IGeminiService
         string prompt,
         GeminiModel? modelOverride = null,
         string? apiKeyOverride = null);
+
+    //ENVIA ARQUIVOS INLINE
+    Task<GeminiResponse> GenerateContentAsync(string prompt, IEnumerable<Part> fileParts,
+        Cortex.Models.Enums.GeminiModel? modelOverride = null, string? apiKeyOverride = null);
+
+    // ENVIA ARQUIVOS VIA API KEY
+    Task<FileDetails?> UploadFileWithHttpAsync(byte[] fileBytes, string mimeType, string fileName);
 }

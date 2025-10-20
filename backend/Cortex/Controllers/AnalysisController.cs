@@ -1,4 +1,6 @@
-﻿using Cortex.Models.DTO;
+﻿using Cortex.Models;
+using Cortex.Models.DTO;
+using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +11,11 @@ namespace Cortex.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class AnalysisController(IAnalysisService analysisService) : ControllerBase
+public class AnalysisController(IAnalysisService analysisService, IAnalysisOrchestrator analysisOrchestrator, IAnalysisRepository analysisRepository) : ControllerBase
 {
     private readonly IAnalysisService _analysisService = analysisService;
+    private readonly IAnalysisOrchestrator _analysisOrchestrator = analysisOrchestrator;
+    private readonly IAnalysisRepository _analysisRepository = analysisRepository;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnalysisDto>>> GetAnalyses()
@@ -42,6 +46,36 @@ public class AnalysisController(IAnalysisService analysisService) : ControllerBa
     {
         var userId = GetCurrentUserId();
         await _analysisService.DeleteAsync(id, userId);
+        return NoContent();
+    }
+
+
+    [HttpPost("{id}")]
+    public async Task<ActionResult> StartAnalysis(int id)
+    {
+        var userId = GetCurrentUserId();
+        var response = await _analysisOrchestrator.StartAnalysisAsync(id, userId);
+        Console.WriteLine(response);
+        return NoContent();
+    }
+
+    [HttpPost("reverseLastStage/{id}")]
+    public async Task<ActionResult> ReverseLastStage(int id)
+    {
+        var analise = await _analysisRepository.RevertLastStageAsync(id);
+        if(analise != null)
+        {
+            return NoContent();
+        }
+        return BadRequest();
+    }
+
+    [HttpPost("continue/{id}")]
+    public async Task<ActionResult> CotinueAnalysis(int id)
+    {
+        var analysis = await _analysisRepository.GetByIdAsync(id);
+        var response = await _analysisOrchestrator.ContinueAnalysisAsync(analysis);
+        Console.WriteLine(response);
         return NoContent();
     }
 

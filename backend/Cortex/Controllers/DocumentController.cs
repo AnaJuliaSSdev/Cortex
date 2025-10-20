@@ -6,18 +6,19 @@ using Cortex.Services.Interfaces;
 using Cortex.Models;
 using StockApp2._0.Mapper;
 using Cortex.Exceptions;
+using Cortex.Helpers;
 
 namespace Cortex.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class DocumentsController(IDocumentService documentService, IFileStorageService fileStorageService) : ControllerBase
 {
     private readonly IDocumentService _documentService = documentService;
     private readonly IFileStorageService _fileStorageService = fileStorageService;
 
     [HttpPost("upload/{analysisId}")]
+    [RequestSizeLimit(104857600)]
     public async Task<IActionResult> Upload(int analysisId, [FromForm] CreateDocumentDto dto)
     {
         if (!ModelState.IsValid)
@@ -41,15 +42,6 @@ public class DocumentsController(IDocumentService documentService, IFileStorageS
             throw new EntityNotFoundException(nameof(document));
                 
         byte[] fileBytes = await _fileStorageService.GetFileAsync(document!.FilePath);
-        return File(fileBytes, GetContentType(document.FileType), document.FileName);
+        return File(fileBytes, document.FileType.ToMimeType(), document.FileName);
     }
-
-    private static string GetContentType(DocumentType type) => type switch
-    {
-        DocumentType.Pdf => "application/pdf",
-        DocumentType.Text => "text/plain",
-        DocumentType.Doc => "application/msword",
-        DocumentType.Docx => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        _ => "application/octet-stream",
-    };
 }

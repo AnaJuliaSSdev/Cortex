@@ -1,10 +1,11 @@
 ﻿using Cortex.Exceptions;
+using Cortex.Helpers;
 using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Factories;
 using Cortex.Services.Interfaces;
-using Pgvector;
+using GenerativeAI.Types;
 
 namespace Cortex.Services;
 
@@ -15,10 +16,10 @@ public class DocumentService(IDocumentRepository repository,
     private readonly IFileStorageService _fileStorageService = fileStorageService;
     private readonly IDocumentProcessingEmbeddingsService _documentProcessingEmbeddingsService = documentProcessingEmbeddingsService;
 
-    public async Task<Document> UploadAsync(CreateDocumentDto dto, int analysisId)
+    public async Task<Cortex.Models.Document> UploadAsync(CreateDocumentDto dto, int analysisId)
     {
         IDocumentProcessingStrategy? strategy = DocumentProcessingStrategyFactory.GetStrategy(dto.File);
-        Document? document = await strategy.ProcessAsync(dto.File);
+        Models.Document? document = await strategy.ProcessAsync(dto.File);
 
         document.Title = dto.Title;
         document.Source = dto.Source;
@@ -31,15 +32,37 @@ public class DocumentService(IDocumentRepository repository,
         document.FileSize = dto.File.Length;
 
         await _repository.AddAsync(document);
-
-        await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
+        //por enquanto sem gerar embeddings, analisando se vai ser necessário usar
+        //await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
 
         return document;
     }
 
-    public async Task<Document?> GetByIdAsync(int id)
+    public async Task<Cortex.Models.Document?> GetByIdAsync(int id)
     {
-        Document? document = await _repository.GetByIdAsync(id) ?? throw new EntityNotFoundException("Document");
+        Models.Document? document = await _repository.GetByIdAsync(id) ?? throw new EntityNotFoundException("Document");
         return document;
+    }
+
+    public async Task<List<Part>> ConvertDocumentsToPart(IEnumerable<Cortex.Models.Document> allDocuments)
+    {
+        List<Part> fileParts = [];
+        foreach (Cortex.Models.Document document in allDocuments)
+        {
+
+            byte[] fileBytes = await _fileStorageService.GetFileAsync(document.FilePath);
+            var base64Data = Convert.ToBase64String(fileBytes);
+
+            fileParts.Add(new Part
+            {
+                InlineData = new Blob
+                {
+                    MimeType = document.FileType.ToMimeType(),
+                    Data = base64Data
+                }
+            });
+        }
+
+        return fileParts;
     }
 }

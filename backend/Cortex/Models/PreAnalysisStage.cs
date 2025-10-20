@@ -2,5 +2,10 @@
 
 public class PreAnalysisStage : Stage
 {
-    List<Index> indexes { get; set; }
+    List<Index> Indexes { get; set; }
+
+    public PreAnalysisStage()
+    {
+        Indexes = [];
+    }
 }
