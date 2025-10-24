@@ -27,6 +27,8 @@ public class Document
 
     public string FilePath { get; set; }
 
+    public string GcsFilePath { get; set; }
+
     public long FileSize { get; set; } // File length in bytes
 
     [MaxLength(500)]

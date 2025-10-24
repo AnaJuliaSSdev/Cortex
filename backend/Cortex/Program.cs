@@ -11,8 +11,11 @@ using Cortex.Middlewares;
 using Cortex.Services.Factories;
 using Cortex.Services.Strategies;
 using Cortex.Models;
+using Google.Cloud.Storage.V1;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton(StorageClient.Create());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -92,7 +95,7 @@ builder.Services.AddScoped<IAnalysisOrchestrator, AnalysisOrchestrator>();
 //Documents
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IDocumentProcessingEmbeddingsService, DocumentProcessingEmbeddingsService>();
-builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IFileStorageService, GcsFileStorageService>();
 
 //Strategies
 builder.Services.AddScoped<IDocumentProcessingStrategy, TxtDocumentProcessingStrategy>();

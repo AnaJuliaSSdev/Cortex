@@ -38,18 +38,36 @@ namespace Cortex.Services
               "indicator": "Indicador concreto para medir a presença ou a falta do índice em questão"
             }}
 
+            Além disso, cada indicador pode ter uma lista de referências de onde ele foi extraído.
+            Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
+            qual trecho embasou a escolha do índice. 
+
             Exemplo da estrutura completa esperada:
             {{
               "indices": [
                 {{
                   "name": "Threat Modeling",
                   "description": "Threat Modeling é o processo de identificar, comunicar e compreender ameaças e mitigações em um contexto de proteção de algo de valor.",
-                  "indicator": "A presença da palavra Threat no texto."
+                  "indicator": "A presença da palavra Threat no texto.",
+                  "references": [
+                    {{
+                      "document": "nome_arquivo",
+                      "page": "2",
+                      "line": "8"
+                    }}
+                  ]
                 }},
                 {{
                   "name": "Input Validation",
                   "description": "A validação de entrada previne que dados malformados entrem no sistema, sendo uma defesa crucial contra ataques de injeção.",
-                  "indicator": "A não menção de validação de input durante uma entrevista."
+                  "indicator": "A não menção de validação de input durante uma entrevista.",
+                  "references": [
+                    {
+                      "document": "nome_arquivo",
+                      "page": "2",
+                      "line": "8"
+                    }}
+                  ]
                 }}
               ]
             }}
@@ -122,120 +140,9 @@ namespace Cortex.Services
         {
             AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos e embeddings         
             IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-            //SE DER ERRADO EXCLUI OQ TA NO MEIO DO TRECHO COMENTADO E DEIXA OQ TA COMENTADO
-            //List<Part> fileParts = await _documentService.ConvertDocumentsToPart(allDocuments);
-
-            List<Part> fileParts = new();
-            foreach (var document in allDocuments)
-            {
-                try
-                {
-                    byte[] fileBytes = await _fileStorageService.GetFileAsync(document.FilePath);
-
-                    // Envia para a File API do Gemini
-                    FileDetails? uploadedFile = await _geminiService.UploadFileWithHttpAsync(
-                        fileBytes,
-                        document.FileType.ToMimeType(),
-                        document.FileName
-                    );
-
-                    if (uploadedFile is not null)
-                    {
-                        // Adiciona o arquivo ao prompt (via URI)
-                        fileParts.Add(new Part
-                        {
-                            FileData = new FileData
-                            {
-                                MimeType = uploadedFile.MimeType,
-                                FileUri = uploadedFile.Uri
-                            }
-                        });
-
-                        _logger.LogInformation(
-                            "Arquivo '{FileName}' adicionado ao prompt. URI: {Uri}",
-                            document.FileName,
-                            uploadedFile.Uri
-                        );
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Falha no upload do arquivo '{FileName}'. Será ignorado na análise.", document.FileName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erro ao processar documento '{FileName}'", document.FileName);
-                }
-            }
-
-            if (fileParts.Count > 0)
-            {
-                _logger.LogInformation("Enviando {Count} arquivos para a API Gemini...", fileParts.Count);
-
-                GeminiResponse geminiResponse = await _geminiService.GenerateContentAsync(
-                    base.CreateFinalPrompt(resultBaseClass, analysis),
-                    fileParts
-                );
-
-                if (geminiResponse.IsSuccess)
-                {
-                    _logger.LogInformation("Resposta do Gemini recebida com sucesso.");
-
-                    // Processa a resposta (ex: extrai citações, índices, etc.)
-                    List<Cortex.Models.Index> processedIndices =
-                        await _indexProcessingService.ProcessGeminiResponseAsync(geminiResponse, analysis.Id);
-
-                    _logger.LogInformation("{Count} índices processados e vinculados com suas referências.", processedIndices.Count);
-
-                    // Apenas um exemplo de log mais detalhado
-                    var firstIndex = processedIndices.FirstOrDefault();
-                    if (firstIndex is not null)
-                    {
-                        Console.WriteLine($"Exemplo - Nome: {firstIndex.Name}");
-                        Console.WriteLine($"Indicador: {firstIndex.Indicator.Name}");
-                        foreach (var reference in firstIndex.References)
-                            Console.WriteLine($"  - Referência: {reference.SourceDocumentUri}");
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Erro da API Gemini: {geminiResponse.ErrorMessage}");
-                }
-            }
-            else
-            {
-                _logger.LogWarning("Nenhum arquivo válido foi enviado à API Gemini.");
-            }
-
-            //if (fileParts.Count != 0)
-            //{
-            //    GeminiResponse geminiResponse = await _geminiService.GenerateContentAsync(
-            //        base.CreateFinalPrompt(resultBaseClass, analysis),
-            //        fileParts
-            //    );
-
-            //    if (geminiResponse.IsSuccess)
-            //    {
-            //        List<Cortex.Models.Index> processedIndices = await _indexProcessingService.ProcessGeminiResponseAsync(geminiResponse, analysis.Id);
-            //        Console.WriteLine($"{processedIndices.Count} índices foram processados e vinculados com suas referências.");
-            //        var firstIndex = processedIndices.FirstOrDefault();
-            //        if (firstIndex != null)
-            //        {
-            //            Console.WriteLine($"Exemplo - Nome: {firstIndex.Name}");
-            //            Console.WriteLine($"Indicador: {firstIndex.Indicator.Name}");
-            //            foreach (var reference in firstIndex.References)
-            //            {
-            //                Console.WriteLine($"  - Referência: {reference.SourceDocumentUri}");
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        throw new Exception($"Erro da API Gemini: {geminiResponse.ErrorMessage}"); // aqui poderia tratar tb erro de too many requests
-            //    }
-            //}
-
-            //- Falta salvar os indices e indicadores no banco de dados e salvar o contexto enfim retornado pelo Gemini para 'concluir' a pré análise, além de verificar essa questão de tamanho de arquivos (permitir mais de 20MB ou então usar técnica RAG)
+            
+            //aqui, devem ser pegados os documentos desse usuário e enviar para análise. 
+            //
 
             return resultBaseClass;
         }

@@ -5,7 +5,7 @@ using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Factories;
 using Cortex.Services.Interfaces;
-using GenerativeAI.Types;
+using Google.Cloud.AIPlatform.V1;
 
 namespace Cortex.Services;
 
@@ -27,8 +27,9 @@ public class DocumentService(IDocumentRepository repository,
         document.AnalysisId = analysisId;
         document.CreatedAt = DateTime.UtcNow;
 
-        string filePath = await _fileStorageService.SaveFileAsync(dto.File, analysisId, strategy.DocumentExtension);
-        document.FilePath = filePath;
+        FileStorageResult filePaths = await _fileStorageService.SaveFileAsync(dto.File, analysisId, strategy.DocumentExtension);
+        document.FilePath = filePaths.LocalPath; // caminho para o diretório 
+        document.GcsFilePath = filePaths.GcsPath; // caminho para o diretório do vertex
         document.FileSize = dto.File.Length;
 
         await _repository.AddAsync(document);
@@ -44,25 +45,26 @@ public class DocumentService(IDocumentRepository repository,
         return document;
     }
 
-    public async Task<List<Part>> ConvertDocumentsToPart(IEnumerable<Cortex.Models.Document> allDocuments)
+    public List<Part> CreateVertexAiPartsFromDocuments(IEnumerable<Cortex.Models.Document> documents)
     {
-        List<Part> fileParts = [];
-        foreach (Cortex.Models.Document document in allDocuments)
+        var fileParts = new List<Google.Cloud.AIPlatform.V1.Part>();
+
+        foreach (var document in documents)
         {
+            if (string.IsNullOrEmpty(document.GcsFilePath) || !document.GcsFilePath.StartsWith("gs://"))
+            {               
+                continue;
+            }
 
-            byte[] fileBytes = await _fileStorageService.GetFileAsync(document.FilePath);
-            var base64Data = Convert.ToBase64String(fileBytes);
-
-            fileParts.Add(new Part
+            fileParts.Add(new Google.Cloud.AIPlatform.V1.Part
             {
-                InlineData = new Blob
+                FileData = new FileData
                 {
-                    MimeType = document.FileType.ToMimeType(),
-                    Data = base64Data
+                    FileUri = document.GcsFilePath, // O GCS URI salvo no banco
+                    MimeType = document.FileType.ToMimeType()
                 }
             });
         }
-
         return fileParts;
     }
 }
