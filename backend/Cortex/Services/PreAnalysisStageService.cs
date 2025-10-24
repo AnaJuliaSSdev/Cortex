@@ -140,9 +140,11 @@ namespace Cortex.Services
         {
             AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos e embeddings         
             IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-            
-            //aqui, devem ser pegados os documentos desse usuário e enviar para análise. 
-            //
+            //cada documento tem a sua uri 
+            //deve ser enviadouma lista de documentos e o prompt final
+            //depois chamar algum método pra tratar a resposta
+
+            //PRECISA AINDA SALVAR O RESULTADO NO BANCO DE DADOS
 
             return resultBaseClass;
         }

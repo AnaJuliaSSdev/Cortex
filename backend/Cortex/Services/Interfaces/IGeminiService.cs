@@ -22,10 +22,5 @@ public interface IGeminiService
         GeminiModel? modelOverride = null,
         string? apiKeyOverride = null);
 
-    ////ENVIA ARQUIVOS INLINE
-    //Task<GeminiResponse> GenerateContentAsync(string prompt, IEnumerable<Part> fileParts,
-    //    Cortex.Models.Enums.GeminiModel? modelOverride = null, string? apiKeyOverride = null);
-
-    //// ENVIA ARQUIVOS VIA API KEY
-    //Task<FileDetails?> UploadFileWithHttpAsync(byte[] fileBytes, string mimeType, string fileName);
+    Task<string> GenerateContentWithDocuments(List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192);
 }
