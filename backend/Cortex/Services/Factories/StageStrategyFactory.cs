@@ -16,9 +16,10 @@ public class StageStrategyFactory(
     {
         return stage switch
         {
-            PreAnalysisStage => _preAnalysisStageService,
-            ExplorationOfMaterialStage => _explorationOfMaterialStageService,
-            InferenceConclusionStage => _inferenceConclusionStageService,
+            null => _preAnalysisStageService,
+            PreAnalysisStage => _explorationOfMaterialStageService,
+            ExplorationOfMaterialStage => _inferenceConclusionStageService,
+            //InferenceConclusionStage => aqui teoricamente já acabou
             _ => throw new NotSupportedException($"No strategy found for type {stage.GetType().Name}")
         };
     }

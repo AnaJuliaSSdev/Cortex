@@ -72,7 +72,7 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
 
         var generationConfig = new GenerationConfig
         {
-            MaxOutputTokens = maxOutputTokens,
+            //MaxOutputTokens = maxOutputTokens,
             Temperature = temperature,
             TopP = 1.0f
         };

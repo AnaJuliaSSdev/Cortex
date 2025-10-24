@@ -8,6 +8,7 @@ public static class FindNextStageStrategyFactory
     {
         return currentStage switch
         {
+            null => new PreAnalysisStage(),
             PreAnalysisStage => new ExplorationOfMaterialStage(),
             ExplorationOfMaterialStage => new InferenceConclusionStage(),
             InferenceConclusionStage => null, 

@@ -12,14 +12,14 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
 {
     private readonly IAnalysisRepository _analysisRepository = analysisRepository;
 
-    public async Task<AnalysisDto?> GetByIdAsync(int id, int userId)
+    public async Task<Analysis?> GetByIdAsync(int id, int userId)
     {
         var analysis = await _analysisRepository.GetByIdWithDetailsAsync(id);
 
         if (analysis == null || analysis.UserId != userId)
             throw new EntityNotFoundException("Analysis");
 
-        return Mapper.Map<AnalysisDto>(analysis);
+        return analysis;
     }
 
     public async Task<IEnumerable<AnalysisDto>> GetByUserIdAsync(int userId)

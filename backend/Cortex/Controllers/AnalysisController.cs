@@ -1,5 +1,4 @@
-﻿using Cortex.Models;
-using Cortex.Models.DTO;
+﻿using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -54,9 +53,8 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
     public async Task<ActionResult> StartAnalysis(int id)
     {
         var userId = GetCurrentUserId();
-        var response = await _analysisOrchestrator.StartAnalysisAsync(id, userId);
-        Console.WriteLine(response);
-        return NoContent();
+        AnalysisExecutionResult response = await _analysisOrchestrator.StartAnalysisAsync(id, userId);
+        return Ok(response);
     }
 
     [HttpPost("reverseLastStage/{id}")]
@@ -74,9 +72,9 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
     public async Task<ActionResult> CotinueAnalysis(int id)
     {
         var analysis = await _analysisRepository.GetByIdAsync(id);
-        var response = await _analysisOrchestrator.ContinueAnalysisAsync(analysis);
+        AnalysisExecutionResult response = await _analysisOrchestrator.ContinueAnalysisAsync(analysis);
         Console.WriteLine(response);
-        return NoContent();
+        return Ok(response);
     }
 
     private int GetCurrentUserId()

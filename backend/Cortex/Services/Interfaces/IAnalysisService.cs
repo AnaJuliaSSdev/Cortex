@@ -1,11 +1,12 @@
-﻿using Cortex.Models.DTO;
+﻿using Cortex.Models;
+using Cortex.Models.DTO;
 
 namespace Cortex.Services.Interfaces;
 
 public interface IAnalysisService
 {
-    Task<AnalysisDto?> GetByIdAsync(int id, int userId);
-    Task<IEnumerable<AnalysisDto>> GetByUserIdAsync(int userId);
+    Task<Analysis?> GetByIdAsync(int id, int userId);
+    Task<IEnumerable<AnalysisDto?>> GetByUserIdAsync(int userId);
     Task<AnalysisDto> CreateAsync(CreateAnalysisDto createDto, int userId);
     Task<bool> DeleteAsync(int id, int userId);
 }

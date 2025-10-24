@@ -13,13 +13,15 @@ using Document = Cortex.Models.Document;
 namespace Cortex.Services
 {
     public class PreAnalysisStageService(IDocumentRepository documentRepository, IGeminiService geminiService,
-        ILogger<PreAnalysisStageService> logger, IStageRepository stageRepository,IIndicatorRepository indicatorRepository,
+        ILogger<PreAnalysisStageService> logger, IStageRepository stageRepository,
+        IIndicatorService indicatorService, IAnalysisRepository analysisRepository,
         IIndexRepository indexRepository) : AStageService(documentRepository)
     {
         private readonly IGeminiService _geminiService = geminiService;
         private readonly IStageRepository _stageRepository = stageRepository;
         private readonly IIndexRepository _indexRepository = indexRepository;
-        private readonly IIndicatorRepository _indicatorRepository = indicatorRepository;
+        private readonly IIndicatorService _indicatorService = indicatorService;
+        private readonly IAnalysisRepository _analysisRepository = analysisRepository;
         private readonly ILogger _logger = logger;
 
 
@@ -182,7 +184,173 @@ namespace Cortex.Services
             {
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
 
-                string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+                //peguei a ultima resposta e mockei pra n ficar gastando crédito
+                string jsonResponse = """
+                ```json
+                {
+                  "indices": [
+                    {
+                      "name": "Saber Pedagógico Lúdico",
+                      "description": "Refere-se à utilização de jogos, brincadeiras, estórias e elementos teatrais como estratégia central para o ensino do Balé, especialmente para crianças. Essa abordagem, descrita como 'a gente aprende brincando' (p. 32), visa estimular a criatividade e a liberdade de expressão, transformando a aula em uma experiência prazerosa e significativa.",
+                      "indicator": "Menção a brincadeiras (tubarão, coelho, castelo), 'teatrinho', uso de objetos cênicos (cenouras, comidinhas) e a percepção da aula como um espaço de diversão e criatividade.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "32",
+                          "line": "50"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "27",
+                          "line": "20"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "33",
+                          "line": "15"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Saber Corporal Somático",
+                      "description": "Conhecimento que aborda o Balé para além da forma estética, com foco na consciência corporal, anatomia e cinesiologia. A metodologia da professora é descrita como promotora de um 'conhecimento que protege o corpo' (p. 10), ensinando os alunos a se movimentarem de forma segura e a compreenderem a função de cada exercício, como na fala de Vagner: 'o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá...' (p. 7).",
+                      "indicator": "Menção a explicações sobre anatomia, fisiologia e função dos movimentos, e ao balé como ferramenta de proteção corporal e prevenção de lesões.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "10",
+                          "line": "22"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "7",
+                          "line": "26"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "4",
+                          "line": "11"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Saber Relacional Afetivo",
+                      "description": "Refere-se à construção de um ambiente de aprendizagem baseado na afetividade, amizade, diálogo e respeito. A relação professor-aluno é descrita como 'de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia' (p. 2), onde o erro é tratado com 'naturalidade' e 'de maneira bem humorada e divertida' (p. 9), e a aula se torna um espaço de encontro e bem-estar.",
+                      "indicator": "Descrição da relação com a professora como sendo de amizade, carinho e proximidade; menção a um ambiente de aula divertido, acolhedor e onde o erro não é punido.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "2",
+                          "line": "20"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "9",
+                          "line": "15"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "4",
+                          "line": "1"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Experiência da Formação Prática e Compartilhada",
+                      "description": "Experiência vivenciada e reproduzida pela professora, originada em sua própria formação na escola de sua mestra, Dicléa. Caracteriza-se por um modelo de 'aprender fazendo', onde a docência é desenvolvida através da prática supervisionada ('eu fico do lado sempre durante um tempo acompanhando essa aula', p. 43) e da docência compartilhada, descrita por sua colega Eleonora como 'fundamental' (p. 14) para a troca de saberes.",
+                      "indicator": "Relatos sobre o processo de se tornar professor através da prática, da observação, da supervisão direta e da colaboração com outros professores (docência compartilhada).",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "43",
+                          "line": "17"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "14",
+                          "line": "15"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "15",
+                          "line": "20"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Saber Pedagógico Reflexivo e Adaptativo",
+                      "description": "Conhecimento pedagógico que se manifesta na capacidade de adaptar a metodologia aos diferentes contextos e alunos, respeitando o 'tempo de desenvolvimento de cada um' (p. 8). Inclui a prática de metarreflexão, incentivando os alunos a pensarem sobre seu próprio processo de aprendizagem e sobre como poderiam ensinar outros, como aponta Vagner: 'tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos' (p. 7).",
+                      "indicator": "Menção à adaptação dos exercícios para diferentes níveis de alunos, ao uso de diários para reflexão e a discussões sobre 'como ensinar'.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "8",
+                          "line": "25"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "7",
+                          "line": "46"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "9",
+                          "line": "38"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Desconstrução da Visão Sacrificial do Balé",
+                      "description": "Movimento de ressignificação do Balé, contrapondo-se à imagem tradicional de uma prática baseada no sacrifício e na dor. As aulas da professora são descritas como um espaço para 'desconstruir a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante' (p. 1), mostrando que a técnica 'não precisa ser sacrificante, não precisa ser isso...' (p. 2).",
+                      "indicator": "Oposição entre uma percepção anterior do balé (sofrimento, rigidez, 'coisa chata') e a experiência vivenciada nas aulas da professora (prazer, descoberta, leveza).",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "1",
+                          "line": "40"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "2",
+                          "line": "9"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "35",
+                          "line": "23"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Concepção de Formação Cultural Ampliada",
+                      "description": "Entendimento da formação em dança como um processo que transcende a sala de aula e a técnica. A metodologia da professora promove uma formação integral, herdada de sua escola de origem, onde os alunos se envolvem em todo o universo da dança. Dicléa descreve: 'a escola não é só de dança, é corte costura, é cabelereiro, é tudo' (p. 46), e Eleonora reforça a preocupação em formar 'não só em termos de reprodução de passos, de vocabulário, mas de História da Dança' (p. 18).",
+                      "indicator": "Menção a aprendizados teóricos (história, nomenclatura), à participação em todas as etapas da produção de um espetáculo (figurino, cenário) e a experiências formativas fora da sala de aula (viagens, festivais).",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "46",
+                          "line": "26"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "18",
+                          "line": "37"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "34",
+                          "line": "38"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                ```
+                """;
+                jsonResponse = Util.Util.SanitizeGeminiJsonResponse(jsonResponse);//sanitização da resposta
+               
+                //deixei comentado por enquanto pra não gastar recurso
+                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
 
                 if (string.IsNullOrWhiteSpace(jsonResponse))
                 {
@@ -192,10 +360,6 @@ namespace Cortex.Services
                 }
                 else
                 {
-                    _logger.LogInformation("--- Resposta JSON Recebida do Vertex AI ---");
-                    _logger.LogInformation(jsonResponse.ToString()); // <<-- Printa no console/log
-                    _logger.LogInformation("-------------------------------------------");
-
                     PreAnalysisStage stageEntity = new()
                     {
                         AnalysisId = analysis.Id
@@ -205,17 +369,17 @@ namespace Cortex.Services
                     _logger.LogInformation("Entidade 'PreAnalysisStage' (ID: {StageId}) salva.", stageEntity.Id);
 
                     JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-                    GeminiIndexResponse geminiResponse = JsonSerializer.Deserialize<GeminiIndexResponse>(jsonResponse, options);
+                    GeminiIndexResponse geminiResponse = JsonSerializer.Deserialize<GeminiIndexResponse>(jsonResponse, options); // erro aqui
 
                     if (geminiResponse == null || geminiResponse.Indices == null)
                     {
-                        throw new JsonException("Falha ao desserializar a resposta do Gemini. O JSON pode estar mal formatado.");
+                        throw new JsonException("Falha ao desserializar a resposta do Gemini. Indices não foram encontrados.");
                     }
 
                     foreach (var geminiIndex in geminiResponse.Indices)
                     {
                         // 3a. Encontra ou Cria o 'Indicator'
-                        Indicator indicatorEntity = await GetOrCreateIndicatorAsync(geminiIndex.Indicator);
+                        Indicator indicatorEntity = await _indicatorService.GetOrCreateIndicatorAsync(geminiIndex.Indicator);
 
                         // 3b. Cria a entidade 'Index'
                         var newIndex = new Models.Index
@@ -232,7 +396,7 @@ namespace Cortex.Services
                             foreach (var geminiRef in geminiIndex.References)
                             {
                                 // Encontra o GCS URI correspondente ao nome do arquivo
-                                string gcsUri = FindGcsUriFromFileName(allDocuments, geminiRef.Document);
+                                string gcsUri = Util.Util.FindGcsUriFromFileName(allDocuments, geminiRef.Document);
                                 if (gcsUri == null)
                                 {
                                     _logger.LogWarning("Não foi possível encontrar o GCS URI para o documento de referência: {DocName}", geminiRef.Document);
@@ -253,6 +417,7 @@ namespace Cortex.Services
                         }
                         await _indexRepository.AddAsync(newIndex);
                     }
+                    analysis.Stages.Add(newStageAdded);
                     resultBaseClass.PromptResult = jsonResponse;
                     resultBaseClass.IsSuccess = true;
                 }
@@ -263,46 +428,8 @@ namespace Cortex.Services
                 resultBaseClass.ErrorMessage = $"Erro na API de IA: {ex.Message}";
                 resultBaseClass.IsSuccess = false;
             }
+
             return resultBaseClass;
-        }
-
-        /// <summary>
-        /// Encontra o GCS URI de um documento com base no nome do arquivo.
-        /// </summary>
-        private string FindGcsUriFromFileName(IEnumerable<Document> allDocuments, string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName)) return null;
-
-            // Tenta encontrar pelo 'FileName' (ex: "entrevista.pdf")
-            var doc = allDocuments.FirstOrDefault(d =>
-                d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
-                d.Title.Equals(fileName, StringComparison.OrdinalIgnoreCase)
-            );
-
-            return doc?.GcsFilePath; // Retorna o GCS URI ou null
-        }
-
-        /// <summary>
-        /// Busca um Indicador pelo nome. Se não existir, cria um novo.
-        /// </summary>
-        private async Task<Indicator> GetOrCreateIndicatorAsync(string indicatorName)
-        {
-            if (string.IsNullOrWhiteSpace(indicatorName))
-            {
-                indicatorName = "Não especificado";
-            }
-
-            // (Assumindo que seu repositório tem um método 'GetByNameAsync')
-            Indicator? existingIndicator = await _indicatorRepository.GetByNameAsync(indicatorName);
-            if (existingIndicator != null)
-            {
-                return existingIndicator;
-            }
-
-            // Criar um novo se não existir
-            _logger.LogInformation("Criando novo Indicador: {IndicatorName}", indicatorName);
-            Indicator newIndicator = new() { Name = indicatorName };
-            return await _indicatorRepository.AddAsync(newIndicator);
-        }
+        }          
     }
 }

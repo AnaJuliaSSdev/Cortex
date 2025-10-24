@@ -11,6 +11,7 @@ public class StageRepository(AppDbContext context) : IStageRepository
     public async Task<Stage> AddAsync(Stage stage)
     {
         await _context.Stages.AddAsync(stage);
+        await _context.SaveChangesAsync();
         return stage;
     }
 }

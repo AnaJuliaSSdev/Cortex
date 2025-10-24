@@ -30,13 +30,6 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             if (analysis.Status != AnalysisStatus.Draft)
                 throw new InvalidOperationException("Analysis can only be started from Draft status");
 
-            PreAnalysisStage newStage = new()
-            {
-                AnalysisId = analysisId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _stageRepository.AddAsync(newStage);
-
             analysis.Status = AnalysisStatus.Running;
 
             Analysis updatedAnalysis = _analysisRepository.UpdateAsync(analysis);
@@ -61,7 +54,7 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             if (analysis.Status == AnalysisStatus.Completed)
                 throw new AnalysisAlreadyCompletedException();
 
-            var lastStage = analysis.Stages.Last(); // pega o último stage adicionado, sem contexto, para ser executado
+            var lastStage = analysis.Stages.Count == 0 ? null : analysis.Stages.Last(); // pega o último stage adicionado, sem contexto, para ser executado
             var currentStageStrategy = _stageStrategyFactory.GetStrategy(lastStage);
             var resultcurrentStage = await currentStageStrategy.ExecuteStageAsync(analysis); // executa o stage e guarda o contexto nesse stage
 

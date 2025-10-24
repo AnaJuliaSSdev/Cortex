@@ -12,12 +12,16 @@ using Cortex.Services.Factories;
 using Cortex.Services.Strategies;
 using Cortex.Models;
 using Google.Cloud.Storage.V1;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton(StorageClient.Create());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -128,6 +132,7 @@ builder.Services.AddScoped<IIndexReferenceRepository, IndexReferenceRepository>(
 
 //Indicator
 builder.Services.AddScoped<IIndicatorRepository, IndicatorRepository>();
+builder.Services.AddScoped<IIndicatorService, IndicatorService>();
 
 
 // Logging

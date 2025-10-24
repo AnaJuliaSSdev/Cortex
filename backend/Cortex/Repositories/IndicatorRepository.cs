@@ -22,6 +22,6 @@ public class IndicatorRepository(AppDbContext context) : IIndicatorRepository
     public async Task<Indicator?> GetByNameAsync(string name)
     {
         return await _context.Indicators
-            .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+            .FirstOrDefaultAsync(i => i.Name.ToLower() == name.ToLower());
     }
 }
