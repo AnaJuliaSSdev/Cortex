@@ -1,7 +1,7 @@
 ﻿using GenerativeAI.Types;
 using System.Text.Json.Serialization;
 
-namespace Cortex.Models;
+namespace Cortex.Models.DTO;
 
 public class GeminiResponse
 {

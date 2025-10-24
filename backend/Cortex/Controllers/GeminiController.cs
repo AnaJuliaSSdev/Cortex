@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Cortex.Services.Interfaces;
-using Cortex.Models;
+using Cortex.Models.DTO;
 
 namespace GeminiService.Api.Controllers;
 

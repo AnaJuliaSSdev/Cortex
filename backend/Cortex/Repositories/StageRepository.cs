@@ -8,8 +8,9 @@ public class StageRepository(AppDbContext context) : IStageRepository
 {
     private readonly AppDbContext _context = context;
 
-    public async Task AddAsync(Stage stage)
+    public async Task<Stage> AddAsync(Stage stage)
     {
         await _context.Stages.AddAsync(stage);
+        return stage;
     }
 }

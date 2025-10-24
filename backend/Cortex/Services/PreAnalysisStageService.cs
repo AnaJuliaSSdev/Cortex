@@ -1,25 +1,30 @@
 ﻿using Cortex.Helpers;
 using Cortex.Models;
 using Cortex.Models.DTO;
+using Cortex.Repositories;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using GenerativeAI.Types;
 using System.Text;
+using System.Text.Json;
 using static GeminiService.Api.Services.Implementations.GeminiService;
+using Document = Cortex.Models.Document;
 
 namespace Cortex.Services
 {
-    public  class PreAnalysisStageService(IDocumentRepository documentRepository, IGeminiService geminiService,
-        ILogger<PreAnalysisStageService> logger,
-        IDocumentService documentService, IIndexProcessingService indexProcessingService, IFileStorageService fileStorageService) : AStageService(documentRepository)
+    public class PreAnalysisStageService(IDocumentRepository documentRepository, IGeminiService geminiService,
+        ILogger<PreAnalysisStageService> logger, IStageRepository stageRepository,IIndicatorRepository indicatorRepository,
+        IIndexRepository indexRepository) : AStageService(documentRepository)
     {
         private readonly IGeminiService _geminiService = geminiService;
-        private readonly IDocumentService _documentService = documentService;
-        private readonly IIndexProcessingService _indexProcessingService = indexProcessingService;
-        private readonly IFileStorageService _fileStorageService = fileStorageService;
+        private readonly IStageRepository _stageRepository = stageRepository;
+        private readonly IIndexRepository _indexRepository = indexRepository;
+        private readonly IIndicatorRepository _indicatorRepository = indicatorRepository;
         private readonly ILogger _logger = logger;
+
+
         #region Prompt Pre Analysis
-        private const string _promptPreAnalysis = """              
+        public string _promptPreAnalysis = """              
             Você está na etapa de PRÉ ANÁLISE e irá fazer o LEVANTAMENTO DE ÍNDICES E A SELEÇÃO DOS INDICADORES dos documentos de análise, segundo a metodologia de Laurance Bardin.
             A partir das entrevistas transcritas anexadas e dos documentos anexados de contextualização da etapa que estamos prestes a realizar, selecione os *índices* e defina os *indicadores* que compõem esses documentos de análise.
             Os documentos de contextualização devem ser utilizados como fontes de conceitos teóricos para embasar a análise.
@@ -62,7 +67,7 @@ namespace Cortex.Services
                   "description": "A validação de entrada previne que dados malformados entrem no sistema, sendo uma defesa crucial contra ataques de injeção.",
                   "indicator": "A não menção de validação de input durante uma entrevista.",
                   "references": [
-                    {
+                    {{
                       "document": "nome_arquivo",
                       "page": "2",
                       "line": "8"
@@ -135,29 +140,169 @@ namespace Cortex.Services
             Indicador (Medida Sistemática) = A frequência de aparição desses índices
             """;
         #endregion
+        public override string GetPromptStageAsync()
+        {
+            return this._promptPreAnalysis;
+        }
 
         public override async Task<AnalysisExecutionResult> ExecuteStageAsync(Analysis analysis)
         {
+            _logger.LogInformation("Iniciando 'PreAnalysisStageService' para a Análise ID: {AnalysisId}...", analysis.Id);
+
             AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos e embeddings         
             IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-            //cada documento tem a sua uri 
-            //deve ser enviadouma lista de documentos e o prompt final
-            //depois chamar algum método pra tratar a resposta
+            string finalPrompt = base.CreateFinalPrompt(resultBaseClass, analysis);
 
-            //PRECISA AINDA SALVAR O RESULTADO NO BANCO DE DADOS
+            var documentInfos = new List<DocumentInfo>();
+            foreach (var doc in allDocuments)
+            {
+                // Usamos a propriedade GcsFilePath que você confirmou ter adicionado
+                if (string.IsNullOrEmpty(doc.GcsFilePath) || !doc.GcsFilePath.StartsWith("gs://"))
+                {
+                    _logger.LogWarning("Documento ID {DocId} ('{Title}') está sem GcsFilePath. Pulando.", doc.Id, doc.Title);
+                    continue;
+                }
 
+                documentInfos.Add(new DocumentInfo
+                {
+                    GcsUri = doc.GcsFilePath,
+                    MimeType = doc.FileType.ToMimeType() // Assumindo que seu enum FileType tem este método helper
+                });              
+            }
+
+            if (documentInfos.Count == 0)
+            {
+                _logger.LogError("Nenhum documento com GCS URI válido foi encontrado para a análise. Abortando.");
+                resultBaseClass.ErrorMessage = "Nenhum documento válido foi encontrado para processamento.";
+                resultBaseClass.IsSuccess = false;
+                return resultBaseClass;
+            }
+
+            try
+            {
+                _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
+
+                string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+
+                if (string.IsNullOrWhiteSpace(jsonResponse))
+                {
+                    _logger.LogError("O Vertex AI (GeminiService) retornou uma resposta vazia.");
+                    resultBaseClass.ErrorMessage = "O serviço de IA retornou uma resposta vazia.";
+                    resultBaseClass.IsSuccess = false;
+                }
+                else
+                {
+                    _logger.LogInformation("--- Resposta JSON Recebida do Vertex AI ---");
+                    _logger.LogInformation(jsonResponse.ToString()); // <<-- Printa no console/log
+                    _logger.LogInformation("-------------------------------------------");
+
+                    PreAnalysisStage stageEntity = new()
+                    {
+                        AnalysisId = analysis.Id
+                    };
+
+                    Stage newStageAdded = await _stageRepository.AddAsync(stageEntity); // SALVA O STAGE NO BD
+                    _logger.LogInformation("Entidade 'PreAnalysisStage' (ID: {StageId}) salva.", stageEntity.Id);
+
+                    JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+                    GeminiIndexResponse geminiResponse = JsonSerializer.Deserialize<GeminiIndexResponse>(jsonResponse, options);
+
+                    if (geminiResponse == null || geminiResponse.Indices == null)
+                    {
+                        throw new JsonException("Falha ao desserializar a resposta do Gemini. O JSON pode estar mal formatado.");
+                    }
+
+                    foreach (var geminiIndex in geminiResponse.Indices)
+                    {
+                        // 3a. Encontra ou Cria o 'Indicator'
+                        Indicator indicatorEntity = await GetOrCreateIndicatorAsync(geminiIndex.Indicator);
+
+                        // 3b. Cria a entidade 'Index'
+                        var newIndex = new Models.Index
+                        {
+                            Name = geminiIndex.Name,
+                            Description = geminiIndex.Description,
+                            IndicatorId = indicatorEntity.Id,
+                            PreAnalysisStageId = newStageAdded.Id
+                        };
+
+                        // Mapeia as 'References' (do JSON para a Entidade)
+                        if (geminiIndex.References != null)
+                        {
+                            foreach (var geminiRef in geminiIndex.References)
+                            {
+                                // Encontra o GCS URI correspondente ao nome do arquivo
+                                string gcsUri = FindGcsUriFromFileName(allDocuments, geminiRef.Document);
+                                if (gcsUri == null)
+                                {
+                                    _logger.LogWarning("Não foi possível encontrar o GCS URI para o documento de referência: {DocName}", geminiRef.Document);
+                                    gcsUri = $"NÃO ENCONTRADO: {geminiRef.Document}";
+                                }
+
+                                IndexReference newReference = new()
+                                {
+                                    Index = newIndex, // EF Core associará automaticamente
+                                    SourceDocumentUri = gcsUri,
+                                    Page = geminiRef.Page,
+                                    Line = geminiRef.Line,
+                                    // aqui teria que pedir pra ele gerar jutno o trecho exato, além das páginas e linhas
+                                    QuotedContent = $"Pág: {geminiRef.Page}, Linha: {geminiRef.Line}" 
+                                };
+                                newIndex.References.Add(newReference);
+                            }
+                        }
+                        await _indexRepository.AddAsync(newIndex);
+                    }
+                    resultBaseClass.PromptResult = jsonResponse;
+                    resultBaseClass.IsSuccess = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Falha crítica ao chamar o GenerateContentWithDocuments do GeminiService.");
+                resultBaseClass.ErrorMessage = $"Erro na API de IA: {ex.Message}";
+                resultBaseClass.IsSuccess = false;
+            }
             return resultBaseClass;
         }
 
-        public override string GetPromptStageAsync()
+        /// <summary>
+        /// Encontra o GCS URI de um documento com base no nome do arquivo.
+        /// </summary>
+        private string FindGcsUriFromFileName(IEnumerable<Document> allDocuments, string fileName)
         {
-           string promptStart = base.GetPromptStageAsync();
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
 
-            StringBuilder stringBuilder = new();
-            stringBuilder.AppendLine(promptStart);
-            stringBuilder.AppendLine(_promptPreAnalysis);
+            // Tenta encontrar pelo 'FileName' (ex: "entrevista.pdf")
+            var doc = allDocuments.FirstOrDefault(d =>
+                d.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
+                d.Title.Equals(fileName, StringComparison.OrdinalIgnoreCase)
+            );
 
-            return stringBuilder.ToString();
+            return doc?.GcsFilePath; // Retorna o GCS URI ou null
+        }
+
+        /// <summary>
+        /// Busca um Indicador pelo nome. Se não existir, cria um novo.
+        /// </summary>
+        private async Task<Indicator> GetOrCreateIndicatorAsync(string indicatorName)
+        {
+            if (string.IsNullOrWhiteSpace(indicatorName))
+            {
+                indicatorName = "Não especificado";
+            }
+
+            // (Assumindo que seu repositório tem um método 'GetByNameAsync')
+            Indicator? existingIndicator = await _indicatorRepository.GetByNameAsync(indicatorName);
+            if (existingIndicator != null)
+            {
+                return existingIndicator;
+            }
+
+            // Criar um novo se não existir
+            _logger.LogInformation("Criando novo Indicador: {IndicatorName}", indicatorName);
+            Indicator newIndicator = new() { Name = indicatorName };
+            return await _indicatorRepository.AddAsync(newIndicator);
         }
     }
 }

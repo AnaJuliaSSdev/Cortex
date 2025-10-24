@@ -22,10 +22,10 @@ public class Index
     public virtual Indicator Indicator { get; set; }
 
     [Required]
-    public int AnalysisId { get; set; }
+    public int PreAnalysisStageId { get; set; }
 
-    [ForeignKey("AnalysisId")]
-    public virtual Analysis Analysis { get; set; }
+    [ForeignKey("PreAnalysisStageId")]
+    public PreAnalysisStage PreAnalysisStage { get; set; }
 
     public virtual ICollection<IndexReference> References { get; set; } = [];
 }

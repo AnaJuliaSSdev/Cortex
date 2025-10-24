@@ -2,7 +2,7 @@
 
 public class PreAnalysisStage : Stage
 {
-    List<Index> Indexes { get; set; }
+    public virtual ICollection<Index> Indexes { get; set; }
 
     public PreAnalysisStage()
     {

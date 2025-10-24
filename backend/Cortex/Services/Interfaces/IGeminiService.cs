@@ -1,4 +1,5 @@
 ﻿using Cortex.Models;
+using Cortex.Models.DTO;
 using Cortex.Models.Enums;
 using GenerativeAI.Types;
 using System.Net.Http;

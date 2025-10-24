@@ -1,5 +1,6 @@
 ﻿using Cortex.Models;
 using Microsoft.EntityFrameworkCore;
+using Index = Cortex.Models.Index;
 
 namespace Cortex.Data;
 
@@ -10,6 +11,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Document> Documents { get; set; }
     public DbSet<Stage> Stages { get; set; }
     public DbSet<Chunk> Chunks { get; set; }
+    public DbSet<PreAnalysisStage> PreAnalysisStages { get; set; }
+    public DbSet<Index> Indexes { get; set; }
+    public DbSet<Indicator> Indicators { get; set; }
+    public DbSet<IndexReference> IndexReferences { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -108,6 +113,57 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(e => e.DocumentId);
             entity.HasIndex(e => new { e.DocumentId, e.ChunkIndex })
                 .HasDatabaseName("IX_Chunks_DocumentId_ChunkIndex");
+        });
+
+        modelBuilder.Entity<PreAnalysisStage>(entity =>
+        {
+            // Uma PreAnalysisStage TEM MUITOS Indexes
+            entity.HasMany(pas => pas.Indexes)
+                .WithOne(i => i.PreAnalysisStage)
+                .HasForeignKey(i => i.PreAnalysisStageId)
+                .OnDelete(DeleteBehavior.Cascade); // Se deletar a etapa, deleta os índices
+        });
+
+        modelBuilder.Entity<Indicator>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // CRÍTICO: Garante que não haja dois indicadores com o mesmo nome
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<Index>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Garante que um índice seja único dentro de sua etapa
+            entity.HasIndex(e => new { e.PreAnalysisStageId, e.Name }).IsUnique();
+
+            // Define o relacionamento Muitos-para-1
+            // Muitos Indexes PODEM USAR UM Indicator
+            entity.HasOne(i => i.Indicator)
+                .WithMany() // Um Indicator pode ser usado por muitos Indexes
+                .HasForeignKey(i => i.IndicatorId)
+                .OnDelete(DeleteBehavior.Restrict); // NÃO DEIXE deletar um Indicator se ele estiver em uso
+
+            // Define o relacionamento 1-para-Muitos
+            // Um Index TEM MUITAS References
+            entity.HasMany(i => i.References)
+                .WithOne(r => r.Index)
+                .HasForeignKey(r => r.IndexId)
+                .OnDelete(DeleteBehavior.Cascade); // Se deletar o Index, deleta suas referências
+
+            // Configuração para IndexReference
+            modelBuilder.Entity<IndexReference>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                // O relacionamento (Muitos-para-1 com Index)
+                // já foi definido na configuração de Index.
+
+                // Apenas adiciona um índice para performance de consulta
+                entity.HasIndex(e => e.IndexId);
+            });
         });
     }
 }

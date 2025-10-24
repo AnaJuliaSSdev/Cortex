@@ -1,4 +1,5 @@
 ﻿using Cortex.Models;
+using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
 using GeminiService.Api.Extensions;
 using GenerativeAI;

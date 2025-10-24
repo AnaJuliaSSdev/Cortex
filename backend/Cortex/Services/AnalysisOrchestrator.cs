@@ -65,6 +65,8 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             var currentStageStrategy = _stageStrategyFactory.GetStrategy(lastStage);
             var resultcurrentStage = await currentStageStrategy.ExecuteStageAsync(analysis); // executa o stage e guarda o contexto nesse stage
 
+            //aqui verificar se n deu nenhum erro antes de continuar
+
             var nextStage = FindNextStageStrategyFactory.GetNextStage(lastStage);
             if (nextStage is not null)
                 analysis.Stages.Add(nextStage); // adiciona o próximo stage a lista, sem o contexto

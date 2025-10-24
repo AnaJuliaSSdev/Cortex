@@ -1,4 +1,4 @@
-﻿using Cortex.Models;
+﻿using Cortex.Models.DTO;
 
 namespace Cortex.Services.Interfaces;
 
