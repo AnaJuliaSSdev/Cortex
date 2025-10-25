@@ -5,15 +5,15 @@ using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Factories;
 using Cortex.Services.Interfaces;
-using Google.Cloud.AIPlatform.V1;
 
 namespace Cortex.Services;
 
-public class DocumentService(IDocumentRepository repository,
+public class DocumentService(IDocumentRepository repository, ILogger<DocumentService> logger,
     IFileStorageService fileStorageService, IDocumentProcessingEmbeddingsService documentProcessingEmbeddingsService) : IDocumentService
 {
     private readonly IDocumentRepository _repository = repository;
     private readonly IFileStorageService _fileStorageService = fileStorageService;
+    private readonly ILogger _logger = logger;
     private readonly IDocumentProcessingEmbeddingsService _documentProcessingEmbeddingsService = documentProcessingEmbeddingsService;
 
     public async Task<Cortex.Models.Document> UploadAsync(CreateDocumentDto dto, int analysisId)
@@ -45,26 +45,38 @@ public class DocumentService(IDocumentRepository repository,
         return document;
     }
 
-    public List<Part> CreateVertexAiPartsFromDocuments(IEnumerable<Cortex.Models.Document> documents)
+    /// <summary>
+    /// Mapeia uma lista de Documents para objetos DocumentInfo
+    /// </summary>
+    /// <param name="allDocuments"></param>
+    /// <returns>Lista de DocumentInfo para usar no serviço do VERTEX</returns>
+    /// <exception cref="AnalysisWithoutDocumentException"></exception>
+    public List<DocumentInfo> MapDocumentsToDocumentsInfo(IEnumerable<Document> allDocuments)
     {
-        var fileParts = new List<Google.Cloud.AIPlatform.V1.Part>();
 
-        foreach (var document in documents)
+        var documentInfos = new List<DocumentInfo>();
+        foreach (var doc in allDocuments)
         {
-            if (string.IsNullOrEmpty(document.GcsFilePath) || !document.GcsFilePath.StartsWith("gs://"))
-            {               
+            // Usamos a propriedade GcsFilePath que você confirmou ter adicionado
+            if (string.IsNullOrEmpty(doc.GcsFilePath) || !doc.GcsFilePath.StartsWith("gs://"))
+            {
+                _logger.LogWarning("Documento ID {DocId} ('{Title}') está sem GcsFilePath. Pulando.", doc.Id, doc.Title);
                 continue;
             }
 
-            fileParts.Add(new Google.Cloud.AIPlatform.V1.Part
+            documentInfos.Add(new DocumentInfo
             {
-                FileData = new FileData
-                {
-                    FileUri = document.GcsFilePath, // O GCS URI salvo no banco
-                    MimeType = document.FileType.ToMimeType()
-                }
+                GcsUri = doc.GcsFilePath,
+                MimeType = doc.FileType.ToMimeType() // Assumindo que seu enum FileType tem este método helper
             });
         }
-        return fileParts;
+
+        if (documentInfos.Count == 0)
+        {
+            _logger.LogError("Nenhum documento com GCS URI válido foi encontrado para a análise. Abortando.");
+            throw new AnalysisWithoutDocumentException();
+        }
+
+        return documentInfos;
     }
 }

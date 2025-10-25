@@ -24,4 +24,5 @@ public interface IGeminiService
         string? apiKeyOverride = null);
 
     Task<string> GenerateContentWithDocuments(List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192);
+
 }

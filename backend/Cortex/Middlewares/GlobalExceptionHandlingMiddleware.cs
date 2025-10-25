@@ -18,7 +18,10 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
             { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
             { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },
             { typeof(GeminiAPIErrorException), HttpStatusCode.InternalServerError },
-            { typeof(FailedToGenerateEmbeddingsException), HttpStatusCode.InternalServerError }
+            { typeof(FailedToGenerateEmbeddingsException), HttpStatusCode.InternalServerError },
+            { typeof(AnalysisWithoutDocumentException), HttpStatusCode.InternalServerError },
+            { typeof(AnalysisAlreadyCompletedException), HttpStatusCode.BadRequest },
+            { typeof(JsonException), HttpStatusCode.InternalServerError }
         };
 
     public async Task InvokeAsync(HttpContext context)

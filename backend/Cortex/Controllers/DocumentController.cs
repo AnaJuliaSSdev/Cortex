@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Cortex.Models.DTO;
-using Cortex.Models.Enums;
 using Cortex.Services.Interfaces;
 using Cortex.Models;
 using StockApp2._0.Mapper;

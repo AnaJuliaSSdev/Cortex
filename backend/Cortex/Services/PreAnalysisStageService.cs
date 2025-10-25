@@ -1,27 +1,22 @@
-﻿using Cortex.Helpers;
-using Cortex.Models;
+﻿using Cortex.Models;
 using Cortex.Models.DTO;
-using Cortex.Repositories;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
-using GenerativeAI.Types;
-using System.Text;
 using System.Text.Json;
-using static GeminiService.Api.Services.Implementations.GeminiService;
-using Document = Cortex.Models.Document;
 
 namespace Cortex.Services
 {
-    public class PreAnalysisStageService(IDocumentRepository documentRepository, IGeminiService geminiService,
-        ILogger<PreAnalysisStageService> logger, IStageRepository stageRepository,
-        IIndicatorService indicatorService, IAnalysisRepository analysisRepository,
-        IIndexRepository indexRepository) : AStageService(documentRepository)
+    public class PreAnalysisStageService(IDocumentRepository documentRepository,
+        ILogger<PreAnalysisStageService> logger,
+        IDocumentService documentService,
+        IGeminiResponseHandler geminiResponseHandler, IPreAnalysisStageBuilder stageBuilder,
+        IPreAnalysisPersistenceService preAnalysisPersistenceService
+        ) : AStageService(documentRepository)
     {
-        private readonly IGeminiService _geminiService = geminiService;
-        private readonly IStageRepository _stageRepository = stageRepository;
-        private readonly IIndexRepository _indexRepository = indexRepository;
-        private readonly IIndicatorService _indicatorService = indicatorService;
-        private readonly IAnalysisRepository _analysisRepository = analysisRepository;
+        private readonly IDocumentService _documentService = documentService;
+        private readonly IGeminiResponseHandler _geminiResponseHandler = geminiResponseHandler;
+        private readonly IPreAnalysisStageBuilder _stageBuilder = stageBuilder;
+        private readonly IPreAnalysisPersistenceService _preAnalysisPersistenceService = preAnalysisPersistenceService;
         private readonly ILogger _logger = logger;
 
 
@@ -147,45 +142,81 @@ namespace Cortex.Services
             return this._promptPreAnalysis;
         }
 
+        /// <summary>
+        /// Serviço principal para execução da etapa de pré-análise.
+        /// Orquestra todo o fluxo da pré análise: preparação, chamada à IA, processamento e persistência.
+        /// </summary>
         public override async Task<AnalysisExecutionResult> ExecuteStageAsync(Analysis analysis)
         {
-            _logger.LogInformation("Iniciando 'PreAnalysisStageService' para a Análise ID: {AnalysisId}...", analysis.Id);
+            _logger.LogInformation("Iniciando === 'PreAnalysisStageService' === para a Análise ID: {AnalysisId}...", analysis.Id);
 
-            AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos e embeddings         
-            IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-            string finalPrompt = base.CreateFinalPrompt(resultBaseClass, analysis);
-
-            var documentInfos = new List<DocumentInfo>();
-            foreach (var doc in allDocuments)
-            {
-                // Usamos a propriedade GcsFilePath que você confirmou ter adicionado
-                if (string.IsNullOrEmpty(doc.GcsFilePath) || !doc.GcsFilePath.StartsWith("gs://"))
-                {
-                    _logger.LogWarning("Documento ID {DocId} ('{Title}') está sem GcsFilePath. Pulando.", doc.Id, doc.Title);
-                    continue;
-                }
-
-                documentInfos.Add(new DocumentInfo
-                {
-                    GcsUri = doc.GcsFilePath,
-                    MimeType = doc.FileType.ToMimeType() // Assumindo que seu enum FileType tem este método helper
-                });              
-            }
-
-            if (documentInfos.Count == 0)
-            {
-                _logger.LogError("Nenhum documento com GCS URI válido foi encontrado para a análise. Abortando.");
-                resultBaseClass.ErrorMessage = "Nenhum documento válido foi encontrado para processamento.";
-                resultBaseClass.IsSuccess = false;
-                return resultBaseClass;
-            }
+            AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos separados para montar o prompt       
 
             try
             {
-                _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
+                string finalPrompt = base.CreateFinalPrompt(resultBaseClass, analysis);
+                IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+                List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
+                _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
                 //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                string jsonResponse = """
+                string jsonResponse = GetMockedGeminiResponse();
+                //deixei comentado por enquanto pra não gastar recurso
+                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+
+                _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
+
+                GeminiIndexResponse geminiResponse = _geminiResponseHandler.ParseResponse(jsonResponse);
+
+                _logger.LogInformation("Resposta processada: {Count} índices identificados.", geminiResponse.Indices.Count);
+
+                PreAnalysisStage savedStage = await _preAnalysisPersistenceService.SavePreAnalysisAsync(analysis.Id);
+
+                var indexes = await _stageBuilder.BuildIndexesAsync(
+                geminiResponse,
+                savedStage.Id, // <-- ID válido 
+                allDocuments
+                 );
+
+                await _preAnalysisPersistenceService.SaveIndexesAsync(indexes, savedStage.Id);
+
+                analysis.Stages.Add(savedStage);
+                resultBaseClass.PromptResult = jsonResponse;
+                resultBaseClass.IsSuccess = true;
+                resultBaseClass.PreAnalysisResult = savedStage;
+                _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Resposta inválida do serviço de IA.");
+                resultBaseClass.ErrorMessage = ex.Message;
+                resultBaseClass.IsSuccess = false;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Erro ao processar resposta JSON.");
+                resultBaseClass.ErrorMessage = $"Erro ao processar resposta: {ex.Message}";
+                resultBaseClass.IsSuccess = false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Falha crítica ao executar pré análise.");
+                resultBaseClass.ErrorMessage = $"Erro na etapa de pré análise: {ex.Message}";
+                resultBaseClass.IsSuccess = false;
+            }
+
+            return resultBaseClass;
+        }
+
+        /// <summary>
+        /// Retorna uma resposta mockada do Gemini para testes e desenvolvimento.
+        /// TODO: Remover quando integração real com Gemini estiver ativa.
+        /// </summary>
+        /// <returns>JSON mockado da resposta do Gemini</returns>
+        private string GetMockedGeminiResponse()
+        {
+            _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");
+            return """
                 ```json
                 {
                   "indices": [
@@ -347,90 +378,6 @@ namespace Cortex.Services
                 }
                 ```
                 """;
-                jsonResponse = Util.Util.SanitizeGeminiJsonResponse(jsonResponse);//sanitização da resposta
-               
-                //deixei comentado por enquanto pra não gastar recurso
-                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
-
-                if (string.IsNullOrWhiteSpace(jsonResponse))
-                {
-                    _logger.LogError("O Vertex AI (GeminiService) retornou uma resposta vazia.");
-                    resultBaseClass.ErrorMessage = "O serviço de IA retornou uma resposta vazia.";
-                    resultBaseClass.IsSuccess = false;
-                }
-                else
-                {
-                    PreAnalysisStage stageEntity = new()
-                    {
-                        AnalysisId = analysis.Id
-                    };
-
-                    Stage newStageAdded = await _stageRepository.AddAsync(stageEntity); // SALVA O STAGE NO BD
-                    _logger.LogInformation("Entidade 'PreAnalysisStage' (ID: {StageId}) salva.", stageEntity.Id);
-
-                    JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-                    GeminiIndexResponse geminiResponse = JsonSerializer.Deserialize<GeminiIndexResponse>(jsonResponse, options); // erro aqui
-
-                    if (geminiResponse == null || geminiResponse.Indices == null)
-                    {
-                        throw new JsonException("Falha ao desserializar a resposta do Gemini. Indices não foram encontrados.");
-                    }
-
-                    foreach (var geminiIndex in geminiResponse.Indices)
-                    {
-                        // 3a. Encontra ou Cria o 'Indicator'
-                        Indicator indicatorEntity = await _indicatorService.GetOrCreateIndicatorAsync(geminiIndex.Indicator);
-
-                        // 3b. Cria a entidade 'Index'
-                        var newIndex = new Models.Index
-                        {
-                            Name = geminiIndex.Name,
-                            Description = geminiIndex.Description,
-                            IndicatorId = indicatorEntity.Id,
-                            PreAnalysisStageId = newStageAdded.Id
-                        };
-
-                        // Mapeia as 'References' (do JSON para a Entidade)
-                        if (geminiIndex.References != null)
-                        {
-                            foreach (var geminiRef in geminiIndex.References)
-                            {
-                                // Encontra o GCS URI correspondente ao nome do arquivo
-                                string gcsUri = Util.Util.FindGcsUriFromFileName(allDocuments, geminiRef.Document);
-                                if (gcsUri == null)
-                                {
-                                    _logger.LogWarning("Não foi possível encontrar o GCS URI para o documento de referência: {DocName}", geminiRef.Document);
-                                    gcsUri = $"NÃO ENCONTRADO: {geminiRef.Document}";
-                                }
-
-                                IndexReference newReference = new()
-                                {
-                                    Index = newIndex, // EF Core associará automaticamente
-                                    SourceDocumentUri = gcsUri,
-                                    Page = geminiRef.Page,
-                                    Line = geminiRef.Line,
-                                    // aqui teria que pedir pra ele gerar jutno o trecho exato, além das páginas e linhas
-                                    QuotedContent = $"Pág: {geminiRef.Page}, Linha: {geminiRef.Line}" 
-                                };
-                                newIndex.References.Add(newReference);
-                            }
-                        }
-                        await _indexRepository.AddAsync(newIndex);
-                    }
-                    analysis.Stages.Add(newStageAdded);
-                    resultBaseClass.PromptResult = jsonResponse;
-                    resultBaseClass.IsSuccess = true;
-                    resultBaseClass.PreAnalysisResult = (PreAnalysisStage)newStageAdded;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Falha crítica ao chamar o GenerateContentWithDocuments do GeminiService.");
-                resultBaseClass.ErrorMessage = $"Erro na API de IA: {ex.Message}";
-                resultBaseClass.IsSuccess = false;
-            }
-
-            return resultBaseClass;
-        }          
+        }
     }
 }

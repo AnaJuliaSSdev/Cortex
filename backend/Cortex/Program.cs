@@ -122,16 +122,21 @@ builder.Services.AddScoped<InferenceConclusionStageService>();
 builder.Services.AddScoped<StageStrategyFactory>();
 builder.Services.AddScoped<IStageRepository, StageRepository>();
 
+//PreAnalysisStage
+builder.Services.AddScoped<IPreAnalysisPersistenceService, PreAnalysisPersistenceService>();
+builder.Services.AddScoped<IPreAnalysisStageBuilder, PreAnalysisStageBuilder>();
 
 //Gemini
 builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
 builder.Services.AddHttpClient<EmbeddingService>();
+builder.Services.AddScoped<IGeminiResponseHandler, GeminiResponseHandler>();
 
 //Indexes
 builder.Services.AddScoped<IIndexRepository, IndexRepository>();
 
 //Indexes References
 builder.Services.AddScoped<IIndexReferenceRepository, IndexReferenceRepository>();
+builder.Services.AddScoped<IIndexReferenceService, IndexReferenceService>();
 
 //Indicator
 builder.Services.AddScoped<IIndicatorRepository, IndicatorRepository>();

@@ -8,5 +8,5 @@ public interface IDocumentService
 {
     Task<Cortex.Models.Document> UploadAsync(CreateDocumentDto createDocumentDto, int analysisId);
     Task<Cortex.Models.Document?> GetByIdAsync(int id);
-    List<Part> CreateVertexAiPartsFromDocuments(IEnumerable<Cortex.Models.Document> documents);
+    List<DocumentInfo> MapDocumentsToDocumentsInfo(IEnumerable<Document> documents);
 }
