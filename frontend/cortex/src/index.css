@@ -10,3 +10,24 @@
      --font-principal: 'Roboto', sans-serif;
      --font-destaque: 'Montserrat', sans-serif;
  }
+
+ /* Se estiver usando TailwindCSS, adicione estas diretivas */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definindo a paleta de cores como variáveis CSS globais */
+:root {
+  --primary: #B35848;
+  --text-dark: #312F2F;
+  --text-medium: #4A4644;
+  --text-light: #8E8883;
+  --background-light: #FBFBF8;
+  --background-medium: #EFEBE6;
+}
+
+body {
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}

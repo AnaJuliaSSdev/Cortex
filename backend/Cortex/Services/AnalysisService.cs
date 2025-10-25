@@ -49,4 +49,19 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
         await _analysisRepository.DeleteAsync(id);
         return true;
     }
+
+    public async Task<bool> PostAnalysisQuestion(int analysisId, StartAnalysisDto startAnalysisDto, int userId)
+    {
+        if (!await _analysisRepository.BelongsToUserAsync(analysisId, userId))
+            throw new AnalysisDontBelongToUserException();
+
+        Analysis? analysis = await _analysisRepository.GetByIdWithDetailsAsync(analysisId);
+        if (analysis == null || analysis.UserId != userId)
+            throw new EntityNotFoundException("Analysis");
+
+        analysis.Question = startAnalysisDto.Question;
+         _analysisRepository.UpdateAsync(analysis);
+
+        return true;
+    }
 }

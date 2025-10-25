@@ -3,6 +3,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
+import AnalysisPage from "./pages/AnalysisPage.tsx";
 
 function App() {
 	return (
@@ -18,6 +19,14 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
+				<Route 
+                    path="/analysis/:id"
+                    element={
+                        <ProtectedRoute>
+                            <AnalysisPage />
+                        </ProtectedRoute>
+                    }
+                />
 			</Routes>
 		</BrowserRouter>
 	);

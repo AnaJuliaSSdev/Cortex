@@ -1,17 +1,18 @@
 using Cortex.Data;
-using Cortex.Repositories.Interfaces;
+using Cortex.Middlewares;
+using Cortex.Models;
 using Cortex.Repositories;
-using Cortex.Services.Interfaces;
+using Cortex.Repositories.Interfaces;
 using Cortex.Services;
-using Microsoft.EntityFrameworkCore;
+using Cortex.Services.Factories;
+using Cortex.Services.Interfaces;
+using Cortex.Services.Strategies;
+using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Cortex.Middlewares;
-using Cortex.Services.Factories;
-using Cortex.Services.Strategies;
-using Cortex.Models;
-using Google.Cloud.Storage.V1;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,8 @@ builder.Services.AddSingleton(StorageClient.Create());
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

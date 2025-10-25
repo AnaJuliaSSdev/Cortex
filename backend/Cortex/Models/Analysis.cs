@@ -30,8 +30,7 @@ public class Analysis
     [ForeignKey("UserId")]
     public virtual User User { get; set; }
 
-    [Required]
-    public string Question { get; set; }
+    public string? Question { get; set; } // ela é requerida mas vai ser setada depois, quando for pra enviar os documentos
 
     public virtual ICollection<Document> Documents { get; set; } = [];
     public virtual ICollection<Stage> Stages { get; set; } = [];

@@ -1,0 +1,127 @@
+/* Layout Simples */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--background-light, #FBFBF8);
+}
+.header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    background-color: white;
+}
+.logo {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    color: var(--text-dark, #312F2F);
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 600;
+}
+.mainContent {
+    flex: 1;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+/* Formulário Principal */
+.analysisForm {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.pageTitle {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    color: var(--text-dark, #312F2F);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    padding-bottom: 1rem;
+}
+
+.formSection {
+    background-color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.label {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    color: var(--text-dark, #312F2F);
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.required {
+    color: var(--primary, #B35848);
+    font-size: 1.25rem;
+    margin-left: 4px;
+}
+
+.description {
+    color: var(--text-light, #8E8883);
+    font-size: 1rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    font-size: 1rem;
+    color: var(--text-medium, #4A4644);
+    border: 1px solid var(--background-medium, #EFEBE6);
+    border-radius: 8px;
+    resize: vertical;
+    box-sizing: border-box; /* Importante */
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: var(--primary, #B35848);
+    box-shadow: 0 0 0 2px #b3584833;
+}
+
+/* Footer de Ações */
+.footer {
+    border-top: 1px solid var(--background-medium, #EFEBE6);
+    padding-top: 1.5rem;
+    text-align: right;
+}
+
+.submitButton {
+    padding: 0.8rem 2rem;
+    background: var(--primary, #B35848);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.submitButton:hover {
+    background-color: #a04e40; /* Um tom mais escuro de --primary */
+}
+
+.submitButton:disabled {
+    background-color: var(--background-medium, #EFEBE6);
+    color: var(--text-light, #8E8883);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.validationMessage {
+    color: var(--text-light, #8E8883);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}

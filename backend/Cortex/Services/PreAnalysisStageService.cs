@@ -420,6 +420,7 @@ namespace Cortex.Services
                     analysis.Stages.Add(newStageAdded);
                     resultBaseClass.PromptResult = jsonResponse;
                     resultBaseClass.IsSuccess = true;
+                    resultBaseClass.PreAnalysisResult = (PreAnalysisStage)newStageAdded;
                 }
             }
             catch (Exception ex)

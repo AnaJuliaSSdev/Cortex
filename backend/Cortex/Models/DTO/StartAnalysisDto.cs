@@ -2,9 +2,8 @@
 
 namespace Cortex.Models.DTO;
 
-public class CreateAnalysisDto
+public class StartAnalysisDto
 {
     [Required]
-    [MaxLength(100)]
-    public string Title { get; set; }
+    public string Question { get; set; }
 }

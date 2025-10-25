@@ -40,6 +40,15 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
         return CreatedAtAction(nameof(GetAnalysis), new { id = analysis.Id }, analysis);
     }
 
+
+    [HttpPost("{analysisId}/question")]
+    public async Task<ActionResult<AnalysisDto>> PostAnalysisQuestion(int analysisId, StartAnalysisDto startAnalysisDto)
+    {
+        var userId = GetCurrentUserId();
+        var analysisUpdated = await _analysisService.PostAnalysisQuestion(analysisId, startAnalysisDto, userId);
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAnalysis(int id)
     {
