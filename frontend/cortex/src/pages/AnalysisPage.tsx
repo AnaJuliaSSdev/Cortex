@@ -108,6 +108,8 @@ export default function AnalysisPage() {
                 <h1 className={styles.pageTitle}>Análise (ID: {id})</h1>
                 <PreAnalysisResults
                     preAnalysisResult={analysisResult.preAnalysisResult}
+                    analysisDocuments={analysisResult.analysisDocuments}
+                    referenceDocuments={analysisResult.referenceDocuments}
                 />
             </MainLayout>
         );

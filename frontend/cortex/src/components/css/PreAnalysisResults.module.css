@@ -9,6 +9,7 @@
     border-bottom: 1px solid var(--background-medium, #EFEBE6);
     padding-bottom: 1rem;
     margin-bottom: 2rem;
+    flex-shrink: 0;
 }
 
 .title {
@@ -41,6 +42,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    flex: 1;
 }
 
 .indexItem {
@@ -52,10 +54,14 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     border: 1px solid var(--background-medium, #EFEBE6);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .indexContent {
     flex: 1;
+    min-width: 0; /* IMPORTANTE: permite que o flex-item encolha */
+    margin-right: 1rem;
 }
 
 .indicatorName {
@@ -70,6 +76,10 @@
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+      /* Quebrar texto longo */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
 }
 
 .indexName {
@@ -77,12 +87,20 @@
     color: var(--text-dark, #312F2F);
     font-size: 1.125rem;
     margin: 0 0 0.5rem 0;
+    /* Quebrar texto longo */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .indexDescription {
     color: var(--text-medium, #4A4444);
     font-size: 0.9rem;
     margin: 0 0 0.75rem 0;
+     /* Quebrar texto longo */
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     hyphens: auto;
 }
 
 .referenceInfo {
@@ -93,6 +111,7 @@
 .indexActions {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .actionButton {
@@ -114,4 +133,185 @@
     padding-top: 1.5rem;
     border-top: 1px solid var(--background-medium, #EFEBE6);
     text-align: right;
+    flex-shrink: 0;
+}
+
+/* NOVO: Layout de 2 colunas */
+
+/* .splitLayout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 2rem;
+    height: calc(100vh - 150px); 
+    padding: 0;
+} */
+
+.splitLayout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 2rem;
+    height: calc(100vh - 150px);
+    width: 100vw; /* Largura total da viewport */
+    max-width: none; /* Remove qualquer limite */
+    margin-left: calc(-50vw + 50%); /* Centraliza e expande */
+    padding: 0 2rem; /* Adiciona padding interno */
+}
+
+/* Coluna da Esquerda (Lista) */
+.resultsContainer {
+    /* ... (estilos .header, .title, etc. continuam aqui) ... */
+    max-height: 100%;
+    overflow-y: auto; /* Permite scroll na lista de índices */
+    padding-right: 1rem; /* Espaçamento para a barra de scroll */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Coluna da Direita (Visualizador) */
+.viewerPane {
+    max-height: 100%;
+    overflow: hidden; /* O scroll será interno do viewer */
+    background-color: var(--background-medium, #EFEBE6);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.indexList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.indexItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--background-medium, #EFEBE6);
+}
+
+.indexContent {
+    flex: 1;
+}
+
+.referenceTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-medium, #4A4444);
+    margin-top: 1rem;
+    display: block;
+}
+
+.referenceList {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.referenceItem {
+    font-size: 0.9rem;
+    color: var(--primary, #B35848);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid transparent;
+    position: relative; /* Para o tooltip */
+     /* Quebrar URLs longas */
+     word-break: break-all;
+     max-width: 100%;
+     display: inline-block;
+}
+
+.referenceItem:hover {
+    border-color: #fef4f2;
+    background-color: #fef4f2;
+    text-decoration: underline;
+}
+
+/* Tooltip */
+.tooltip {
+    visibility: hidden;
+    width: 300px;
+    max-width: 90vw;
+    background-color: var(--text-dark, #312F2F);
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.75rem;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-style: italic;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    /* Quebrar texto longo */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+/* Seta do tooltip */
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--text-dark, #312F2F) transparent transparent transparent;
+}
+
+.referenceItem:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .splitLayout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .viewerPane {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .primaryButton {
+        width: 100%;
+    }
+    
+    .indexItem {
+        flex-direction: column;
+    }
+    
+    .indexActions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
 }

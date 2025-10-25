@@ -1,0 +1,91 @@
+.viewerContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff;
+    border: 1px solid var(--background-medium, #EFEBE6);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+}
+
+.tabs button {
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-light, #8E8883);
+    border-bottom: 2px solid transparent;
+}
+
+.tabs button.activeTab {
+    color: var(--primary, #B35848);
+    border-bottom-color: var(--primary, #B35848);
+}
+
+.docList {
+    list-style: none;
+    padding: 0.5rem;
+    margin: 0;
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.docItem {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-medium, #4A4444);
+}
+
+.docItem:hover {
+    background-color: var(--background-medium, #EFEBE6);
+}
+
+.docItem.docActive {
+    background-color: #fef4f2;
+    color: var(--primary, #B35848);
+    font-weight: 700;
+}
+
+.contentArea {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: var(--background-light, #FBFBF8);
+}
+
+.pdfViewer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pageInfo {
+    font-size: 0.9rem;
+    color: var(--text-light, #8E8883);
+    margin-top: 0.5rem;
+}
+
+.txtViewer {
+    white-space: pre-wrap; /* Quebra linha no TXT */
+    word-wrap: break-word;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    color: var(--text-dark, #312F2F);
+}
+
+.react-pdf__Page__textLayer {
+    display: none;
+}
+.react-pdf__Page__annotationLayer {
+    display: none;
+}
