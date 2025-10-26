@@ -8,21 +8,14 @@ namespace Cortex.Services;
 /// Serviço responsável pela persistência de dados do PreAnalysisStage no banco de dados.
 /// Gerencia transações de salvamento do Stage e seus Indexes relacionados.
 /// </summary>
-public class PreAnalysisPersistenceService : IPreAnalysisPersistenceService
+public class PreAnalysisPersistenceService(
+    IStageRepository stageRepository,
+    IIndexRepository indexRepository,
+    ILogger<PreAnalysisPersistenceService> logger) : IPreAnalysisPersistenceService
 {
-    private readonly IStageRepository _stageRepository;
-    private readonly IIndexRepository _indexRepository;
-    private readonly ILogger<PreAnalysisPersistenceService> _logger;
-
-    public PreAnalysisPersistenceService(
-        IStageRepository stageRepository,
-        IIndexRepository indexRepository,
-        ILogger<PreAnalysisPersistenceService> logger)
-    {
-        _stageRepository = stageRepository;
-        _indexRepository = indexRepository;
-        _logger = logger;
-    }
+    private readonly IStageRepository _stageRepository = stageRepository;
+    private readonly IIndexRepository _indexRepository = indexRepository;
+    private readonly ILogger<PreAnalysisPersistenceService> _logger = logger;
 
     /// <summary>
     /// Salva o PreAnalysisStage e todos os seus Indexes no banco de dados.

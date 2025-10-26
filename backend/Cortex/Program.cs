@@ -125,6 +125,7 @@ builder.Services.AddScoped<IStageRepository, StageRepository>();
 //PreAnalysisStage
 builder.Services.AddScoped<IPreAnalysisPersistenceService, PreAnalysisPersistenceService>();
 builder.Services.AddScoped<IPreAnalysisStageBuilder, PreAnalysisStageBuilder>();
+builder.Services.AddScoped<IExplorationPersistenceService, ExplorationPersistenceService>();
 
 //Gemini
 builder.Services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
@@ -141,6 +142,13 @@ builder.Services.AddScoped<IIndexReferenceService, IndexReferenceService>();
 //Indicator
 builder.Services.AddScoped<IIndicatorRepository, IndicatorRepository>();
 builder.Services.AddScoped<IIndicatorService, IndicatorService>();
+
+//Categories
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+//Register units
+builder.Services.AddScoped<IRegisterUnitRepository, RegisterUnitRepository>();
+
 
 
 // Logging

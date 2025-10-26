@@ -218,7 +218,7 @@ namespace Cortex.Services
 
                 _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
-                GeminiIndexResponse geminiResponse = _geminiResponseHandler.ParseResponse(jsonResponse);
+                GeminiIndexResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiIndexResponse>(jsonResponse);
 
                 _logger.LogInformation("Resposta processada: {Count} índices identificados.", geminiResponse.Indices.Count);
 
@@ -226,7 +226,7 @@ namespace Cortex.Services
 
                 var indexes = await _stageBuilder.BuildIndexesAsync(
                 geminiResponse,
-                savedStage.Id, // <-- ID válido 
+                savedStage.Id,
                 allDocuments
                  );
 

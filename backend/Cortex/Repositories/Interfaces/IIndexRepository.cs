@@ -9,4 +9,6 @@ public interface IIndexRepository
     /// </summary>
     /// <param name="index">O index a ser adicionado</param>
     Task AddAsync(Cortex.Models.Index index);
+
+    Task<List<Models.Index>> GetByIdsAsync(List<int> ids);
 }

@@ -7,6 +7,8 @@ public class AnalysisExecutionResult
 
     public PreAnalysisStage PreAnalysisResult {  get; set; }
 
+    public ExplorationOfMaterialStage ExplorationOfMaterialStage { get; set; }
+
     // aqui vão ter os resultados de outras etapas
     // ao avanço de cada etapa, os objetos dessa etapa vao sendo preenchidos, e ao final o serviço vai ter
     //todo o contexto de execução da análise

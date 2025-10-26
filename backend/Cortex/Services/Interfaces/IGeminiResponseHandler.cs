@@ -4,5 +4,5 @@ namespace Cortex.Services.Interfaces;
 
 public interface IGeminiResponseHandler
 {
-    GeminiIndexResponse ParseResponse(string jsonResponse);
+    T ParseResponse<T>(string jsonResponse) where T : class;
 }

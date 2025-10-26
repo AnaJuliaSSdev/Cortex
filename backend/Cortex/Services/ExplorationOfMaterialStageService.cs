@@ -1,19 +1,23 @@
 ﻿using Cortex.Models;
 using Cortex.Models.DTO;
+using Cortex.Repositories;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using System.Text;
+using System.Text.Json;
 
 namespace Cortex.Services;
 
 public class ExplorationOfMaterialStageService(IDocumentRepository documentRepository,
     IDocumentService documentService, IGeminiService geminiService, IGeminiResponseHandler geminiResponseHandler,
+    IExplorationPersistenceService explorationPersistenceService,
     ILogger<ExplorationOfMaterialStageService> logger) : AStageService(documentRepository)
 {
     private readonly ILogger _logger = logger;
     private readonly IDocumentService _documentService = documentService;
     private readonly IGeminiService _geminiService = geminiService;
     private readonly IGeminiResponseHandler _geminiResponseHandler = geminiResponseHandler;
+    private readonly IExplorationPersistenceService _explorationPersistenceService = explorationPersistenceService;
 
 
     public string _promptExplorationOfMaterial = """
@@ -599,21 +603,55 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
         _logger.LogInformation("Iniciando === 'ExplorationOfMaterialStageService' === para a Análise ID: {AnalysisId}...", analysis.Id);
         AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos separados para montar o prompt
 
-        string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass, null);
-        IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-        List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
+        try
+        {
+            string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass, null);
+            IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+            List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
-        _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
-        //peguei a ultima resposta e mockei pra n ficar gastando crédito
-        string jsonResponse = GetMockedGeminiResponse();
-        //deixei comentado por enquanto pra não gastar recurso
-        //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+            _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
+            //peguei a ultima resposta e mockei pra n ficar gastando crédito
+            string jsonResponse = GetMockedGeminiResponse();
+            //deixei comentado por enquanto pra não gastar recurso
+            //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
 
-        _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
+            _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
-        resultBaseClass.PromptResult = jsonResponse;
+            resultBaseClass.PromptResult = jsonResponse;
 
-        return resultBaseClass;
+            GeminiCategoryResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiCategoryResponse>(jsonResponse);
+          
+            ExplorationOfMaterialStage stageEntity = await _explorationPersistenceService.MapAndSaveExplorationResultAsync(analysis.Id, geminiResponse, allDocuments);
+
+            resultBaseClass.ExplorationOfMaterialStage = stageEntity;
+            resultBaseClass.PromptResult = jsonResponse;
+            resultBaseClass.IsSuccess = true;
+            _logger.LogInformation("========== EXPLORAÇÃO DO MATERIAL CONCLUÍDA COM SUCESSO ==========");
+
+            return resultBaseClass;
+        }
+        catch (JsonException jsonEx)
+        {
+            _logger.LogError(jsonEx, "Falha ao desserializar a resposta JSON da Exploração de Material.");
+            resultBaseClass.ErrorMessage = "Erro ao processar a resposta da IA (formato inválido).";
+            resultBaseClass.IsSuccess = false;
+            // Retorne ou trate o erro
+            return resultBaseClass;
+        }
+        catch (ArgumentNullException argNullEx)
+        {
+            _logger.LogError(argNullEx, "A resposta JSON recebida estava vazia.");
+            resultBaseClass.ErrorMessage = "O serviço de IA retornou uma resposta vazia.";
+            resultBaseClass.IsSuccess = false;
+            return resultBaseClass;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha genérica na exploração de material.");
+            resultBaseClass.ErrorMessage = ex.Message;
+            resultBaseClass.IsSuccess = false;
+            return resultBaseClass;
+        }
     }
 
     private static string FormatIndicesForPrompt(ICollection<Models.Index> indices)
@@ -632,8 +670,9 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
         return sb.ToString();
     }
 
-    private static string GetMockedGeminiResponse()
+    private string GetMockedGeminiResponse()
     {
+        _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");
         return """
             ```json
             {
@@ -727,7 +766,8 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                     {
                       "text": "mas eu me lembro dele humilhar muito as outras meninas assim, e isso me traumatizou um pouco assim (risos).",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "4": "44",
+                      "page": "4",
+                      "line": "44",
                       "found_indices": ["200"],
                       "indicator": "17",
                       "justification": "O relato de 'trauma' e 'humilhação' vivenciados como observadora em outra experiência formativa constitui uma fonte de saber que, por oposição, fundamenta a busca por uma pedagogia afetiva e respeitosa."
