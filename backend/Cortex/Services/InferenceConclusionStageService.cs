@@ -7,12 +7,12 @@ namespace Cortex.Services;
 
 public class InferenceConclusionStageService(IDocumentRepository documentRepository) : AStageService(documentRepository)
 {
-    public async Task<AnalysisExecutionResult> ExecuteStageAsync(Analysis analysis)
+    public override string FormatStagePromptAsync(Analysis analysis, AnalysisExecutionResult resultBaseClass, object? previousStageData = null)
     {
         throw new NotImplementedException();
     }
 
-    public override string GetPromptStageAsync()
+    public override string GetStagePromptTemplate()
     {
         throw new NotImplementedException();
     }

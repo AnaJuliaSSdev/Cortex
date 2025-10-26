@@ -1,7 +1,6 @@
 ﻿using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
-using Microsoft.Extensions.Primitives;
 using System.Text;
 
 namespace Cortex.Services.Interfaces;
@@ -11,7 +10,7 @@ public abstract class AStageService(IDocumentRepository documentRepository)
     private readonly IDocumentRepository _documentRepository = documentRepository;
     private readonly string basePrompt = """
     Você é um pesquisador profissional que utiliza análise de conteúdo como sua principal metodologia de análise.        
-    Você segue a metodologia de análise de conteúdo publicada por Laurance Bardin para fazer suas análises.
+    Você segue a metodologia de análise de conteúdo publicada por Laurence Bardin para fazer suas análises.
     Você fará análise de entrevistas semi estruturadas.
     Siga atentamente as seguintes instruções e seja rigoroso e criterioso no seu processo de análise.
     """;
@@ -30,23 +29,48 @@ public abstract class AStageService(IDocumentRepository documentRepository)
         return analysisExecutionResult;
     }
 
-    public abstract string GetPromptStageAsync();
+    /// <summary>
+    /// Método abstrato que as subclasses devem implementar para retornar
+    /// o TEMPLATE de prompt específico daquela etapa (com placeholders).
+    /// </summary>
+    /// <returns>A string do template do prompt da etapa.</returns>
+    public abstract string GetStagePromptTemplate();
 
-    public string CreateFinalPrompt(AnalysisExecutionResult resultBaseClass, Analysis analysis)
+    /// <summary>
+    /// Método abstrato que as subclasses devem implementar para formatar
+    /// seu template específico com os dados necessários.
+    /// </summary>
+    /// <param name="analysis">A análise atual.</param>
+    /// <param name="resultBaseClass">O resultado contendo os documentos carregados.</param>
+    /// <param name="previousStageData">Dados opcionais da etapa anterior (ex: índices formatados).</param>
+    /// <returns>O prompt específico da etapa, já formatado.</returns>
+    public abstract string FormatStagePromptAsync(Analysis analysis, AnalysisExecutionResult resultBaseClass, object? previousStageData = null);
+
+    /// <summary>
+    /// Cria o prompt final combinando o prompt base com o prompt formatado da etapa atual.
+    /// </summary>
+    /// <param name="analysis">A análise atual.</param>
+    /// <param name="resultBaseClass">O resultado contendo os documentos carregados.</param>
+    /// <param name="previousStageData">Dados opcionais da etapa anterior.</param>
+    /// <returns>O prompt final completo para enviar ao LLM.</returns>
+    public string CreateFinalPrompt(Analysis analysis, AnalysisExecutionResult resultBaseClass, object? previousStageData = null)
     {
-        string documentsNamesAnalysis = string.Join(",\n",
-            resultBaseClass.AnalysisDocuments.Select(d => d.FileName));
+        // Chama o método abstrato que a subclasse implementará para formatar seu prompt
+        string formattedStagePrompt = FormatStagePromptAsync(analysis, resultBaseClass, previousStageData);
 
-        string documentsNamesReferences = (resultBaseClass.ReferenceDocuments != null && resultBaseClass.ReferenceDocuments.Any())
-        ? string.Join(",\n", resultBaseClass.ReferenceDocuments.Select(d => d.FileName))
-        : "Nessa análise não foi necessário documentos de referência. ";
-
-        string promptStage = GetPromptStageAsync();
-        promptStage = String.Format(promptStage, analysis.Question, documentsNamesAnalysis, documentsNamesReferences);
-
+        // Concatena o prompt base com o prompt formatado da etapa
         StringBuilder stringBuilder = new();
         stringBuilder.Append(basePrompt);
-        stringBuilder.Append(promptStage);
+        stringBuilder.Append(formattedStagePrompt);
         return stringBuilder.ToString();
+    }
+
+    protected string GetDocumentNames(IEnumerable<Document> documents, string fallbackMessage = "Nenhum documento fornecido.")
+    {
+        if (documents != null && documents.Any())
+        {
+            return string.Join(",\n", documents.Select(d => d.FileName));
+        }
+        return fallbackMessage;
     }
 }

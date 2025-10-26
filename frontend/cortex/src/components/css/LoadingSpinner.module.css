@@ -1,0 +1,125 @@
+/* Usando as variáveis globais que você definiu */
+.loadingContainer {
+    /* Tela cheia para "hipnotizar" e bloquear cliques */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    /* Um "blur" sutil no fundo */
+    backdrop-filter: blur(5px);
+    background-color: rgba(251, 251, 248, 0.9); /* --background-light com transparência */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    
+    /* Um fade-in suave para o overlay */
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* O container do Orbe (permite o clique e contém os pulsos) */
+.orbContainer {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* Remove highlight de clique no mobile */
+}
+
+/* O Orbe central pulsante (nosso "Cérebro") */
+.orb {
+    width: 80px;
+    height: 80px;
+    background-color: var(--primary, #B35848);
+    border-radius: 50%;
+    position: absolute;
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Animação de pulsação do orbe (hipnótico) */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(179, 88, 72, 0.7); /* Cor --primary */
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px 35px rgba(179, 88, 72, 0);
+    }
+}
+
+/* O pulso interativo que aparece ao clicar */
+.pulse {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--primary, #B35848);
+    
+    /* Animação de "ripple" (onda) */
+    animation: ripple 1s ease-out forwards;
+}
+
+@keyframes ripple {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Container para os textos (para o efeito de fade) */
+/* Container para os textos (para o efeito de fade) */
+.textContainer {
+    margin-top: 2.5rem;
+    position: relative; 
+    width: 90%; 
+    max-width: 450px;
+    min-height: 4.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.statusText {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    font-size: 1.25rem;
+    color: var(--text-dark, #312F2F);
+    
+    /* 1. Garante que os textos fiquem empilhados
+         um sobre o outro para o cross-fade.
+    */
+    position: absolute;
+    width: 100%; /* Ocupa toda a largura do .textContainer */
+    
+    /* 2. A mágica da transição (isso já estava certo)
+    */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.statusText.visible {
+    opacity: 1;
+}
+
+.subText {
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    color: var(--text-light, #8E8883);
+    margin-top: 1rem;
+}

@@ -32,7 +32,7 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
 
             analysis.Status = AnalysisStatus.Running;
 
-            Analysis updatedAnalysis = _analysisRepository.UpdateAsync(analysis);
+            Analysis updatedAnalysis = await _analysisRepository.UpdateAsync(analysis);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -61,13 +61,10 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             //aqui verificar se n deu nenhum erro antes de continuar
 
             var nextStage = FindNextStageStrategyFactory.GetNextStage(lastStage);
-            if (nextStage is not null)
-                analysis.Stages.Add(nextStage); // adiciona o próximo stage a lista, sem o contexto
-            else
-                analysis.Status = AnalysisStatus.Completed; // caso não tenha próxima etapa a análise está completa
+            if (nextStage is null)
+                analysis.Status = AnalysisStatus.Completed;
 
-            _analysisRepository.UpdateAsync(analysis);
-            await _context.SaveChangesAsync();
+            await _analysisRepository.UpdateAsync(analysis);
             await transaction.CommitAsync();
 
             return resultcurrentStage;

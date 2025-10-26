@@ -28,4 +28,6 @@ public class Index
     public PreAnalysisStage PreAnalysisStage { get; set; }
 
     public virtual ICollection<IndexReference> References { get; set; } = [];
+
+    public virtual ICollection<RegisterUnit> RegisterUnits { get; set; } = [];
 }

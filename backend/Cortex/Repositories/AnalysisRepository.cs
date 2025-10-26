@@ -24,15 +24,13 @@ namespace Cortex.Repositories
 
             if (lastStage != null)
             {
-                if (lastStage.GetType() == typeof(PreAnalysisStage))
+                _context.Stages.Remove(lastStage);
+                if (analysis.Stages.Count == 1) // Se a contagem ANTES da remoção era 1...
                 {
                     analysis.Status = Models.Enums.AnalysisStatus.Draft;
-                }
-                _context.Stages.Remove(lastStage);
+                } 
 
                 analysis.UpdatedAt = DateTime.UtcNow;
-                _context.Analyses.Update(analysis);
-
                 await _context.SaveChangesAsync();
             }
 
@@ -41,10 +39,25 @@ namespace Cortex.Repositories
 
         public async Task<Analysis?> GetByIdAsync(int id)
         {
-            return await _context.Analyses
-                .Include(a => a.User)
-                .Include(a => a.Stages)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            var analysis = await _context.Analyses
+                 .Include(a => a.User)
+                 .Include(a => a.Stages)
+                 .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (analysis == null)
+                return null;
+
+            await _context.Entry(analysis)
+                .Collection(a => a.Stages)
+                .Query()
+                .OfType<PreAnalysisStage>()
+                .Include(p => p.Indexes)
+                    .ThenInclude(i => i.Indicator)
+                .Include(p => p.Indexes)
+                    .ThenInclude(i => i.References)
+                .LoadAsync();
+
+            return analysis;
         }
 
         public async Task<Analysis?> GetByIdWithDetailsAsync(int id)
@@ -72,10 +85,11 @@ namespace Cortex.Repositories
             return analysis;
         }
 
-        public Analysis UpdateAsync(Analysis analysis)
+        public async Task<Analysis> UpdateAsync(Analysis analysis)
         {
             analysis.UpdatedAt = DateTime.UtcNow;
             _context.Analyses.Update(analysis);
+            await _context.SaveChangesAsync();
             return analysis;
         }
 

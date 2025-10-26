@@ -9,6 +9,17 @@ import Logo from '../components/Logo';
 import { postAnalysisQuestion, startAnalysis } from '../services/analysisService';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import PreAnalysisResults from '../components/PreAnalysisResults';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+// Textos que vão ciclar para dar sensação de progresso
+const loadingMessages = [
+    'Preparando o envio dos documentos...',
+    'Processando documentos de análise...',
+    'Aplicando inteligência...',
+    'Extraindo índices e indicadores...',
+    'Compilando referências...',
+    'Quase pronto, organizando os resultados...',
+];
 
 // Componente de Layout (pode ser movido para components/Layout.tsx)
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -31,7 +42,7 @@ export default function AnalysisPage() {
     const [question, setQuestion] = useState('');
     const [analysisDocuments, setAnalysisDocuments] = useState<UploadedDocument[]>([]);
     const [referenceDocuments, setReferenceDocuments] = useState<UploadedDocument[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(true);
     const [analysisResult, setAnalysisResult] = useState<AnalysisExecutionResult | null>(null);
 
     // Validação para habilitar o botão de iniciar
@@ -45,14 +56,6 @@ export default function AnalysisPage() {
     const handleReferenceUpload = (doc: UploadedDocument) => {
         setReferenceDocuments((prevDocs) => [...prevDocs, doc]);
     };
-
-    const LoadingSpinner: React.FC = () => (
-        <div className={styles.loadingContainer}>
-            <div className={styles.spinner}></div>
-            <p>Iniciando análise, por favor aguarde...</p>
-            <p>Este processo pode levar alguns minutos.</p>
-        </div>
-    );
 
     // Função para enviar a pergunta e "iniciar" a análise
     /**
@@ -97,7 +100,7 @@ export default function AnalysisPage() {
     if (isSubmitting) {
         return (
             <MainLayout>
-                <LoadingSpinner />
+                <LoadingSpinner messages={loadingMessages} />
             </MainLayout>
         );
     }

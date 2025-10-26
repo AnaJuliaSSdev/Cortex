@@ -10,59 +10,57 @@ namespace Cortex.Services
         ILogger<PreAnalysisStageService> logger,
         IDocumentService documentService,
         IGeminiResponseHandler geminiResponseHandler, IPreAnalysisStageBuilder stageBuilder,
-        IPreAnalysisPersistenceService preAnalysisPersistenceService
+        IPreAnalysisPersistenceService preAnalysisPersistenceService, IGeminiService geminiService
         ) : AStageService(documentRepository)
     {
         private readonly IDocumentService _documentService = documentService;
         private readonly IGeminiResponseHandler _geminiResponseHandler = geminiResponseHandler;
         private readonly IPreAnalysisStageBuilder _stageBuilder = stageBuilder;
         private readonly IPreAnalysisPersistenceService _preAnalysisPersistenceService = preAnalysisPersistenceService;
+        private readonly IGeminiService _geminiService = geminiService;
         private readonly ILogger _logger = logger;
 
 
         #region Prompt Pre Analysis
         public string _promptPreAnalysis = """              
-            Você está na etapa de PRÉ ANÁLISE e irá fazer o LEVANTAMENTO DE ÍNDICES E A SELEÇÃO DOS INDICADORES dos documentos de análise, segundo a metodologia de Laurance Bardin.
-            A partir das entrevistas transcritas anexadas e dos documentos anexados de contextualização da etapa que estamos prestes a realizar, selecione os *índices* e defina os *indicadores* que compõem esses documentos de análise.
+            Você está na etapa de PRÉ ANÁLISE e irá fazer o LEVANTAMENTO DE ÍNDICES E A SELEÇÃO DOS INDICADORES dos documentos de análise, segundo a metodologia de Laurence Bardin.
+            A partir dos documentos de análise (corpus), você deve:
+                1. IDENTIFICAR índices: "Vestígios" ou sinais presentes na superfície do texto que sugerem a presença de fenômenos relacionados à pergunta central
+                2. CONSTRUIR indicadores: Definir como medir/identificar sistematicamente a presença ou ausência desses índices
+            
+            CRITÉRIOS PARA SELEÇÃO DE ÍNDICES
+            Os índices devem ser:
+            - Pertinentes: Relacionados à pergunta central e às hipóteses
+            - Observáveis: Identificáveis objetivamente no texto
+            - Manifestos: Presentes explicitamente no discurso
+            - Representativos: Relevantes para a inferência que se pretende fazer
+            
+            CRITÉRIOS PARA CONSTRUÇÃO DE INDICADORES
+            Os indicadores devem ser:
+            - Precisos: Definição clara e sem ambiguidade
+            - Seguros: Permitem que outro analista chegue aos mesmos resultados
+            - Sistemáticos: Aplicáveis de forma consistente em todo o corpus
+            - Adequados ao objetivo: Quantitativos ou qualitativos conforme a necessidade
+
             Os documentos de contextualização devem ser utilizados como fontes de conceitos teóricos para embasar a análise.
             O foco central desta análise de conteúdo é responder a pergunta que move a análise, a pergunta central da pesquisa. Pode não ser necessariamente uma pergunta, mas uma tese, uma motivação de pesquisa. 
+            Proceda com rigor metodológico. Sua análise deve ser replicável por outro pesquisador seguindo os mesmos critérios.          
             Você está na etapa de pré análise da metodologia e está extraindo os índices e indicadores dos documentos de análise, que são entrevistas transcritas. 
             Sua resposta DEVE ser obrigatoriamente um único bloco de código JSON, sem formatação Markdown, comentários ou texto introdutório. 
-            O JSON deve ser um objeto contendo uma única chave "indices", que é uma lista de objetos.
-            A API deverá retornar a CitationMetadata (contendo uma ou várias citações) correspondente a cada trecho utilizado para gerar cada índice.  
             Inclua informações precisas e referenciáveis. 
-
-
-            Cada objeto na lista deve seguir exatamente esta estrutura:
-            {{
-              "name": "Nome do Conceito",
-              "description": "Uma descrição detalhada do conceito, citando diretamente as informações dos documentos.",
-              "indicator": "Indicador concreto para medir a presença ou a falta do índice em questão"
-            }}
-
+            O JSON deve ser um objeto contendo uma única chave "indices", que é uma lista de objetos.          
             Além disso, cada indicador pode ter uma lista de referências de onde ele foi extraído.
             Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
             qual trecho embasou a escolha do índice. 
 
-            Exemplo da estrutura completa esperada:
+            Retorne APENAS um objeto JSON válido, sem markdown, comentários ou texto adicional:
+            O JSON DEVE SEGUIR EXATAMENTE ESSA ESTRUTURA:
             {{
               "indices": [
                 {{
-                  "name": "Threat Modeling",
-                  "description": "Threat Modeling é o processo de identificar, comunicar e compreender ameaças e mitigações em um contexto de proteção de algo de valor.",
-                  "indicator": "A presença da palavra Threat no texto.",
-                  "references": [
-                    {{
-                      "document": "nome_arquivo",
-                      "page": "2",
-                      "line": "8"
-                    }}
-                  ]
-                }},
-                {{
-                  "name": "Input Validation",
-                  "description": "A validação de entrada previne que dados malformados entrem no sistema, sendo uma defesa crucial contra ataques de injeção.",
-                  "indicator": "A não menção de validação de input durante uma entrevista.",
+                  "name": "Nome do Índice",
+                  "description": "Descrição clara do que é este índice e por que foi escolhido, com embasamento teórico",
+                  "indicator": "Descrição PRECISA de como medir/identificar este índice",
                   "references": [
                     {{
                       "document": "nome_arquivo",
@@ -73,6 +71,7 @@ namespace Cortex.Services
                 }}
               ]
             }}
+            A ESTRUTURA ACIMA É A ESTRUTURA FINAL ESPERADA.
 
             Você irá receber todos os dados de contextualizãção e deverá preencher o json com os índices, cada índice deve conter um nome, e uma descrição. A descrição sobre o índice deve ser breve e conter um comentário sobre a escolha do índice e/ou o que ele representa na análise.
 
@@ -85,8 +84,40 @@ namespace Cortex.Services
             DOCUMENTOS DE ANÁLISE ENVIADOS (nomes):
             {2}
 
-            REFERENCIAL TEÓRICO ADICIONAL SOBRE A COLETA DOS ÍNDICES E INDICADORES(trecho retirado do livro de Bardin):
+            EXEMPLOS MAIS CONCRETOS DE ÍNDICES E INDICADORES (contexto fictício: Análise de entrevistas com professores sobre suas experiências durante a pandemia.):
+            {{
+              "indices": [
+                {{
+                  "name": "Dificuldades tecnológicas",
+                  "description": "Menções a problemas com internet, plataformas, computador",
+                  "indicator": "Presença de palavras: 'internet caiu', 'não funcionou', 'travou', 'não conseguia acessar'"
+                }},
+                {{
+                  "name": "Cansaço e exaustão",
+                  "description": "Expressões relacionadas a fadiga física ou mental",
+                  "indicator": "Presença de palavras: 'cansado', 'exausto', 'esgotado', 'não aguento mais'"
+                }},
+                {{
+                  "name": "Isolamento social",
+                  "description": "Menções à falta de contato humano",
+                  "indicator": "Presença de palavras: 'sozinho', 'falta de contato', 'distante', 'saudade dos alunos'"
+                }},
+                {{
+                  "name": "Aprendizado de novas ferramentas",
+                  "description": "Relatos sobre aprender a usar tecnologias",
+                  "indicator": "Presença de expressões: 'aprendi a usar', 'descobri', 'dominei', 'me capacitei'"
+                }},
+                {{
+                  "name": "Flexibilidade de horários",
+                  "description": "Menções a benefícios relacionados ao tempo",
+                  "indicator": "Presença de expressões: 'trabalhar em casa', 'meu horário', 'mais tempo', 'evitei trânsito'"
+                }}
+              ]
+            }}
 
+            REFERENCIAL TEÓRICO ADICIONAL SOBRE A COLETA DOS ÍNDICES E INDICADORES(trecho retirado do livro de Bardin):
+            NOTA: ESSE CONTEÚDO É EXCLUSIVAMENTE PARA CONTEXTUALIZAÇÃO DA ETAPA QUE VOCÊ ESTÁ REALIZANDO
+            
             Se se considerarem os textos uma manifestação que contém índices que a análise explicitará,
             o trabalho preparatório será o da escolha destes - em função das hipóteses, caso
             elas estejam determinadas - e sua organização sistemática em indicadores.
@@ -137,9 +168,30 @@ namespace Cortex.Services
             Indicador (Medida Sistemática) = A frequência de aparição desses índices
             """;
         #endregion
-        public override string GetPromptStageAsync()
+        public override string GetStagePromptTemplate()
         {
-            return this._promptPreAnalysis;
+            return _promptPreAnalysis;
+        }
+
+        public override string FormatStagePromptAsync(Analysis analysis, AnalysisExecutionResult resultBaseClass, object? previousStageData = null)
+        {
+            // Pega os dados comuns da classe base
+            string documentsNamesAnalysis = GetDocumentNames(resultBaseClass.AnalysisDocuments);
+            string documentsNamesReferences = GetDocumentNames(resultBaseClass.ReferenceDocuments, "Nenhum documento de referência foi fornecido.");
+            string centralQuestion = analysis.Question ?? "Nenhuma pergunta central foi definida.";
+
+       
+            // Pega o template desta etapa
+            string template = GetStagePromptTemplate();
+
+            // Formata com os 3 argumentos
+            string formattedPrompt = string.Format(template,
+                centralQuestion,           // {0}
+                documentsNamesReferences,  // {1}
+                documentsNamesAnalysis     // {2}
+            );
+
+            return formattedPrompt;
         }
 
         /// <summary>
@@ -154,7 +206,7 @@ namespace Cortex.Services
 
             try
             {
-                string finalPrompt = base.CreateFinalPrompt(resultBaseClass, analysis);
+                string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass);
                 IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
                 List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
@@ -180,7 +232,6 @@ namespace Cortex.Services
 
                 await _preAnalysisPersistenceService.SaveIndexesAsync(indexes, savedStage.Id);
 
-                analysis.Stages.Add(savedStage);
                 resultBaseClass.PromptResult = jsonResponse;
                 resultBaseClass.IsSuccess = true;
                 resultBaseClass.PreAnalysisResult = savedStage;
@@ -215,162 +266,127 @@ namespace Cortex.Services
         /// <returns>JSON mockado da resposta do Gemini</returns>
         private string GetMockedGeminiResponse()
         {
-            _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");
+            _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");           
             return """
                 ```json
                 {
                   "indices": [
                     {
-                      "name": "Saber Pedagógico Lúdico",
-                      "description": "Refere-se à utilização de jogos, brincadeiras, estórias e elementos teatrais como estratégia central para o ensino do Balé, especialmente para crianças. Essa abordagem, descrita como 'a gente aprende brincando' (p. 32), visa estimular a criatividade e a liberdade de expressão, transformando a aula em uma experiência prazerosa e significativa.",
-                      "indicator": "Menção a brincadeiras (tubarão, coelho, castelo), 'teatrinho', uso de objetos cênicos (cenouras, comidinhas) e a percepção da aula como um espaço de diversão e criatividade.",
+                      "name": "Saber Pedagógico e Didático",
+                      "description": "Refere-se ao conhecimento sobre o processo de ensino-aprendizagem, incluindo didática, planejamento e a intencionalidade pedagógica. Este saber, advindo tanto da formação acadêmica quanto da prática supervisionada, diferencia a abordagem da professora de uma mera reprodução técnica, focando no 'porquê' e 'para quê' dos movimentos.",
+                      "indicator": "Presença de termos e expressões como 'didática', 'metodologia', 'pedagogia', 'formação de professores', 'explicar pra que que é aquilo', 'preparar aula', 'organização da aula', 'relação professor-aluno', 'dar sentido'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "32",
-                          "line": "50"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "27",
-                          "line": "20"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "33",
-                          "line": "15"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Saber Corporal Somático",
-                      "description": "Conhecimento que aborda o Balé para além da forma estética, com foco na consciência corporal, anatomia e cinesiologia. A metodologia da professora é descrita como promotora de um 'conhecimento que protege o corpo' (p. 10), ensinando os alunos a se movimentarem de forma segura e a compreenderem a função de cada exercício, como na fala de Vagner: 'o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá...' (p. 7).",
-                      "indicator": "Menção a explicações sobre anatomia, fisiologia e função dos movimentos, e ao balé como ferramenta de proteção corporal e prevenção de lesões.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "10",
-                          "line": "22"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "7",
-                          "line": "26"
+                          "page": "5",
+                          "line": "10"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "4",
-                          "line": "11"
+                          "line": "10"
                         }
                       ]
                     },
                     {
-                      "name": "Saber Relacional Afetivo",
-                      "description": "Refere-se à construção de um ambiente de aprendizagem baseado na afetividade, amizade, diálogo e respeito. A relação professor-aluno é descrita como 'de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia' (p. 2), onde o erro é tratado com 'naturalidade' e 'de maneira bem humorada e divertida' (p. 9), e a aula se torna um espaço de encontro e bem-estar.",
-                      "indicator": "Descrição da relação com a professora como sendo de amizade, carinho e proximidade; menção a um ambiente de aula divertido, acolhedor e onde o erro não é punido.",
+                      "name": "Experiências Formativas como Contraponto",
+                      "description": "Menções a experiências passadas da professora ou de seus alunos, especialmente as negativas (como humilhação, dor, rigidez excessiva), que servem como base, por oposição, para a construção de sua própria metodologia de trabalho, buscando evitar a repetição de traumas e promover uma prática mais positiva.",
+                      "indicator": "Relatos de experiências anteriores com o balé descritas com palavras como 'trauma', 'humilhante', 'sacrifício', 'sofrimento', 'rígido', 'maltrata o corpo', em contraste com a prática atual da professora.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "2",
-                          "line": "20"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "9",
-                          "line": "15"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
                           "page": "4",
+                          "line": "21"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "12",
                           "line": "1"
                         }
                       ]
                     },
                     {
-                      "name": "Experiência da Formação Prática e Compartilhada",
-                      "description": "Experiência vivenciada e reproduzida pela professora, originada em sua própria formação na escola de sua mestra, Dicléa. Caracteriza-se por um modelo de 'aprender fazendo', onde a docência é desenvolvida através da prática supervisionada ('eu fico do lado sempre durante um tempo acompanhando essa aula', p. 43) e da docência compartilhada, descrita por sua colega Eleonora como 'fundamental' (p. 14) para a troca de saberes.",
-                      "indicator": "Relatos sobre o processo de se tornar professor através da prática, da observação, da supervisão direta e da colaboração com outros professores (docência compartilhada).",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "43",
-                          "line": "17"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "14",
-                          "line": "15"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "15",
-                          "line": "20"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Saber Pedagógico Reflexivo e Adaptativo",
-                      "description": "Conhecimento pedagógico que se manifesta na capacidade de adaptar a metodologia aos diferentes contextos e alunos, respeitando o 'tempo de desenvolvimento de cada um' (p. 8). Inclui a prática de metarreflexão, incentivando os alunos a pensarem sobre seu próprio processo de aprendizagem e sobre como poderiam ensinar outros, como aponta Vagner: 'tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos' (p. 7).",
-                      "indicator": "Menção à adaptação dos exercícios para diferentes níveis de alunos, ao uso de diários para reflexão e a discussões sobre 'como ensinar'.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "8",
-                          "line": "25"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "7",
-                          "line": "46"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "9",
-                          "line": "38"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Desconstrução da Visão Sacrificial do Balé",
-                      "description": "Movimento de ressignificação do Balé, contrapondo-se à imagem tradicional de uma prática baseada no sacrifício e na dor. As aulas da professora são descritas como um espaço para 'desconstruir a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante' (p. 1), mostrando que a técnica 'não precisa ser sacrificante, não precisa ser isso...' (p. 2).",
-                      "indicator": "Oposição entre uma percepção anterior do balé (sofrimento, rigidez, 'coisa chata') e a experiência vivenciada nas aulas da professora (prazer, descoberta, leveza).",
+                      "name": "Metodologia Centrada no Cuidado e Respeito ao Corpo",
+                      "description": "Este índice aponta para uma abordagem pedagógica que prioriza o bem-estar do aluno, o respeito aos limites individuais, a prevenção de lesões e a construção de uma consciência corporal saudável, em oposição a uma visão do balé como prática de sacrifício.",
+                      "indicator": "Presença de expressões como 'respeitar o tempo', 'limite do corpo', 'cuidado com o corpo', 'não precisa ser sacrificante', 'conhecimento que protege o corpo', 'consciência corporal'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "1",
-                          "line": "40"
+                          "line": "30"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "2",
-                          "line": "9"
+                          "page": "10",
+                          "line": "16"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Desconstrução de Estereótipos do Balé",
+                      "description": "Refere-se ao esforço consciente da professora em desafiar e transformar visões estereotipadas do balé como uma prática excessivamente rígida, dolorosa ou 'chata'. A metodologia busca ativamente apresentar uma 'outra visão' da dança, associando-a ao prazer e à leveza.",
+                      "indicator": "Relatos que contrastam a experiência na aula da professora com ideias pré-concebidas de 'sacrifício', 'coisa chata', 'rígido', 'maltrata o corpo'. Uso de expressões como 'desconstruí a ideia que eu tinha', 'outra visão do Balé'.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "1",
+                          "line": "43"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "35",
+                          "line": "18"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Ambiente de Aprendizagem Afetivo e Lúdico",
+                      "description": "Este índice caracteriza a criação de um clima de aula positivo, baseado em relações afetivas, bom humor, brincadeiras e elementos do imaginário. O erro é tratado como parte do processo e com leveza, constituindo uma estratégia pedagógica para engajar os alunos e facilitar a aprendizagem.",
+                      "indicator": "Menções a 'amizade', 'se divertia', 'brincadeiras', 'teatrinho', 'lúdico', 'rir dos erros', 'era um divertimento', 'ambiente de intimidade'.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "2",
+                          "line": "18"
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "32",
                           "line": "23"
                         }
                       ]
                     },
                     {
-                      "name": "Concepção de Formação Cultural Ampliada",
-                      "description": "Entendimento da formação em dança como um processo que transcende a sala de aula e a técnica. A metodologia da professora promove uma formação integral, herdada de sua escola de origem, onde os alunos se envolvem em todo o universo da dança. Dicléa descreve: 'a escola não é só de dança, é corte costura, é cabelereiro, é tudo' (p. 46), e Eleonora reforça a preocupação em formar 'não só em termos de reprodução de passos, de vocabulário, mas de História da Dança' (p. 18).",
-                      "indicator": "Menção a aprendizados teóricos (história, nomenclatura), à participação em todas as etapas da produção de um espetáculo (figurino, cenário) e a experiências formativas fora da sala de aula (viagens, festivais).",
+                      "name": "Corpo Próprio como Fonte de Saber",
+                      "description": "Aponta para a importância da experiência corporal da própria professora como um saber fundamental em sua pedagogia. Suas vivências, dificuldades e superações no próprio corpo são transformadas em empatia e ferramentas para ensinar e facilitar a aprendizagem dos outros.",
+                      "indicator": "Declarações que conectam a capacidade de ensinar da professora ao fato dela ter vivenciado as técnicas e dificuldades em seu próprio corpo. Expressões como 'sabe ensinar no corpo dos outros porque já passou por aquilo', 'as dificuldades te fizeram buscar isso'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "46",
-                          "line": "26"
+                          "page": "11",
+                          "line": "22"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "18",
-                          "line": "37"
+                          "page": "12",
+                          "line": "11"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Estímulo à Prática Reflexiva e Criativa",
+                      "description": "Refere-se ao uso de estratégias e ferramentas pedagógicas que incentivam os alunos a irem além da reprodução técnica, promovendo a reflexão sobre o próprio aprendizado, a autonomia e a expressão criativa.",
+                      "indicator": "Menções a atividades como 'diários de processo', 'memorial no final da aula', 'liberdade de expressão', 'estimula a criatividade', 'criações', 'teatrinho', e momentos de tomada de decisão pelos alunos.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "7",
+                          "line": "28"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "34",
-                          "line": "38"
+                          "page": "33",
+                          "line": "12"
                         }
                       ]
                     }

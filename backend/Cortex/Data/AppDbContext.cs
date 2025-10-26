@@ -12,9 +12,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Stage> Stages { get; set; }
     public DbSet<Chunk> Chunks { get; set; }
     public DbSet<PreAnalysisStage> PreAnalysisStages { get; set; }
+    public DbSet<ExplorationOfMaterialStage> ExplorationOfMaterialStages { get; set; }
     public DbSet<Index> Indexes { get; set; }
     public DbSet<Indicator> Indicators { get; set; }
     public DbSet<IndexReference> IndexReferences { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<RegisterUnit> RegisterUnits { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,7 +92,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasValue<ExplorationOfMaterialStage>("Codification")
                 .HasValue<InferenceConclusionStage>("InferenceConclusion");
             entity.HasIndex(e => e.AnalysisId);
-            entity.HasIndex(e => new { e.AnalysisId});
         });
 
         modelBuilder.Entity<Chunk>(entity =>
@@ -152,18 +155,49 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne(r => r.Index)
                 .HasForeignKey(r => r.IndexId)
                 .OnDelete(DeleteBehavior.Cascade); // Se deletar o Index, deleta suas referências
-
-            // Configuração para IndexReference
-            modelBuilder.Entity<IndexReference>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                // O relacionamento (Muitos-para-1 com Index)
-                // já foi definido na configuração de Index.
-
-                // Apenas adiciona um índice para performance de consulta
-                entity.HasIndex(e => e.IndexId);
-            });
+           
+            entity.HasMany(i => i.RegisterUnits)
+                .WithMany(ru => ru.FoundIndices);
         });
+
+        // Configuração para IndexReference
+        modelBuilder.Entity<IndexReference>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // O relacionamento (Muitos-para-1 com Index)
+            // já foi definido na configuração de Index.
+
+            // Apenas adiciona um índice para performance de consulta
+            entity.HasIndex(e => e.IndexId);
+        });
+
+        // Configuração para ExplorationOfMaterialStage
+        modelBuilder.Entity<ExplorationOfMaterialStage>(entity =>
+        {
+            entity.HasMany(eos => eos.Categories)
+                .WithOne(c => c.ExplorationOfMaterialStage)
+                .HasForeignKey(c => c.ExplorationOfMaterialStageId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuração para Category
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ExplorationOfMaterialStageId, e.Name }).IsUnique();
+            entity.HasMany(c => c.RegisterUnits)
+                .WithOne(ru => ru.Category)
+                .HasForeignKey(ru => ru.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuração para RegisterUnit
+        modelBuilder.Entity<RegisterUnit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.CategoryId);
+        });
+
     }
 }

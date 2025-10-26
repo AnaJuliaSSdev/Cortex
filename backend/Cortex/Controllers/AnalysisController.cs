@@ -1,4 +1,5 @@
-﻿using Cortex.Models.DTO;
+﻿using Cortex.Models;
+using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -90,5 +91,53 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return int.Parse(userIdClaim ?? "0");
+    }
+
+
+    // <summary>
+    /// Gets the Indexes and related data from the PreAnalysisStage of a specific Analysis.
+    /// </summary>
+    /// <param name="analysisId">The ID of the Analysis to retrieve results from.</param>
+    /// <returns>A list of Indexes or NotFound if the analysis or stage doesn't exist.</returns>
+    [HttpGet("{analysisId}/pre-analysis/indexes")] // Route: GET /api/analysis/123/pre-analysis/indexes
+    [ProducesResponseType(typeof(IEnumerable<Models.Index>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPreAnalysisIndexes(int analysisId)
+    {
+
+        // 1. Fetch the Analysis using the repository method that includes nested data
+        //    Your GetByIdAsync already loads the necessary nested data for PreAnalysisStage
+        var analysis = await _analysisRepository.GetByIdAsync(analysisId);
+
+        if (analysis == null)
+        {
+            return NotFound($"Analysis with ID {analysisId} not found.");
+        }
+
+        // 2. Find the PreAnalysisStage within the loaded Stages
+        //    We use OfType<>() to filter the collection to the specific derived type.
+        //    OrderByDescending is optional but ensures consistency if multiple exist (shouldn't happen).
+        var preAnalysisStage = analysis.Stages
+                                    .OfType<PreAnalysisStage>()
+                                    .OrderByDescending(s => s.CreatedAt) // Get the latest one if multiple exist (unlikely)
+                                    .FirstOrDefault();
+
+        if (preAnalysisStage == null)
+        {
+            // Return NotFound or an empty list depending on preference
+            // return NotFound($"PreAnalysisStage not found for Analysis ID {analysisId}.");
+            return Ok(new List<Models.Index>()); // Return empty list if stage not found
+        }
+
+        // 3. Return the Indexes from the found stage
+        //    The Includes in GetByIdAsync should have already loaded Indexes, Indicators, and References.
+        //    Check for null just in case the collection wasn't initialized or loaded.
+        if (preAnalysisStage.Indexes == null)
+        {
+            return Ok(new List<Models.Index>()); // Return empty list
+        }
+
+        // Return the collection of Indexes. The serializer (with IgnoreCycles) will handle the response.
+        return Ok(preAnalysisStage.Indexes);
     }
 }
