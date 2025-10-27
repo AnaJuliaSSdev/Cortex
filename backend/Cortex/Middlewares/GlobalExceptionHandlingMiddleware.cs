@@ -13,7 +13,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
         new Dictionary<Type, HttpStatusCode>
         {
             { typeof(EmailAlreadyInUseException), HttpStatusCode.BadRequest },
-            { typeof(InvalidCredentialsException), HttpStatusCode.BadRequest },
+            { typeof(InvalidCredentialsException), HttpStatusCode.Unauthorized },
             { typeof(EntityNotFoundException), HttpStatusCode.NotFound },
             { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
             { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },

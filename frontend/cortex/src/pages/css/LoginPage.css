@@ -67,3 +67,13 @@
         font-size: 1.75rem;
     }
 }
+
+.login-error-message {
+    color: var(--cor-destaque, #b35848);
+    background-color: #fef4f2; 
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 0.8rem;
+    text-align: center;
+}
