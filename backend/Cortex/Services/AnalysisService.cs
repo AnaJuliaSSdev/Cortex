@@ -14,6 +14,9 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
 
     public async Task<Analysis?> GetByIdAsync(int id, int userId)
     {
+        if (!await _analysisRepository.BelongsToUserAsync(id, userId))
+            throw new AnalysisDontBelongToUserException();
+
         Analysis? analysis = await _analysisRepository.GetByIdWithDetailsAsync(id);
 
         if (analysis == null || analysis.UserId != userId)
@@ -79,5 +82,33 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
          await _analysisRepository.UpdateAsync(analysis);
 
         return true;
+    }
+
+    public async Task<AnalysisExecutionResult> GetFullStateByIdAsync(int analysisId, int userId)
+    {
+        if (!await _analysisRepository.BelongsToUserAsync(analysisId, userId))
+            throw new AnalysisDontBelongToUserException();
+
+        Analysis? analysis = await _analysisRepository.GetByIdAsync(analysisId);
+        if(analysis == null || analysis.UserId != userId) 
+            throw new EntityNotFoundException("Analysis");
+
+        AnalysisExecutionResult detailsAnalysis = new AnalysisExecutionResult();
+
+        if (analysis.Stages.Count != 0)
+        {
+            detailsAnalysis.PreAnalysisResult = (PreAnalysisStage)analysis.Stages.First();
+
+            if(analysis.Stages.Count == 2)
+            {
+                detailsAnalysis.ExplorationOfMaterialStage = (ExplorationOfMaterialStage)analysis.Stages.Last();
+            }
+        }
+
+        detailsAnalysis.IsSuccess = true;
+        detailsAnalysis.ReferenceDocuments = analysis.Documents.ToList().FindAll(x => x.Purpose == DocumentPurpose.Reference);
+        detailsAnalysis.AnalysisDocuments = analysis.Documents.ToList().FindAll(x => x.Purpose == DocumentPurpose.Analysis);
+
+        return detailsAnalysis;
     }
 }

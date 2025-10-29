@@ -87,6 +87,27 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
         return Ok(response);
     }
 
+    /// <summary>
+    /// Busca o estado completo e atual de uma análise pelo seu ID.
+    /// Apenas o dono da análise pode acessá-la.
+    /// </summary>
+    /// <param name="id">O ID da análise.</param>
+    /// <returns>O DTO AnalysisExecutionResult com as etapas preenchidas.</returns>
+    [HttpGet("state/{id}")]
+    public async Task<ActionResult<AnalysisExecutionResult>> GetAnalysisState(int id)
+    {
+        var userId = GetCurrentUserId(); // Assume que você tem um método para pegar o ID do usuário logado
+
+        // O _analysisService.GetFullStateByIdAsync faria a lógica de buscar a análise,
+        // verificar se userId é o dono, e popular o DTO com as Stages.
+        var analysisResult = await _analysisService.GetFullStateByIdAsync(id, userId);
+
+        // O serviço deve lançar uma exceção se a análise não for encontrada ou
+        // o usuário não for o dono, que será capturada pelo seu middleware
+        // e retornará um 404 (Not Found) ou 403 (Forbidden).
+        return Ok(analysisResult);
+    }
+
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

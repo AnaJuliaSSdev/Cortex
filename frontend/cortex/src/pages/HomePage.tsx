@@ -5,6 +5,9 @@ import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
 import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
 import { getAnalyses } from '../services/analysisService';
 import AnalysisTable from '../components/AnalysisTable';
+import { ErrorState } from '../components/ErrorState';
+import { EmptyState } from '../components/EmptyState';
+import { LoadingState } from '../components/LoadingState';
 
 // Componente simples para o layout da página, inspirado nas referências
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -31,31 +34,6 @@ const homeErrorMap: ApiErrorMap = {
     default: "Ocorreu um erro inesperado ao carregar seus dados."
 };
 
-// Componente de Loading simples
-const LoadingState: React.FC = () => (
-    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-light)' }}>
-        <p>Carregando suas análises...</p>
-    </div>
-);
-
-// Componente de Erro
-const ErrorState: React.FC<{ message: string }> = ({ message }) => (
-     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', backgroundColor: '#fef4f2' }}>
-        <h3 style={{ margin: 0 }}>Ocorreu um Erro</h3>
-        <p>{message}</p>
-    </div>
-);
-
-// Componente de Estado Vazio
-const EmptyState: React.FC = () => (
-    <div style={{
-        textAlign: 'center', padding: '4rem', border: '2px dashed var(--background-medium)',
-        borderRadius: '8px', backgroundColor: '#FDFDFC'
-    }}>
-        <h3 style={{ color: 'var(--text-medium)', fontWeight: 500 }}>Sua biblioteca está vazia</h3>
-        <p style={{ color: 'var(--text-light)' }}>Crie sua primeira análise para começar a fazer upload de arquivos e extrair insights.</p>
-    </div>
-);
 
 export default function HomePage() {
     // Estado para controlar se o modal está aberto ou fechado

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileUploader from '../components/FileUploader';
 import FileList from '../components/FileList';
@@ -6,11 +6,13 @@ import styles from './css/AnalysisPage.module.css'; // Novo CSS
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 import { DocumentPurpose } from '../interfaces/enum/DocumentPurpose';
 import Logo from '../components/Logo';
-import { continueAnalysis, postAnalysisQuestion, startAnalysis } from '../services/analysisService';
+import { continueAnalysis, getAnalysisState, postAnalysisQuestion, startAnalysis } from '../services/analysisService';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import PreAnalysisResults from '../components/PreAnalysisResults';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ExplorationResults from '../components/ExplorationResults';
+import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
+import { ErrorState } from '../components/ErrorState';
 
 // Textos que vão ciclar para dar sensação de progresso
 const preAnalysisMessages = [
@@ -29,6 +31,17 @@ const explorationMessages = [
     'Contando índices...',
     'Quase lá...'
 ];
+
+const initialLoadingMessages = ['Carregando sua análise...'];
+
+const analysisPageErrorMap: ApiErrorMap = {
+    byStatusCode: {
+        404: "Análise não encontrada. Verifique o link ou crie uma nova análise.",
+        403: "Você não tem permissão para acessar esta análise.",
+        500: "Ocorreu um erro no servidor ao buscar os dados."
+    },
+    default: "Não foi possível carregar a análise. Tente novamente."
+};
 
 // Componente de Layout (pode ser movido para components/Layout.tsx)
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -52,17 +65,26 @@ export default function AnalysisPage() {
     const [referenceDocuments, setReferenceDocuments] = useState<UploadedDocument[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingMessages, setLoadingMessages] = useState(preAnalysisMessages);
+    const [isLoading, setIsLoading] = useState(true); // Começa carregando
+    const [error, setError] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisExecutionResult | null>(null);
     
-    // (Opcional) Buscar o estado da análise ao carregar a página
-    // useEffect(() => {
-    //    const fetchAnalysis = async () => {
-    //       // Crie uma função getAnalysis(id) no seu service
-    //       // const result = await analysisService.getAnalysis(id);
-    //       // setAnalysisResult(result);
-    //    }
-    //    fetchAnalysis();
-    // }, [id]);
+   useEffect(() => {
+        const fetchAnalysis = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const result = await getAnalysisState(id);
+                setAnalysisResult(result);
+            } catch (err) {
+                const friendlyMessage = handleApiError(err, analysisPageErrorMap);
+                setError(friendlyMessage);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAnalysis();
+    }, [id]); // Roda sempre que o ID na URL mudar
 
     // Validação para habilitar o botão de iniciar
     const isFormValid = question.trim() !== '' && analysisDocuments.length > 0;
@@ -131,12 +153,20 @@ export default function AnalysisPage() {
         }
     };
 
+    if (isLoading) {
+        return <LoadingSpinner messages={initialLoadingMessages} />;
+    }
+
     if (isSubmitting) {
         return (
             <MainLayout>
-                <LoadingSpinner messages={preAnalysisMessages} />
+                <LoadingSpinner messages={loadingMessages} />
             </MainLayout>
         );
+    }
+
+    if (!analysisResult) {
+        return <ErrorState message="Não foi possível carregar os dados da análise." />;
     }
 
     if (analysisResult?.explorationOfMaterialStage) {

@@ -10,4 +10,5 @@ public interface IAnalysisService
     Task<AnalysisDto> CreateAsync(CreateAnalysisDto createDto, int userId);
     Task<bool> DeleteAsync(int id, int userId);
     Task<bool> PostAnalysisQuestion(int id, StartAnalysisDto startAnalysisDto, int userId);
+    Task<AnalysisExecutionResult> GetFullStateByIdAsync(int analysisId, int userId);
 }

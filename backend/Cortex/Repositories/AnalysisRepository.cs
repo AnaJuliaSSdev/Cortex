@@ -42,6 +42,7 @@ namespace Cortex.Repositories
             var analysis = await _context.Analyses
                  .Include(a => a.User)
                  .Include(a => a.Stages)
+                 .Include(a => a.Documents)
                  .FirstOrDefaultAsync(a => a.Id == id);
 
             if (analysis == null)

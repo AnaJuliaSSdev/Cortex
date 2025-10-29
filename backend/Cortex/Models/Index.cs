@@ -20,7 +20,6 @@ public class Index
     public int IndicatorId { get; set; }
 
     [ForeignKey("IndicatorId")]
-    [JsonIgnore]
     public virtual Indicator Indicator { get; set; }
 
     [Required]

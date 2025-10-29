@@ -83,3 +83,18 @@ export const continueAnalysis = async (analysisId: string): Promise<AnalysisExec
         throw error;
     }
 };
+
+/**
+ * Busca o estado completo de uma análise pelo seu ID.
+ * @param analysisId O ID da análise a ser buscada.
+ * @returns O objeto AnalysisExecutionResult com o estado atual.
+ */
+export const getAnalysisState = async (analysisId: string): Promise<AnalysisExecutionResult> => {
+    try {
+        const response = await api.get<AnalysisExecutionResult>(`/analysis/state/${analysisId}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Erro ao buscar o estado da análise ${analysisId}:`, error);
+        throw error;
+    }
+};
