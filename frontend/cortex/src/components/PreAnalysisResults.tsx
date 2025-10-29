@@ -17,6 +17,7 @@ interface PreAnalysisResultsProps {
     preAnalysisResult: PreAnalysisStage;
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
+    onContinue: () => void;
 }
 
 // Um componente "filho" para renderizar cada item da lista
@@ -77,7 +78,8 @@ const IndexItem: React.FC<IndexItemProps> = ({
 const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({ 
     preAnalysisResult, 
     analysisDocuments, 
-    referenceDocuments 
+    referenceDocuments,
+    onContinue
 }) => {
     
     const { indexes } = preAnalysisResult;
@@ -86,7 +88,6 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     const [selectedReference, setSelectedReference] = useState<IndexReference | null>(null);
 
     const handleReferenceClick = (reference: IndexReference) => {
-        console.log("Referência clicada:", reference);
         setSelectedReference(reference);
     };
 
@@ -118,7 +119,9 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                 )}
                 
                 <footer className={styles.footer}>
-                    <button className={styles.primaryButton}>Confirmar Índices e Avançar</button>
+                    <button 
+                    onClick={onContinue}
+                    className={styles.primaryButton}>Confirmar Índices e Avançar</button>
                 </footer>
             </section>
 

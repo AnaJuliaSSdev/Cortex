@@ -1,10 +1,10 @@
 ﻿using Cortex.Models;
 using Cortex.Models.DTO;
-using Cortex.Repositories;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
+using Google.Cloud.AIPlatform.V1;
 using System.Text;
-using System.Text.Json;
+using Type = Google.Cloud.AIPlatform.V1.Type;
 
 namespace Cortex.Services;
 
@@ -19,6 +19,59 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     private readonly IGeminiResponseHandler _geminiResponseHandler = geminiResponseHandler;
     private readonly IExplorationPersistenceService _explorationPersistenceService = explorationPersistenceService;
 
+    public OpenApiSchema responseSchema = new()
+    {
+        Type = Google.Cloud.AIPlatform.V1.Type.Object,
+        Properties =
+            {
+                { "categories", new OpenApiSchema
+                    {
+                        Type = Type.Array,
+                        Description = "Lista de categorias identificadas na análise",
+                        Items = new OpenApiSchema
+                        {
+                            Type = Type.Object,
+                            Properties =
+                            {
+                                { "name", new OpenApiSchema { Type = Type.String, Description = "Nome da categoria" } },
+                                { "definition", new OpenApiSchema { Type = Type.String, Description = "Definição da categoria" } },
+                                { "frequency", new OpenApiSchema { Type = Type.Integer, Description = "Número de unidades de registro nesta categoria" } },
+                                {
+                                    "register_units", new OpenApiSchema
+                                    {
+                                        Type = Type.Array,
+                                        Description = "Unidades de registro desta categoria",
+                                        Items = new OpenApiSchema
+                                        {
+                                            Type = Type.Object,
+                                            Properties =
+                                            {
+                                                { "text", new OpenApiSchema { Type = Type.String, Description = "Trecho EXATO extraído do documento" } },
+                                                { "document", new OpenApiSchema { Type = Type.String, Description = "Nome do arquivo fonte" } },
+                                                { "page", new OpenApiSchema { Type = Type.String, Description = "Número da página" } },
+                                                { "line", new OpenApiSchema { Type = Type.String, Description = "Número da linha" } },
+                                                { "justification", new OpenApiSchema { Type = Type.String, Description = "Justificativa para categorização" } },
+                                                { "found_indices", new OpenApiSchema
+                                                    {
+                                                        Type = Type.Array,
+                                                        Description = "IDs dos índices encontrados nesta unidade",
+                                                        Items = new OpenApiSchema { Type = Type.String, Description = "ID do índice" }
+                                                    }
+                                                },
+                                                { "indicator", new OpenApiSchema { Type = Type.String, Description = "ID do indicador associado" } }
+                                            },
+                                            Required = { "text", "document", "page", "line", "justification", "found_indices", "indicator" }
+                                        }
+                                    }
+                                }
+                            },
+                            Required = { "name", "definition", "register_units" }
+                        }
+                    }
+                }
+            },
+        Required = { "categories" }
+    };
 
     public string _promptExplorationOfMaterial = """
     Você está na etapa de EXPLORAÇÃO DO MATERIAL e irá fazer o AGRUPAMENTO DAS UNIDADES DE REGISTRO EM **CATEGORIAS**.
@@ -613,7 +666,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
             //peguei a ultima resposta e mockei pra n ficar gastando crédito
             string jsonResponse = GetMockedGeminiResponse();
             //deixei comentado por enquanto pra não gastar recurso
-            //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+            //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
 
             _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -630,7 +683,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
 
             return resultBaseClass;
         }
-        catch (JsonException jsonEx)
+        catch (System.Text.Json.JsonException jsonEx)
         {
             _logger.LogError(jsonEx, "Falha ao desserializar a resposta JSON da Exploração de Material.");
             resultBaseClass.ErrorMessage = "Erro ao processar a resposta da IA (formato inválido).";
@@ -674,494 +727,489 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     {
         _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");
         return """
-            ```json
             {
               "categories": [
                 {
-                  "name": "Saberes Constituintes da Prática Pedagógica",
-                  "definition": "Agrupa unidades de registro que revelam as fontes de conhecimento da professora, incluindo saberes pedagógicos formais, o conhecimento advindo da própria experiência corporal e as vivências (especialmente as negativas) que serviram de contraponto para a construção de sua metodologia.",
-                  "frequency": 15,
+                  "name": "Fundamentos Pedagógicos Humanizados",
+                  "definition": "Agrupa as unidades de registro que descrevem uma abordagem pedagógica centrada na humanização do ensino, valorizando a relação afetiva, o tratamento positivo do erro e a criação de um ambiente de aprendizagem acolhedor e motivador.",
                   "register_units": [
                     {
-                      "text": "Mas aí eu te digo né Mônica, a metodologia, da coisa, entendesse. Porque não é qualquer um que sabe fazer aquilo, sem ter, sem ficar, ãaaa. Ah não sei se eu vou saber explicar, mas sem sem sem ficar com aquilo... porque eu lembro assim ó, que a gente fazia aquela aula de Balé, mas era uma coisa desconstruída já",
+                      "text": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal...",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "4",
+                      "line": "1",
+                      "justification": "A unidade de registro expressa a centralidade da afetividade no processo de aprendizagem, alinhando-se diretamente ao índice de Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
+                    },
+                    {
+                      "text": "(risos) de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "53",
-                      "found_indices": ["199", "202"],
-                      "indicator": "16",
-                      "justification": "A unidade de registro aponta para a existência de uma 'metodologia' específica e um saber-fazer que a diferencia, além de caracterizá-la como 'desconstruída', alinhando-se aos saberes pedagógicos que fundamentam a prática."
+                      "line": "19",
+                      "justification": "O trecho destaca a amizade e a diversão como elementos centrais da aula, caracterizando um ambiente de Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
                     },
                     {
-                      "text": "aquela técnica é necessária pra qualquer estilo, porém, a metodologia, tem que ser muito bem pensada, pra não ficar uma coisa muito assim sabe, é assim!",
+                      "text": "eu descreveria como uma metodologia mais contemporânea, mais humana né, não, sei lá, nada a ver com a varetinha que se acredita que aprende, mas mais humana, mais, mais próxima.",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "3",
-                      "line": "1",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "O trecho enfatiza a importância da 'metodologia' como um saber pedagógico que qualifica a aplicação da técnica, sendo um pilar na construção da prática da professora."
+                      "page": "23",
+                      "line": "33",
+                      "justification": "A entrevistada define a metodologia como 'humana' e 'próxima', em contraste com métodos tradicionais, o que corresponde ao índice de Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
                     },
                     {
-                      "text": "não era aquilo que eu já tinha visto... assim eu já tinha tido umas experiências não muito boas!",
+                      "text": "mas o ambiente era bom, era tranquilo...",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "3",
-                      "line": "6",
-                      "found_indices": ["200"],
-                      "indicator": "17",
-                      "justification": "A fala evidencia como experiências formativas anteriores, percebidas como negativas ('não muito boas'), servem de contraponto para a metodologia atual, constituindo um saber experiencial por oposição."
+                      "page": "24",
+                      "line": "4",
+                      "justification": "A descrição do ambiente como 'bom' e 'tranquilo' é um claro indicador de uma Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
                     },
                     {
-                      "text": "primeiro, a metodologia que a pessoa pensa em fazer isso, primeiro, ela tem que ter noção dos vários estilos que pode trabalhar dentro daquela, daquele contexto do Balé, né?",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "3",
-                      "line": "21",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "A unidade destaca a 'metodologia' e a 'noção' de diferentes abordagens como um saber pedagógico fundamental para a prática docente, anterior à própria ação de ensinar."
-                    },
-                    {
-                      "text": "Então seria uma metodologia de trabalhar o Balé de forma universal assim, né. Enxergando qualquer possibilidade ali, ta aberta de repente por aluno também né?",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "3",
-                      "line": "34",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "A percepção da aluna sobre uma 'metodologia' de ensino 'universal' e 'aberta' reflete um saber pedagógico que estrutura a prática da professora, focando na adaptabilidade e na pertinência para o aluno."
-                    },
-                    {
-                      "text": "Ah eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio e... sempre tu dizia",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "17",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "O relato descreve a intencionalidade pedagógica de 'explicar pra que que é aquilo', um saber didático que busca dar sentido e funcionalidade aos movimentos, ultrapassando a mera reprodução técnica."
-                    },
-                    {
-                      "text": "então sempre tinha esta explicação. Eu me lembro que sempre tinha, tu explicava o movimento a gente ia fazer de uma forma bem simples, e a gente sabia pra que que era aquilo, pra que que poderia servir aquilo.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "21",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "Esta unidade reforça a presença de um saber didático explícito, onde a professora se preocupa em dar sentido ('sabia pra que que era aquilo') ao aprendizado, um pilar de sua pedagogia."
-                    },
-                    {
-                      "text": "Não me faz de pateta(risos)! Então assim, tem que ter um sentido. Eu acho que tu sempre tentou em todos os movimentos pra que que é isso então, então tu fazia primeiro e também explicava, esta era a parte teórica assim.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "28",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "A busca por 'sentido' em todos os movimentos é um forte indicador do saber pedagógico, que transforma a aula em uma experiência de aprendizado consciente e não apenas de execução."
-                    },
-                    {
-                      "text": "era uma coisa até humilhante assim, né, pra quem não conseguia entender um plié, um... qualquer coisa mais simples, assim que a pessoa não tava, nunca tinha visto, não tava acostumada, então eu fiquei com essa experiência assim ó de ser uma coisa \"se tu não fizer isso tu não é nada\"!",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "35",
-                      "found_indices": ["200"],
-                      "indicator": "17",
-                      "justification": "A memória de uma experiência 'humilhante' em outra aula de balé serve como um saber formativo por contraponto, influenciando a professora a construir uma prática que evite esse tipo de abordagem."
-                    },
-                    {
-                      "text": "mas eu me lembro dele humilhar muito as outras meninas assim, e isso me traumatizou um pouco assim (risos).",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "44",
-                      "found_indices": ["200"],
-                      "indicator": "17",
-                      "justification": "O relato de 'trauma' e 'humilhação' vivenciados como observadora em outra experiência formativa constitui uma fonte de saber que, por oposição, fundamenta a busca por uma pedagogia afetiva e respeitosa."
-                    },
-                    {
-                      "text": "tinha algumas coisas que eu identificava ali que eram também de Educação Somática e que tinha a vê, total assim! E quando tu ia dando as aulas, tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos, como é que eles tinham que pensar com os alunos deles",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "7",
-                      "line": "44",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "A unidade aponta para um saber pedagógico que transcende a aula de balé, instrumentalizando os alunos (futuros professores) para a 'formação de professores' ao explicar como 'adaptar' o conteúdo."
-                    },
-                    {
-                      "text": "A resposta, (risos) aprender (risos)! Ãaa ah é que eles tivessem uma consciência corporal dentro do seu estágio de desenvolvimento, de consciência corporal a partir duma técnica de Balé que eles tivessem compreendendo a importância de cada etapa daquelas ali, porque que tinha que ser daquele jeito",
+                      "text": "é muito...tranquila, muito tranquila... não tinha aquela rigidez formal que às vezes distaciada que alguns professores gostam de impor",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "10",
-                      "line": "40",
-                      "found_indices": ["199"],
-                      "indicator": "16",
-                      "justification": "A expectativa da professora, segundo o aluno, era a compreensão da 'importância' e do 'porquê' de cada etapa, o que reflete um saber pedagógico focado na construção de sentido e não na simples reprodução."
-                    },
-                    {
-                      "text": "A professora aaa, (risos) ãa eu acho que ela é competente, didaticamente experiente e competente, ao ponto de ter vivenciado muito todas estas técnicas no seu corpo, e por compreender, ter compreendido isso tanto no seu corpo, sabe ensinar no corpo dos outros, porque já identificou os problemas que os outros tão passando ali ela consegue identificar no corpo dos outros porque ela já passou por aquilo ali em alguma outra..",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "11",
-                      "line": "31",
-                      "found_indices": ["204"],
-                      "indicator": "21",
-                      "justification": "Esta unidade é um exemplo claro do corpo próprio como fonte de saber, onde a vivência das técnicas e dificuldades no próprio corpo se transforma em empatia e competência didática para 'ensinar no corpo dos outros'."
-                    },
-                    {
-                      "text": "Então até as experiências ruins que tu viveste, dava pra ver que tu soubeste puxar disso, dessas experiências pra transformar pra o momento que tu fosses ser professora, tu não causasse esse sofrimento que tu passou nos teus alunos",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "12",
                       "line": "1",
-                      "found_indices": ["200"],
-                      "indicator": "17",
-                      "justification": "O trecho explicita como as 'experiências ruins' e o 'sofrimento' do passado foram transformados em um saber pedagógico, um contraponto consciente para evitar a repetição de práticas negativas com seus próprios alunos."
+                      "justification": "A ausência de rigidez formal e a tranquilidade do ambiente são características que se enquadram na definição do índice de Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
                     },
                     {
-                      "text": "Então eu acho que todas as dificuldades te fizeram buscar isso pro momento que tu fosse ensinar, tu saber ajudar os outros a ultrapassarem os limites que tu demorou bastante pra ultrapassar, tu seria uma facilitadora, neste sentido...",
+                      "text": "a gente sempre foi muito, muito amigas... muito, muito amigas. Desde os cinco anos de idade até sempre. A gente sempre foi muito junta e unida, a nossa turma sempre foi assim.",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "12",
-                      "line": "12",
-                      "found_indices": ["204"],
-                      "indicator": "21",
-                      "justification": "A fala conecta diretamente as 'dificuldades' vivenciadas no corpo da professora com a sua capacidade de 'ajudar os outros a ultrapassarem os limites', caracterizando o corpo próprio como uma fonte de saber empático e pedagógico."
+                      "page": "33",
+                      "line": "32",
+                      "justification": "O relato de uma relação de amizade forte e duradoura entre professora e alunas exemplifica o pilar da Relação Afetiva e Humanizada.",
+                      "found_indices": [
+                        "272"
+                      ],
+                      "indicator": "40"
+                    },
+                    {
+                      "text": "como eu ria muito dos meus erros e eu adoro os meus erros (risos)... e eu acho que era isso assim.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "2",
+                      "line": "21",
+                      "justification": "A unidade de registro demonstra uma atitude positiva e de humor em relação aos próprios erros, alinhada ao índice de Tratamento Pedagógico do Erro.",
+                      "found_indices": [
+                        "273"
+                      ],
+                      "indicator": "41"
+                    },
+                    {
+                      "text": "(risos) era um divertimento né? (risos) não tem outra explicação.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "2",
+                      "line": "26",
+                      "justification": "A descrição do erro como 'divertimento' captura a essência do índice de Tratamento Pedagógico do Erro, que vê o erro como algo leve e natural.",
+                      "found_indices": [
+                        "273"
+                      ],
+                      "indicator": "41"
+                    },
+                    {
+                      "text": "em questão dos erros assim eu não me sentia pressionada pela professora",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "2",
+                      "line": "28",
+                      "justification": "A ausência de pressão ao errar é um indicador direto de um Tratamento Pedagógico do Erro que não é punitivo.",
+                      "found_indices": [
+                        "273"
+                      ],
+                      "indicator": "41"
+                    },
+                    {
+                      "text": "eu não me lembro do erro me traumatizar, não não, não me traumatizava, não me causava angústia, era uma coisa que eu errava e tentava ter consciência para não fazer de novo, mas ele não me traumatizava.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "24",
+                      "line": "8",
+                      "justification": "Este trecho descreve a ausência de trauma ou angústia associada ao erro, o que caracteriza um Tratamento Pedagógico do Erro positivo e construtivo.",
+                      "found_indices": [
+                        "273"          ],
+                      "indicator": "41"
+                    },
+                    {
+                      "text": "o erro era tratado com naturalidade, porque ele faz parte né",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "9",
+                      "line": "9",
+                      "justification": "A afirmação de que o erro era 'tratado com naturalidade' e 'faz parte' corresponde exatamente à descrição do índice de Tratamento Pedagógico do Erro.",
+                      "found_indices": [
+                        "273"
+                      ],
+                      "indicator": "41"
+                    },
+                    {
+                      "text": "ninguém ali ia morrer, se atirar pela janela porque não levantou a perna na cabeça, sabe?",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "9",
+                      "line": "13",
+                      "justification": "A expressão hiperbólica e bem-humorada ilustra a leveza com que o erro era tratado, diminuindo a ansiedade e a pressão, conforme o índice 273.",
+                      "found_indices": [
+                        "273"
+                      ],
+                      "indicator": "41"
                     }
-                  ]
+                  ],
+                  "frequency": 12
                 },
                 {
-                  "name": "Metodologia de Ensino Centrada no Aluno",
-                  "definition": "Reúne unidades de registro que descrevem a aplicação prática da metodologia da professora, caracterizada pelo cuidado com o corpo, a desconstrução de estereótipos do balé, a criação de um ambiente afetivo e lúdico, e o estímulo à prática reflexiva e criativa dos alunos.",
-                  "frequency": 37,
+                  "name": "Ressignificação da Técnica do Balé Clássico",
+                  "definition": "Reúne as manifestações que apontam para uma desconstrução da visão tradicional do Balé, enfatizando a descoberta do corpo, a consciência somática e a integração entre teoria e prática, em oposição a uma abordagem puramente sacrificial ou reprodutiva.",
                   "register_units": [
                     {
                       "text": "eram aulas que contribuíam muito pra eu descobrir outras coisas possibilidades do meu corpo que eu não conhecia assim.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
                       "line": "21",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A unidade descreve a aula como um espaço para a descoberta de 'possibilidades do corpo', alinhando-se a uma metodologia que promove a consciência corporal e o respeito ao corpo."
+                      "justification": "O trecho aponta para a 'descoberta' de possibilidades do corpo, alinhando-se ao índice da Pedagogia da Descoberta e do Prazer.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
-                      "text": "eu tive outra visão do Balé, entendesse, eu tinha uma coisa muito fechada assim, uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!",
+                      "text": "uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
                       "line": "23",
-                      "found_indices": ["202", "200"],
-                      "indicator": "19",
-                      "justification": "O relato evidencia a desconstrução ativa de estereótipos negativos do balé ('sacrifício', 'maltrata o corpo'), mostrando que a metodologia da professora oferece uma 'outra visão' da dança."
+                      "justification": "A unidade de registro contrasta a experiência da aula com a visão tradicional do Balé como 'sacrifício', o que é central para o índice 270.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
-                      "text": "Eu acho que a tua aula veio pra contribuir pra gente descobrir o limite do corpo e a possibilidade de fazer as coisas que tu achava muito impossível e tu podes fazer no teu limite",
+                      "text": "Ah eu acho que eu desconstruí a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
-                      "line": "25",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A fala destaca a descoberta e o respeito ao 'limite do corpo' como um elemento central da aula, característica de uma metodologia focada no cuidado e na prática consciente."
-                    },
-                    {
-                      "text": "Ah eu acho que eu desconstruí a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante, da coisa... assim...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "1",
-                      "line": "47",
-                      "found_indices": ["202"],
-                      "indicator": "19",
-                      "justification": "A unidade expressa diretamente a 'desconstrução da ideia' de que o balé é algo 'chato' e 'sacrificante', um dos pilares da metodologia de ensino aplicada."
-                    },
-                    {
-                      "text": "e eu acho que tu simplificava a coisa... e isso que facilitava e que era lá: tá pode ser agradável, pode ser prazeroso, né?",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "line": "14",
-                      "found_indices": ["202", "201"],
-                      "indicator": "19",
-                      "justification": "Ao contrastar a prática com a ideia de sacrifício, associando-a ao prazer ('agradável', 'prazeroso'), a professora desconstrói um estereótipo central do balé."
+                      "line": "41",
+                      "justification": "A desconstrução da ideia do Balé como 'coisa chata' e 'sacrificante' é um indicador explícito da Pedagogia da Descoberta e do Prazer.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
                       "text": "depois (risos) que eu fiz Balé com a Mônica eu vi que não precisa ser sacrificante, não precisa ser isso...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "16",
-                      "found_indices": ["202", "201"],
-                      "indicator": "19",
-                      "justification": "A fala do aluno confirma o sucesso da metodologia em desconstruir o estereótipo do balé como uma prática 'sacrificante', promovendo uma visão centrada no cuidado."
+                      "line": "14",
+                      "justification": "A afirmação 'não precisa ser sacrificante' é um termo-chave do indicador 38, ressignificando a prática do Balé.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
-                      "text": "(risos) de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia.",
+                      "text": "e ai eu tinha prazer... aí depois de um mês, dois meses, eu já sabia o que ia acontecer, já ficava mais tranquila... e aí tu faz aquilo com prazer",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "22",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A unidade descreve o ambiente de aprendizagem como sendo de 'amizade' e 'divertimento', características centrais de um clima de aula afetivo e lúdico."
+                      "line": "7",
+                      "justification": "A presença da palavra 'prazer' para descrever a experiência da aula é um indicador direto do índice 270.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
-                      "text": "se tu não divertir fazendo alguma coisa, se tu não rir, não, não, te ãaa, desconstruir aquela coisa de que sempre tem que ser perfeito, como eu ria muito dos meus erros e eu adoro os meus erros (risos)...",
+                      "text": "eu percebi que o balé não precisa ser uma coisa tão séria quanto ele parece ser. O balé pode ser uma coisa feliz, ele não po... ele não precisa ser uma coisa monótona",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "line": "23",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "O ato de 'rir dos erros' e a valorização do divertimento são estratégias pedagógicas que definem um ambiente de aprendizagem afetivo, onde o erro é tratado com leveza."
-                    },
-                    {
-                      "text": "(risos) era um divertimento né? (risos) não tem outra explicação.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "line": "30",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A caracterização da experiência do erro como 'um divertimento' reforça a presença de um ambiente de aprendizagem lúdico e positivo."
-                    },
-                    {
-                      "text": "mas eu me lembro sempre daquela ideia da gente brincar assim, sempre teve aquela ideia também, eu acho que, não sei se por tu ser pedagoga, assim, né, então por exemplo, \"vamos fazer\" um... centro né, e ai tinha uma coisa mais assim, a gente brincava com aquilo",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "3",
-                      "line": "38",
-                      "found_indices": ["203", "199"],
-                      "indicator": "20",
-                      "justification": "A memória da 'ideia da gente brincar' e do ato de 'brincar com aquilo' (o exercício) demonstra a aplicação de uma metodologia que utiliza o lúdico como ferramenta pedagógica."
-                    },
-                    {
-                      "text": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "line": "1",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A unidade elege a 'afetividade' como o elemento 'principal' do ambiente de aprendizagem, definindo o clima da aula como fundamentalmente afetivo."
-                    },
-                    {
-                      "text": "a gente se divertia muito é a única coisa que eu me lembro assim, tirando a minha tensão de estar fazendo uma aula de Balé, eu me lembro muito disso assim, da gente rir muito, se divertir muito, rir muito dos erros. E tu brinca muito com a gente (risos)",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
+                      "page": "35",
                       "line": "10",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "O relato reitera a presença constante de elementos lúdicos ('se divertia', 'rir muito dos erros', 'brinca muito') que caracterizam o ambiente de aprendizagem."
+                      "justification": "Este trecho contrapõe a seriedade e monotonia com a felicidade, desconstruindo a visão rígida do Balé e alinhando-se à Pedagogia do Prazer.",
+                      "found_indices": [
+                        "270"
+                      ],
+                      "indicator": "38"
                     },
                     {
-                      "text": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá, fisiológica que o Balé dá, e tudo de proteção da articulação e de musculatura tudo",
+                      "text": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "24",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A unidade descreve o aprendizado como a aquisição de 'consciência corporal' e 'proteção', elementos de uma metodologia que prioriza o cuidado e o respeito ao corpo."
+                      "line": "26",
+                      "justification": "A unidade de registro lista explicitamente os termos 'consciência corporal', 'cinesiológica' e 'anatômica' como aprendizados, correspondendo ao índice de Consciência Corporal e Somática.",
+                      "found_indices": [
+                        "271"
+                      ],
+                      "indicator": "39"
                     },
                     {
-                      "text": "tem que fazer um caminho certo que não vai te machucar, e o Balé o que faz? É te proteger, ele te protege",
+                      "text": "o Balé, ele é todo explicadinho, ãaa relacionado né, À Anatomia, Fisiologia, Cinesiologia, tudo né, certinho.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "34",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A percepção de que o balé, conforme ensinado, 'protege' o corpo de lesões é um forte indicador de uma metodologia centrada no cuidado e na saúde corporal."
+                      "line": "35",
+                      "justification": "A menção à relação do Balé com 'Anatomia' e 'Cinesiologia' evidencia o foco no entendimento do corpo, característico do índice 271.",
+                      "found_indices": [
+                        "271"
+                      ],
+                      "indicator": "39"
                     },
                     {
-                      "text": "tu pedia pro pessoal sempre fazer aquele registro, o memorial no final da aula, pedindo pra pensar em como adaptar aquilo também, como é que tava sentindo...",
+                      "text": "o Balé o que faz? É te proteger, ele te protege",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "7",
+                      "line": "39",
+                      "justification": "A ideia de que a técnica do Balé serve para 'proteger o corpo' é um pilar do índice de Consciência Corporal e Somática.",
+                      "found_indices": [
+                        "271"
+                      ],
+                      "indicator": "39"
+                    },
+                    {
+                      "text": "Eu aprendi a ter uma melhor consciência do meu corpo, a ter uma melhor aaaa... movimentação do meu corpo",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "10",
+                      "line": "10",
+                      "justification": "O relato de aprendizado da 'consciência do meu corpo' é uma manifestação direta do índice 271.",
+                      "found_indices": [
+                        "271"
+                      ],
+                      "indicator": "39"
+                    },
+                    {
+                      "text": "lembro que tu dava claro Balé, e tem umas coisas da... como é que chama aquilo? Educação Somática(...)",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
                       "line": "48",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "A menção ao 'memorial no final da aula' como uma prática regular evidencia o estímulo à reflexão sobre o próprio processo de aprendizagem, uma característica da metodologia."
+                      "justification": "A identificação de elementos da 'Educação Somática' nas aulas de Balé conecta a prática diretamente ao índice de Consciência Corporal e Somática.",
+                      "found_indices": [
+                        "271"
+                      ],
+                      "indicator": "39"
                     },
                     {
-                      "text": "Então ã, tu respeitavas o, o tempo de desenvolvimento de cada um. E isso é uma coisa boa também, porque dentro de uma turma tu pode ter alguém super avançado... e alguém que nunca fez nada, como eu!",
+                      "text": "eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "4",
+                      "line": "13",
+                      "justification": "A descrição da professora explicando o 'pra que que é aquilo' (o propósito do movimento) exemplifica a Integração Teoria-Prática.",
+                      "found_indices": [
+                        "275"
+                      ],
+                      "indicator": "43"
+                    },
+                    {
+                      "text": "tu explicava o movimento a gente ia fazer de uma forma bem simples, e a gente sabia pra que que era aquilo, pra que que poderia servir aquilo.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "4",
+                      "line": "18",
+                      "justification": "Este trecho mostra que a professora 'explicava o movimento' e seu propósito ('pra que que era aquilo'), o que define o índice de Integração Teoria-Prática.",
+                      "found_indices": [
+                        "275"
+                      ],
+                      "indicator": "43"
+                    },
+                    {
+                      "text": "tu sempre explicava como era, como se escreve né, pra saber, pra ensinar, acho que isso eu acabei levando...",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "23",
+                      "line": "18",
+                      "justification": "A menção à explicação de 'como se escreve' o passo (nomenclatura) é um indicador da abordagem teórica vinculada à prática, conforme o índice 275.",
+                      "found_indices": [
+                        "275"
+                      ],
+                      "indicator": "43"
+                    },
+                    {
+                      "text": "ter este momento de trazer a teoria ajuda a tu compreender a importância de se fazer aquilo ali do jeito que tem que ser feito e não fazer de qualquer jeito",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "11",
+                      "line": "12",
+                      "justification": "A unidade de registro valoriza o 'trazer a teoria' para dar sentido e corrigir a execução do movimento, o que é a essência do índice de Integração Teoria-Prática.",
+                      "found_indices": [
+                        "275"
+                      ],
+                      "indicator": "43"
+                    }
+                  ],
+                  "frequency": 15
+                },
+                {
+                  "name": "Estratégias Metodológicas Flexíveis e Lúdicas",
+                  "definition": "Congrega os trechos que evidenciam o uso de estratégias metodológicas que se afastam da rigidez, incluindo a adaptação aos diferentes contextos e alunos, e o emprego da ludicidade como ferramenta central para o engajamento e a aprendizagem.",
+                  "register_units": [
+                    {
+                      "text": "E quando tu ia dando as aulas, tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "7",
+                      "line": "50",
+                      "justification": "O relato de que a professora explicava como 'adaptar aquilo pra outros contextos' corresponde diretamente ao índice de Adaptação e Flexibilidade Metodológica.",
+                      "found_indices": [
+                        "274"
+                      ],
+                      "indicator": "42"
+                    },
+                    {
+                      "text": "tu respeitavas o, o tempo de desenvolvimento de cada um. E isso é uma coisa boa também, porque dentro de uma turma tu pode ter alguém super avançado... e alguém que nunca fez nada",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "8",
-                      "line": "9",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "O respeito ao 'tempo de desenvolvimento de cada um' é uma prática pedagógica que demonstra o cuidado e o respeito aos limites individuais dos alunos."
+                      "line": "11",
+                      "justification": "A menção a 'respeitavas o tempo de cada um' e a consideração dos diferentes níveis na turma são indicadores claros de Adaptação e Flexibilidade Metodológica.",
+                      "found_indices": [
+                        "274"
+                      ],
+                      "indicator": "42"
                     },
                     {
-                      "text": "o Balé fortalece de tal modo a minha musculatura que, que me ajudava no dia-a-dia.",
+                      "text": "aprendizagem de repente de culturas novas né porque tu traz coisas assim de outras danças, de coisas que tavam passando na TV...",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "line": "6",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "O relato de um benefício físico concreto (fortalecimento) que auxilia na vida cotidiana demonstra um resultado da metodologia focada no cuidado e na saúde corporal."
+                      "page": "25",
+                      "line": "2",
+                      "justification": "A incorporação de elementos de 'outras danças' e da cultura contemporânea ('TV') demonstra uma abordagem aberta e flexível, alinhada ao índice 274.",
+                      "found_indices": [
+                        "274"
+                      ],
+                      "indicator": "42"
                     },
                     {
-                      "text": "daí fortaleceu e eu não tive absolutamente nada! Ãaa, me protegeu as minhas articulações e a musculatura... e me ajudou, num problema de saúde.",
+                      "text": "sempre teve aquela ideia da gente brincar assim",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "line": "13",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A experiência de que a prática do balé 'protegeu' o corpo de uma lesão mais grave reforça a percepção de uma metodologia que promove um corpo saudável e resiliente."
+                      "page": "3",
+                      "line": "50",
+                      "justification": "A presença da ideia de 'brincar' como um elemento constante nas aulas é um indicador do índice de Ludicidade como Ferramenta Pedagógica.",
+                      "found_indices": [
+                        "277"
+                      ],
+                      "indicator": "45"
                     },
                     {
-                      "text": "o erro era tratado com naturalidade, porque ele faz parte né",
+                      "text": "eu acho que tem que ter essa leveza que o Balé sabe traz assim historicamente, que não tem...",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "line": "18",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A forma como o erro é 'tratado com naturalidade' é um componente essencial da criação de um ambiente de aprendizagem afetivo e seguro para o aluno."
-                    },
-                    {
-                      "text": "todo mundo lidava com o erro de maneira bem humorada e divertida, então não tinha problema nenhum, não aquele... ninguém ali ia morrer, se atirar pela janela porque não levantou a perna na cabeça, sabe?",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "line": "21",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A descrição do tratamento do erro de forma 'bem humorada e divertida' caracteriza um ambiente lúdico, que desconstrói a pressão e o perfeccionismo excessivo."
-                    },
-                    {
-                      "text": "esses diários são bons por serem um momento de depois que tu faz uma aula depois que tu vivencia um processo desses tu vai pensar sobre aquilo ali, sobre o que aquela aula representou no teu corpo, sobre o que tu descobriu, o que tu vai refletir e tal",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "line": "40",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "A unidade detalha a função dos 'diários de processo' como ferramenta para a reflexão sobre o aprendizado, estimulando uma prática consciente e não apenas executora."
-                    },
-                    {
-                      "text": "aprender que as linhas não são só linhas no meu corpo porque fica bonito, mas é porque elas tem uma função e elas não limitam a gente, elas nosmi ajudam a ir além...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "10",
-                      "line": "19",
-                      "found_indices": ["199", "201"],
-                      "indicator": "18",
-                      "justification": "A compreensão da 'função' do movimento para 'ir além' demonstra um aprendizado focado na consciência corporal e na superação de limites, e não apenas na estética, alinhando-se ao cuidado com o corpo."
-                    },
-                    {
-                      "text": "Um conhecimento que protege! Um conhecimento que protege o corpo foi isso que o Balé me deu.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "10",
-                      "line": "25",
-                      "found_indices": ["201"],
-                      "indicator": "18",
-                      "justification": "A afirmação categórica de que o balé forneceu um 'conhecimento que protege o corpo' sintetiza o pilar da metodologia centrado no cuidado e na prevenção de lesões."
-                    },
-                    {
-                      "text": "fazer sem compreender é que leva à lesão, leva machucado, prejudica...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "11",
-                      "line": "21",
-                      "found_indices": ["199", "201"],
-                      "indicator": "18",
-                      "justification": "A conexão direta entre a falta de compreensão e o risco de lesão evidencia uma metodologia que integra o saber pedagógico ao cuidado com o corpo como forma de proteção."
-                    },
-                    {
-                      "text": "tu conseguias trazer isso de uma forma que ãa, que vai ter que doer, mexer com a musculatura né, que isso não fosse tão dolorido, fosse agradável, divertido...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "11",
-                      "line": "39",
-                      "found_indices": ["204", "202", "203"],
-                      "indicator": "19",
-                      "justification": "A capacidade da professora de transformar uma experiência potencialmente 'dolorida' em algo 'agradável, divertido' demonstra a aplicação de uma metodologia que desconstrói estereótipos e utiliza o lúdico."
+                      "page": "3",
+                      "line": "55",
+                      "justification": "A valorização da 'leveza' na prática do Balé, em contraste com a rigidez, aponta para o uso de elementos lúdicos e uma abordagem menos solene.",
+                      "found_indices": [
+                        "277"
+                      ],
+                      "indicator": "45"
                     },
                     {
                       "text": "a gente também fazia no final um teatrinho que a gente tinha que fazer passos de balé e essas coisas.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "32",
-                      "line": "11",
-                      "found_indices": ["203", "205"],
-                      "indicator": "20",
-                      "justification": "A prática do 'teatrinho' no final da aula é um exemplo claro de uma estratégia que combina o lúdico com a prática criativa, caracterizando o ambiente de aprendizagem."
+                      "line": "14",
+                      "justification": "O uso de 'teatrinho' como atividade de aula é um exemplo explícito de Ludicidade como Ferramenta Pedagógica.",
+                      "found_indices": [
+                        "277"
+                      ],
+                      "indicator": "45"
                     },
                     {
-                      "text": "tinha momento que a gente parava pra conversar, tinha os momentos que a gente fazia essas brincadeiras que eu tinha falado antes, tinha vários momentos legais e descontraídos.",
+                      "text": "Eu lembro uma que eu nunca mais vou esquecer que é do tubarão que tu desenhava no chão e era pra gente pular. Eu lembro de uma vez também que a gente fez, que tu fez um castelo e a gente tinha que ir passando pelos desafios do castelo pra gente poder chegar no chá das princesas.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "32",
-                      "line": "16",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A menção a 'brincadeiras' e 'momentos legais e descontraídos' descreve um ambiente de aula afetivo e lúdico, que vai além da instrução técnica."
+                      "line": "23",
+                      "justification": "A descrição de atividades imaginativas e narrativas, como 'tubarão' e 'castelo', são exemplos concretos do uso da ludicidade no ensino.",
+                      "found_indices": [
+                        "277"
+                      ],
+                      "indicator": "45"
                     },
                     {
-                      "text": "eu lembro de uma vez que tu fez umas comidinhas e aí a gente tinha que imitar ser uma formiga e a gente tina que ir pegando as comidinhas pra chegar de baixo do tnt que era a toca das formigas.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "32",
-                      "line": "25",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "O relato de uma atividade lúdica e imaginativa ('imitar ser uma formiga') exemplifica a metodologia que utiliza o 'teatrinho' e a brincadeira para engajar os alunos."
-                    },
-                    {
-                      "text": "O teatrinho... tu dava um tema pra gente e a gente tinha que fazer duplas ou trios pra gente poder fazer o teatrinho e tinha que ter pelo menos uns cinco (5) passos de balé pra ser válido.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "32",
-                      "line": "30",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "A descrição do 'teatrinho' como uma atividade com tema e regras (incluir passos de balé) mostra como a professora estimula a prática criativa de forma estruturada."
-                    },
-                    {
-                      "text": "Porque no teatrinho existia uma liberdade de expressão, né? Então a gente podia fazer o que a gente quisesse se enquadrando nos temas. Então eu acho que isso é bom porque estimula a criatividade da pessoa.",
+                      "text": "tu não vai encontra outro curso onde a professora brinca e conversa direito contigo.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "33",
+                      "line": "27",
+                      "justification": "A palavra 'brinca' é usada para caracterizar o modo de ensinar da professora, o que corresponde diretamente ao índice 277.",
+                      "found_indices": [
+                        "277",
+                        "272"
+                      ],
+                      "indicator": "45"
+                    },
+                    {
+                      "text": "Então eu acho que esse jeito teu de ensinar, esse jeito teu de brincar, me estimula a continuar dançando balé até hoje.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "35",
                       "line": "10",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "A unidade define o 'teatrinho' como um espaço de 'liberdade de expressão' que 'estimula a criatividade', alinhando-se perfeitamente à categoria de estímulo à prática criativa."
-                    },
-                    {
-                      "text": "Tu tava sempre estimulando a gente pra, nas criações, na criatividade... tu sempre procurou estimular o nosso lado criativo, o nosso lado da imaginação, né? O nosso lado criança mesmo.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "33",
-                      "line": "24",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "O aluno percebe e verbaliza a intenção da professora de 'estimular o lado criativo' e a 'imaginação', confirmando esta como uma característica central de sua metodologia."
-                    },
-                    {
-                      "text": "tu não vai encontra outro curso onde a professora brinca e conversa direito contigo. Tu não vai encontrar outro curso em que tu pode... ãaaa, sei lá, criar coisas na aula.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "33",
-                      "line": "29",
-                      "found_indices": ["203", "205"],
-                      "indicator": "20",
-                      "justification": "A unidade destaca o ato de 'brincar', 'conversar' e 'criar coisas na aula' como diferenciais da metodologia, apontando para um ambiente lúdico e que estimula a criatividade."
-                    },
-                    {
-                      "text": "eu aprendia bastante com as brincadeiras e também nos momentos sérios, quando a gente era meio na marra e tinha que aprender, mas era isso, entre os momentos de brincadeiras e os momentos sérios, a gente acabava aprendendo bastante coisa.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "33",
-                      "line": "39",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A fala confirma que as 'brincadeiras' são uma parte efetiva do processo de aprendizagem, validando o lúdico como uma ferramenta pedagógica na metodologia da professora."
-                    },
-                    {
-                      "text": "A professora sempre foi a coisa mais calma do mundo, né? Ela ia lá, corrigia o erro, falava o que tinha que fazer com a maior calma do mundo e aí se a gente errava de ovo ela ia á e explicava de novo, com a mesma calma de sempre",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "line": "7",
-                      "found_indices": ["203"],
-                      "indicator": "20",
-                      "justification": "A descrição da maneira calma e paciente com que a professora lida com o erro ('corrigia o erro com a maior calma') caracteriza um ambiente de aprendizagem afetivo e seguro."
-                    },
-                    {
-                      "text": "eu percebi que o balé não precisa ser uma coisa tão séria quanto ele parece ser. O balé pode ser uma coisa feliz, ele não po... ele não precisa ser uma coisa monótona, sempre naquele jeito, naquele estilo. Então eu acho que esse jeito teu de ensinar, esse jeito teu de brincar, me estimula a continuar dançando balé até hoje.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "line": "21",
-                      "found_indices": ["202", "203"],
-                      "indicator": "19",
-                      "justification": "A unidade mostra a desconstrução do estereótipo do balé 'sério' e 'monótono', associando a metodologia ('jeito de brincar') a uma experiência 'feliz' que estimula o aluno."
-                    },
-                    {
-                      "text": "porque todos os professores de balé sempre fazem aquela coisa séria, que vão te falar os passos que tu vai ter que fazer e não te dão liberdade nenhuma.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "line": "29",
-                      "found_indices": ["202", "205"],
-                      "indicator": "19",
-                      "justification": "Ao contrastar com a 'coisa séria' de outros professores que 'não dão liberdade', o trecho evidencia que a metodologia da professora se diferencia por desconstruir essa rigidez e estimular a autonomia."
-                    },
-                    {
-                      "text": "eu lembro que a gente até opinava nas apresentações de final de ano, não era nem a professora que decidia, era a gente, então a gente tinha bastante liberdade pra ser o que a gente quisesse ser",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "line": "35",
-                      "found_indices": ["205"],
-                      "indicator": "22",
-                      "justification": "A prática de permitir que os alunos 'opinassem' e decidissem sobre as apresentações é um forte indicador do estímulo à autonomia, à expressão e à tomada de decisão, componentes da prática criativa."
+                      "justification": "O 'jeito de brincar' é identificado como um fator de estímulo e permanência na dança, validando a ludicidade como uma ferramenta pedagógica eficaz.",
+                      "found_indices": [
+                        "277"
+                      ],
+                      "indicator": "45"
                     }
-                  ]
+                  ],
+                  "frequency": 9
+                },
+                {
+                  "name": "A Formação Docente pela Práxis Colaborativa",
+                  "definition": "Categoria que agrupa as vivências de formação da professora baseadas na prática compartilhada e na mentoria, indicando um modelo de 'aprender fazendo' e 'aprender com o outro' que se reflete em sua própria metodologia pedagógica.",
+                  "register_units": [
+                    {
+                      "text": "eu já comecei a dar aula de Balé de forma compartilhada... Desdo primeiro ano que eu comecei a dar aula lá em 1990, ãa, já foi com essa proposta de trabalhar junto com a Aline Peres",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "13",
+                      "line": "32",
+                      "justification": "O trecho descreve o início da carreira docente da professora como uma experiência 'compartilhada' e de 'trabalhar junto', alinhando-se ao índice de Formação pela Experiência e Colaboração.",
+                      "found_indices": [
+                        "276"
+                      ],
+                      "indicator": "44"
+                    },
+                    {
+                      "text": "e ao mesmo tempo com uma supervisão, vamos dizer assim, da Tia Beth, que dava todo o suporte, né... da gente di di dá ideias e de... e da gente fazer aquela... tinha aquela rotina da gente montar a aula lá e os exercícios, de mostrar pra ela antes, pra ela dar alguma dica, algum ajuste",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "13",
+                      "line": "40",
+                      "justification": "A descrição do processo de 'supervisão' e mentoria por uma professora mais experiente é um indicador claro de Formação pela Experiência e Colaboração.",
+                      "found_indices": [
+                        "276"
+                      ],
+                      "indicator": "44"
+                    },
+                    {
+                      "text": "Eu acho Fun da men tal !! (fala pausada e enfática) Eu acho que a gente aprende com o outro, a gente ensina o outro.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "14",
+                      "line": "21",
+                      "justification": "Esta unidade de registro expressa a crença fundamental de que se 'aprende com o outro', que é a base do índice de Formação pela Experiência e Colaboração.",
+                      "found_indices": [
+                        "276"
+                      ],
+                      "indicator": "44"
+                    },
+                    {
+                      "text": "além dessa, dessa conversa anterior a aula, ãa sim, a Tia Beth assistia as aulas da gente assim, assistia e se não assistia por inteiro entrava num pedaço, entrava dava uma olhada... tinha essa figura que supervisionava... tinha.",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "15",
+                      "line": "45",
+                      "justification": "O relato da existência de uma 'figura que supervisionava' as aulas reforça a ideia de uma formação docente baseada na prática supervisionada e na colaboração.",
+                      "found_indices": [
+                        "276"
+                      ],
+                      "indicator": "44"
+                    },
+                    {
+                      "text": "Eu boto uma pessoa dando aula e outra pessoa de auxiliar. De auxiliar, pra te ajudar. Se um dia tu não puderes vir, essa pessoa que ta te ajudando, eu entro na sala com ela... ela tem capacidade de dar aula e sabe onde anda o programa. (COLABORAÇÃO)",
+                      "document": "EntrevistasExemplo.pdf",
+                      "page": "44",
+                      "line": "17",
+                      "justification": "A descrição da dinâmica de 'professora e uma auxiliar' como um sistema de apoio e colaboração é um exemplo prático do índice de Formação pela Experiência e Colaboração.",
+                      "found_indices": [
+                        "276"
+                      ],
+                      "indicator": "44"
+                    }
+                  ],
+                  "frequency": 5
                 }
               ]
             }
-            ```
             """;
     }
 }

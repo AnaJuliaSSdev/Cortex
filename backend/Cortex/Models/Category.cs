@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Cortex.Models;
 
@@ -24,6 +25,7 @@ public class Category
     public int ExplorationOfMaterialStageId { get; set; }
 
     [ForeignKey("ExplorationOfMaterialStageId")]
+    [JsonIgnore]
     public virtual ExplorationOfMaterialStage ExplorationOfMaterialStage { get; set; }
 
     // Uma categoria contém várias unidades de registro

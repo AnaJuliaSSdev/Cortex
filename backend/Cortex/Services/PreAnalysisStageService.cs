@@ -2,7 +2,10 @@
 using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
+using Google.Cloud.AIPlatform.V1;
+using Newtonsoft.Json;
 using System.Text.Json;
+using Type = Google.Cloud.AIPlatform.V1.Type;
 
 namespace Cortex.Services
 {
@@ -20,6 +23,79 @@ namespace Cortex.Services
         private readonly IGeminiService _geminiService = geminiService;
         private readonly ILogger _logger = logger;
 
+        public  OpenApiSchema responseSchema = new OpenApiSchema
+        {
+            Type = Type.Object,
+            Description = "Estrutura para extração de índices da análise de conteúdo",
+            Properties =
+            {
+                { "indices", new OpenApiSchema
+                    {
+                        Type = Type.Array,
+                        Description = "Lista de índices identificados nos documentos",
+                        Items = new OpenApiSchema
+                        {
+                            Type = Type.Object,
+                            Properties =
+                            {
+                                { "name", new OpenApiSchema
+                                    {
+                                        Type = Type.String,
+                                        Description = "Nome do índice extraído"
+                                    }
+                                },
+                                { "description", new OpenApiSchema
+                                    {
+                                        Type = Type.String,
+                                        Description = "Descrição clara do que é este índice e por que foi escolhido, com embasamento teórico"
+                                    }
+                                },
+                                { "indicator", new OpenApiSchema
+                                    {
+                                        Type = Type.String,
+                                        Description = "Descrição PRECISA de como medir/identificar este índice"
+                                    }
+                                },
+                                { "references", new OpenApiSchema
+                                    {
+                                        Type = Type.Array,
+                                        Description = "Referências aos documentos onde o índice foi encontrado",
+                                        Items = new OpenApiSchema
+                                        {
+                                            Type = Type.Object,
+                                            Properties =
+                                            {
+                                                { "document", new OpenApiSchema
+                                                    {
+                                                        Type = Type.String,
+                                                        Description = "Nome do arquivo fonte (ex: documento.pdf)"
+                                                    }
+                                                },
+                                                { "page", new OpenApiSchema
+                                                    {
+                                                        Type = Type.String,
+                                                        Description = "Número da página como string"
+                                                    }
+                                                },
+                                                { "line", new OpenApiSchema
+                                                    {
+                                                        Type = Type.String,
+                                                        Description = "Número da linha como string"
+                                                    }
+                                                }
+                                            },
+                                            Required = { "document", "page", "line" }
+                                        }
+                                    }
+                                }
+                            },
+                            Required = { "name", "description", "indicator", "references" }
+                        }
+                    }
+                }
+            },
+            Required = { "indices" }
+        };
 
         #region Prompt Pre Analysis
         public string _promptPreAnalysis = """              
@@ -212,9 +288,9 @@ namespace Cortex.Services
 
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
                 //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                string jsonResponse = GetMockedGeminiResponse();
+                //string jsonResponse = GetMockedGeminiResponse();
                 //deixei comentado por enquanto pra não gastar recurso
-                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(documentInfos, finalPrompt);
+                string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
                 _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -243,7 +319,7 @@ namespace Cortex.Services
                 resultBaseClass.ErrorMessage = ex.Message;
                 resultBaseClass.IsSuccess = false;
             }
-            catch (JsonException ex)
+            catch (System.Text.Json.JsonException ex)
             {
                 _logger.LogError(ex, "Erro ao processar resposta JSON.");
                 resultBaseClass.ErrorMessage = $"Erro ao processar resposta: {ex.Message}";

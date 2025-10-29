@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CreateAnalysisModal from '../components/CreateAnalysisModal';
 import Logo from '../components/Logo';
+import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
+import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
+import { getAnalyses } from '../services/analysisService';
+import AnalysisTable from '../components/AnalysisTable';
 
 // Componente simples para o layout da página, inspirado nas referências
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -10,7 +14,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
             backgroundColor: 'var(--background-light)', color: 'var(--text-dark)',
             display: 'flex', alignItems: 'center', gap: '0.5rem'
         }}>
-			     {/* Um logo simples do CORTEX */}
 			<div style={{margin :"0",}}>
 				<Logo />
 			</div>
@@ -21,13 +24,78 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     </div>
 );
 
+const homeErrorMap: ApiErrorMap = {
+    byStatusCode: {
+        500: "Erro ao buscar suas análises. Tente novamente mais tarde."
+    },
+    default: "Ocorreu um erro inesperado ao carregar seus dados."
+};
+
+// Componente de Loading simples
+const LoadingState: React.FC = () => (
+    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-light)' }}>
+        <p>Carregando suas análises...</p>
+    </div>
+);
+
+// Componente de Erro
+const ErrorState: React.FC<{ message: string }> = ({ message }) => (
+     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px', backgroundColor: '#fef4f2' }}>
+        <h3 style={{ margin: 0 }}>Ocorreu um Erro</h3>
+        <p>{message}</p>
+    </div>
+);
+
+// Componente de Estado Vazio
+const EmptyState: React.FC = () => (
+    <div style={{
+        textAlign: 'center', padding: '4rem', border: '2px dashed var(--background-medium)',
+        borderRadius: '8px', backgroundColor: '#FDFDFC'
+    }}>
+        <h3 style={{ color: 'var(--text-medium)', fontWeight: 500 }}>Sua biblioteca está vazia</h3>
+        <p style={{ color: 'var(--text-light)' }}>Crie sua primeira análise para começar a fazer upload de arquivos e extrair insights.</p>
+    </div>
+);
 
 export default function HomePage() {
     // Estado para controlar se o modal está aberto ou fechado
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
-    // Por enquanto, não temos análises para listar
-    const analyses: any[] = []; // No futuro, isso virá de uma chamada de API
+    const [analyses, setAnalyses] = useState<AnalysisDto[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // EFEITO PARA BUSCAR OS DADOS QUANDO A PÁGINA CARREGA
+    useEffect(() => {
+        const fetchAnalyses = async () => {
+            try {
+                setError(null);
+                setIsLoading(true);
+                const data = await getAnalyses();
+                setAnalyses(data);
+            } catch (err) {
+                const friendlyMessage = handleApiError(err, homeErrorMap);
+                setError(friendlyMessage);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAnalyses();
+    }, []); // O array vazio [] garante que isso rode apenas uma vez
+
+    // Função para renderizar o conteúdo principal da página
+    const renderContent = () => {
+        if (isLoading) {
+            return <LoadingState />;
+        }
+        if (error) {
+            return <ErrorState message={error} />;
+        }
+        if (analyses.length === 0) {
+            return <EmptyState />;
+        }
+        return <AnalysisTable analyses={analyses} />;
+    };
 
     return (
         <MainLayout>
@@ -44,22 +112,10 @@ export default function HomePage() {
                 </button>
             </div>
 
-            {/* Conteúdo Principal: Mostra o estado vazio se não houver análises */}
-            {analyses.length === 0 ? (
-                <div style={{
-                    textAlign: 'center', padding: '4rem', border: '2px dashed var(--background-medium)',
-                    borderRadius: '8px', backgroundColor: '#FDFDFC'
-                }}>
-                    <h3 style={{ color: 'var(--text-medium)', fontWeight: 500 }}>Sua biblioteca está vazia</h3>
-                    <p style={{ color: 'var(--text-light)' }}>Crie sua primeira análise para começar a fazer upload de arquivos e extrair insights.</p>
-                </div>
-            ) : (
-                <div>
-                    {/* Aqui é onde você vai mapear e listar as análises no futuro */}
-                </div>
-            )}
+            {/* Conteúdo Principal agora é dinâmico */}
+            {renderContent()}
             
-            {/* O Modal é renderizado aqui, mas só é visível se isModalOpen for true */}
+            {/* O Modal (não muda) */}
             <CreateAnalysisModal 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)} 

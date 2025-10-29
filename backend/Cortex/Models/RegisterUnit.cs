@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Cortex.Models;
 
@@ -30,6 +31,7 @@ public class RegisterUnit
     public int CategoryId { get; set; }
 
     [ForeignKey("CategoryId")]
+    [JsonIgnore]
     public virtual Category Category { get; set; }
 
     // Propriedade de navegação para o relacionamento Muitos-para-Muitos com Index

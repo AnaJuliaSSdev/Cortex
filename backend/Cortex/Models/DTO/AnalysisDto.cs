@@ -13,5 +13,8 @@ public class AnalysisDto
     public string UserName { get; set; }
     public int DocumentsCount { get; set; }
     public string Question { get; set; }
-    public ICollection<Stage> Stages { get; set; }
+
+    public ICollection<StageDto> Stages { get; set; }
+    public ICollection<DocumentDto> Documents { get; set; }
+
 }

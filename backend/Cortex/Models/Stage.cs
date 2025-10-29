@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Cortex.Models;
 
@@ -15,10 +16,6 @@ public abstract class Stage
     public int AnalysisId { get; set; }
 
     [ForeignKey("AnalysisId")]
+    [JsonIgnore]
     public virtual Analysis Analysis { get; set; }
-
-    protected Stage()
-    {
-        CreatedAt = DateTime.UtcNow;
-    }
 }

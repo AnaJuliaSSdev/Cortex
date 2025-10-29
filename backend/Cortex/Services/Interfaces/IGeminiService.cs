@@ -1,10 +1,7 @@
 ﻿using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Models.Enums;
-using GenerativeAI.Types;
-using System.Net.Http;
-using System.Text.Json;
-using static GeminiService.Api.Services.Implementations.GeminiService;
+using Google.Cloud.AIPlatform.V1;
 
 namespace Cortex.Services.Interfaces;
 
@@ -23,6 +20,6 @@ public interface IGeminiService
         GeminiModel? modelOverride = null,
         string? apiKeyOverride = null);
 
-    Task<string> GenerateContentWithDocuments(List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192);
+    Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192);
 
 }

@@ -1,0 +1,86 @@
+/* Usando suas variáveis de cor globais */
+.tableContainer {
+    width: 100%;
+    background-color: white;
+    border: 1px solid var(--background-medium, #EFEBE6);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+}
+
+.tableHeader, .tableRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr; /* 4 colunas */
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    align-items: center;
+}
+
+.tableHeader {
+    background-color: var(--background-light, #FBFBF8);
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    color: var(--text-light, #8E8883);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tableRow {
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.tableRow:hover {
+    background-color: #fdfdfc; /* Um hover muito sutil */
+}
+
+/* Colunas individuais */
+.colTitle {
+    color: var(--text-dark, #312F2F);
+    font-weight: 500;
+}
+
+.colStatus, .colCount, .colDate {
+    color: var(--text-medium, #4A4644);
+    font-size: 0.9rem;
+}
+
+.colCount, .colDate {
+    text-align: left;
+}
+
+/* Badges de Status */
+.statusBadge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background-color: var(--background-medium, #EFEBE6);
+    color: var(--text-medium, #4A4644);
+}
+
+.statusDraft {
+    /* (cor cinza padrão) */
+}
+
+.statusProgress {
+    background-color: #e0f2fe; /* Azul claro */
+    color: #0c4a6e; /* Azul escuro */
+}
+
+.statusCompleted {
+    background-color: #dcfce7; /* Verde claro */
+    color: #166534; /* Verde escuro */
+}
+
+.statusError {
+    background-color: var(--primary, #B35848); /* Sua cor de destaque */
+    color: white;
+}

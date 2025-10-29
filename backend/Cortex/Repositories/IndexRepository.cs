@@ -29,4 +29,14 @@ public class IndexRepository(AppDbContext context) : IIndexRepository
                                             // .Include(i => i.References) 
             .ToListAsync();
     }
+
+    public List<Models.Index> GetAll()
+    {
+        return [.. _context.Indexes];
+    }
+
+    public async Task<Models.Index> GetByIdAsync(int id)
+    {
+        return await _context.Indexes.FirstOrDefaultAsync(i => i.Id == id);
+    }
 }

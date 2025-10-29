@@ -6,19 +6,28 @@ import styles from './css/AnalysisPage.module.css'; // Novo CSS
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 import { DocumentPurpose } from '../interfaces/enum/DocumentPurpose';
 import Logo from '../components/Logo';
-import { postAnalysisQuestion, startAnalysis } from '../services/analysisService';
+import { continueAnalysis, postAnalysisQuestion, startAnalysis } from '../services/analysisService';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import PreAnalysisResults from '../components/PreAnalysisResults';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ExplorationResults from '../components/ExplorationResults';
 
 // Textos que vão ciclar para dar sensação de progresso
-const loadingMessages = [
+const preAnalysisMessages = [
     'Preparando o envio dos documentos...',
     'Processando documentos de análise...',
     'Aplicando inteligência...',
     'Extraindo índices e indicadores...',
     'Compilando referências...',
     'Quase pronto, organizando os resultados...',
+];
+
+const explorationMessages = [
+    'Continuando análise...',
+    'Processando unidades de registro...',
+    'Gerando categorias...',
+    'Contando índices...',
+    'Quase lá...'
 ];
 
 // Componente de Layout (pode ser movido para components/Layout.tsx)
@@ -36,17 +45,28 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export default function AnalysisPage() {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate(); // Hook para navegação
     if (!id) return <p>ID da análise não encontrado.</p>; // Proteção simples
 
     const [question, setQuestion] = useState('');
     const [analysisDocuments, setAnalysisDocuments] = useState<UploadedDocument[]>([]);
     const [referenceDocuments, setReferenceDocuments] = useState<UploadedDocument[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loadingMessages, setLoadingMessages] = useState(preAnalysisMessages);
     const [analysisResult, setAnalysisResult] = useState<AnalysisExecutionResult | null>(null);
+    
+    // (Opcional) Buscar o estado da análise ao carregar a página
+    // useEffect(() => {
+    //    const fetchAnalysis = async () => {
+    //       // Crie uma função getAnalysis(id) no seu service
+    //       // const result = await analysisService.getAnalysis(id);
+    //       // setAnalysisResult(result);
+    //    }
+    //    fetchAnalysis();
+    // }, [id]);
 
     // Validação para habilitar o botão de iniciar
     const isFormValid = question.trim() !== '' && analysisDocuments.length > 0;
+
 
     // Callbacks para os uploaders
     const handleAnalysisUpload = (doc: UploadedDocument) => {
@@ -71,18 +91,14 @@ export default function AnalysisPage() {
 
         try {
             // Passo 1: Enviar e salvar a pergunta central
-            console.log('Salvando a pergunta no backend...');
             await postAnalysisQuestion(id, question);
             console.log('Pergunta salva com sucesso!');
 
             // Passo 2: Iniciar a análise (agora que a pergunta e os docs estão lá)
             console.log('Iniciando a análise...');
             const result = await startAnalysis(id);
-            console.log('Análise iniciada com sucesso! Resposta:', result);
 
             if (result.isSuccess) {
-                // Em vez de um alert, guardamos o resultado no estado.
-                console.log("Setando análise result..")
                 setAnalysisResult(result);
             } else {
                 // Se o backend retornar isSuccess = false
@@ -97,10 +113,41 @@ export default function AnalysisPage() {
         }
     };
 
+    // Função para a ETAPA 2 (Pré-Análise -> Exploração)
+    const handleContinueToExploration = async () => {
+        setLoadingMessages(explorationMessages);
+        setIsSubmitting(true);
+        try {
+            const result = await continueAnalysis(id);
+            if (result.isSuccess) {
+                setAnalysisResult(result); // Atualiza o estado com o NOVO resultado
+            } else {
+                alert(`Falha ao continuar a análise: ${result.errorMessage || 'Erro desconhecido.'}`);
+            }
+        } catch (error) {
+            alert('Falha ao continuar a análise. Verifique o console.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (isSubmitting) {
         return (
             <MainLayout>
-                <LoadingSpinner messages={loadingMessages} />
+                <LoadingSpinner messages={preAnalysisMessages} />
+            </MainLayout>
+        );
+    }
+
+    if (analysisResult?.explorationOfMaterialStage) {
+        return (
+            <MainLayout>
+                <h1 className={styles.pageTitle}>Análise (ID: {id})</h1>
+                <ExplorationResults 
+                    explorationStage={analysisResult.explorationOfMaterialStage}
+                />
+                {/* Aqui você também pode renderizar o PreAnalysisResults
+                    ou o DocumentViewer, se quiser */}
             </MainLayout>
         );
     }
@@ -113,6 +160,7 @@ export default function AnalysisPage() {
                     preAnalysisResult={analysisResult.preAnalysisResult}
                     analysisDocuments={analysisResult.analysisDocuments}
                     referenceDocuments={analysisResult.referenceDocuments}
+                    onContinue={handleContinueToExploration}
                 />
             </MainLayout>
         );

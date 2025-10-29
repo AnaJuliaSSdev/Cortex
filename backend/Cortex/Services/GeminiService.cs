@@ -1,10 +1,11 @@
-﻿using Cortex.Models;
+﻿using Google.Cloud.AIPlatform.V1;
+using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
 using GeminiService.Api.Extensions;
 using GenerativeAI;
-using Google.Cloud.AIPlatform.V1;
 using Microsoft.Extensions.Options;
+using Type = Google.Cloud.AIPlatform.V1.Type;
 
 namespace GeminiService.Api.Services.Implementations;
 
@@ -48,7 +49,7 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
         }
     }
 
-    public async Task<string> GenerateContentWithDocuments(List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192)
+    public async Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192)
     {
         var predictionServiceClient = new PredictionServiceClientBuilder().Build();
 
@@ -67,11 +68,15 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
             });
         }
 
+       
+
         var generationConfig = new GenerationConfig
         {
             //MaxOutputTokens = maxOutputTokens,
             Temperature = temperature,
-            TopP = 1.0f
+            TopP = 1.0f, 
+            ResponseSchema = responseSchema,
+            ResponseMimeType = "application/json" //retorna sempre json com o schema definido
         };
 
         var generateContentRequest = new GenerateContentRequest

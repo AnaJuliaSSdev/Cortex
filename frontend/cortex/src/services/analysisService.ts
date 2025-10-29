@@ -1,4 +1,6 @@
 import type { Analysis } from '../interfaces/Analysis';
+import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
+import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import type { CreateAnalysisPayload } from '../interfaces/dto/CreateAnalysisPayload';
 import api from './api';
 
@@ -48,6 +50,36 @@ export const startAnalysis = async (analysisId: string): Promise<any> => {
         return response.data;
     } catch (error) {
         console.error("Erro ao iniciar a análise:", error);
+        throw error;
+    }
+};
+
+/**
+ * Busca todas as análises do usuário logado.
+ * @returns Uma lista de análises.
+ */
+export const getAnalyses = async (): Promise<AnalysisDto[]> => {
+    try {
+        // Assumindo que a rota GET /Analysis retorna a lista (padrão REST)
+        const response = await api.get<AnalysisDto[]>('/analysis');
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao buscar as análises:", error);
+        throw error;
+    }
+};
+
+/**
+ * Continua a análise para a próxima etapa (ex: Exploração).
+ * @param analysisId O ID da análise a ser continuada.
+ * @returns O objeto AnalysisExecutionResult atualizado.
+ */
+export const continueAnalysis = async (analysisId: string): Promise<AnalysisExecutionResult> => {
+    try {
+        const response = await api.post<AnalysisExecutionResult>(`/analysis/continue/${analysisId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao continuar a análise:", error);
         throw error;
     }
 };

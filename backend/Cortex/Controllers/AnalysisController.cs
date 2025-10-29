@@ -20,8 +20,8 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnalysisDto>>> GetAnalyses()
     {
-        var userId = GetCurrentUserId();
-        var analyses = await _analysisService.GetByUserIdAsync(userId);
+        int userId = GetCurrentUserId();
+        IEnumerable<AnalysisDto?> analyses = await _analysisService.GetByUserIdAsync(userId);
         return Ok(analyses);
     }
 

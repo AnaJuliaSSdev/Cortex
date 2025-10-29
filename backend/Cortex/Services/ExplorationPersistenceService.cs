@@ -74,7 +74,7 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, ICa
                     if (geminiUnit.FoundIndices != null && geminiUnit.FoundIndices.Any())
                     {
                         var indexIds = geminiUnit.FoundIndices
-                            .Select(idStr => int.TryParse(idStr.Replace("index_id_", ""), out int id) ? id : (int?)null)
+                            .Select(idStr => int.TryParse(idStr, out int id) ? id : (int?)null)
                             .Where(id => id.HasValue)
                             .Select(id => id.Value)
                             .Distinct() // Evita buscar o mesmo ID múltiplas vezes

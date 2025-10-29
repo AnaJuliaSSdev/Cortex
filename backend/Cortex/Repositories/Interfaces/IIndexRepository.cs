@@ -11,4 +11,6 @@ public interface IIndexRepository
     Task AddAsync(Cortex.Models.Index index);
 
     Task<List<Models.Index>> GetByIdsAsync(List<int> ids);
+    List<Models.Index> GetAll();
+    Task<Models.Index> GetByIdAsync(int id);
 }

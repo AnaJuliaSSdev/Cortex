@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Cortex.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Cortex.Models;
 
@@ -41,6 +42,7 @@ public class Document
     public int AnalysisId { get; set; }
 
     [ForeignKey("AnalysisId")]
+    [JsonIgnore]
     public virtual Analysis Analysis { get; set; }
     public ICollection<Chunk> Chunks { get; set; } = [];
 }

@@ -22,10 +22,26 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
         return analysis;
     }
 
-    public async Task<IEnumerable<AnalysisDto>> GetByUserIdAsync(int userId)
+    public async Task<IEnumerable<AnalysisDto?>> GetByUserIdAsync(int userId)
     {
         var analyses = await _analysisRepository.GetByUserIdAsync(userId);
-        return analyses.Select(x => Mapper.Map<AnalysisDto>(x));
+        if (analyses == null || !analyses.Any()) return [];
+
+        var analysisDTOs = analyses.Select(analysisEntity =>
+        {
+            if (analysisEntity == null) return null;
+
+            var dto = Mapper.Map<AnalysisDto>(analysisEntity);
+
+            // Calcula DocumentsCount diretamente da entidade original
+            dto.DocumentsCount = analysisEntity.Documents?.Count ?? 0;
+            dto.UserName = analysisEntity.User?.FullName ?? "Usuário Desconhecido"; // Exemplo          
+
+            return dto;
+
+        }).Where(dto => dto != null);
+
+        return analysisDTOs;
     }
 
     public async Task<AnalysisDto> CreateAsync(CreateAnalysisDto createDto, int userId)
@@ -60,7 +76,7 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
             throw new EntityNotFoundException("Analysis");
 
         analysis.Question = startAnalysisDto.Question;
-         _analysisRepository.UpdateAsync(analysis);
+         await _analysisRepository.UpdateAsync(analysis);
 
         return true;
     }
