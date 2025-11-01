@@ -34,7 +34,8 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
 
         await _repository.AddAsync(document);
         //por enquanto sem gerar embeddings, analisando se vai ser necessário usar
-        //await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
+        //DESCOMENTANDO LINHA PARA TRABALHO DO PINTO
+        await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
 
         return document;
     }

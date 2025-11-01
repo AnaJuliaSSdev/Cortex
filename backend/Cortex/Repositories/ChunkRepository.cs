@@ -45,12 +45,38 @@ public class ChunkRepository : IChunkRepository
             .ToListAsync();
     }
 
-    public async Task<List<Chunk>> SearchSimilarAsync(float[] queryEmbedding, int limit = 5)
+    public async Task<List<Chunk>> SearchSimilarAsync(float[] queryEmbedding, int limit = 5, int? documentId = null, int? analysisId = null)
+    {
+        var queryVector = new Vector(queryEmbedding);
+
+        var query = _context.Chunks
+            .Include(c => c.Document)
+            .AsQueryable();
+
+        // Filtrar por documento se especificado
+        if (documentId.HasValue)
+        {
+            query = query.Where(c => c.DocumentId == documentId.Value);
+        }
+        // Filtrar por análise se especificado
+        else if (analysisId.HasValue)
+        {
+            query = query.Where(c => c.Document.AnalysisId == analysisId.Value);
+        }
+
+        return await query
+            .OrderBy(c => c.Embedding.CosineDistance(queryVector))
+            .Take(limit)
+            .ToListAsync();
+    }
+
+    public async Task<List<Chunk>> SearchSimilarByDocumentIdAsync(int documentId, float[] queryEmbedding, int limit = 5)
     {
         var queryVector = new Vector(queryEmbedding);
 
         return await _context.Chunks
             .Include(c => c.Document)
+            .Where(c => c.DocumentId == documentId)  // Filtrar por documento específico
             .OrderBy(c => c.Embedding.CosineDistance(queryVector))
             .Take(limit)
             .ToListAsync();
