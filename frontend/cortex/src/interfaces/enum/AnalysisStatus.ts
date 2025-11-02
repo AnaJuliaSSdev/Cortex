@@ -1,6 +1,6 @@
 export enum AnalysisStatus {
-    Draft = 0,
-    InProgress = 1,
-    Completed = 2,
-    Error = 3
+    Draft = 1,
+    Running = 2, 
+    Completed = 4,
+    Failed =5
 }

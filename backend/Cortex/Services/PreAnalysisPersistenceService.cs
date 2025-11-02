@@ -45,10 +45,10 @@ public class PreAnalysisPersistenceService(
     /// <param name="indexes">Lista de índices a serem persistidos</param>
     /// <param name="stageId">ID do PreAnalysisStage (para logging e validação)</param>
     /// <returns>Quantidade de índices salvos com sucesso</returns>
-    public async Task<int> SaveIndexesAsync(List<Models.Index> indexes, int stageId)
+    public async Task<int> SaveIndexesAsync(List<Models.Index> indexes)
     {
-        _logger.LogInformation("Salvando {Count} índices para PreAnalysisStage ID: {StageId}...",
-            indexes.Count, stageId);
+        _logger.LogInformation("Salvando {Count} índices para PreAnalysisStage",
+            indexes.Count);
 
         foreach (var index in indexes)
         {

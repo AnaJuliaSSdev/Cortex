@@ -1,0 +1,59 @@
+numero da questao
+primeira tentativa 	certo ou errado
+segunda tentativa	certo ou errado
+
+
+1) 
+C	V
+
+
+2) 
+E	V   
+
+3)
+B	V
+
+4) 
+A	V
+
+5) 
+B 	V
+
+6) 
+D	X
+B	V
+
+7)
+C	V
+
+8)
+B	X
+D	V
+
+9)
+C	X
+B	X
+correto -> E
+
+
+10)
+D	X
+B	V
+
+11)
+A	X
+E	X
+correto --> C
+
+12)
+D	V
+
+
+14)
+C	X
+B	X
+correto -> D
+
+15)
+A	X
+B	V

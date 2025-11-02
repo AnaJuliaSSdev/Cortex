@@ -1,28 +1,17 @@
-import  { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import styles from './css/ExplorationResults.module.css'
 import type { ExplorationOfMaterialStage } from '../interfaces/dto/AnalysisResult';
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
+import DescriptionIcon from '@mui/icons-material/Description';
+import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
 }
 
 type ViewMode = 'chart' | 'table' | 'cards';
-
-// Tipo de dado que o gráfico espera
-interface ChartData {
-    categoryName: string;
-    [indexName: string]: any; // Chaves dinâmicas para cada índice (ex: "VISUERROS": 5)
-}
-
-// Cores para as barras do gráfico (baseadas na sua paleta)
-// const CHART_COLORS = [
-//     '#B35848', // --primary
-//     '#4A4644', // --text-medium
-//     '#8E8883', // --text-light
-//     '#5a8d87', // Um verde/azul complementar
-//     '#c7a97f', // Um bege/dourado
-// ];
 
 const CHART_COLORS = [
     '#B35848', '#4A4644', '#8E8883', '#5a8d87', '#c7a97f',
@@ -38,7 +27,6 @@ interface ProcessedData {
 export default function ExplorationResults({ explorationStage }: ExplorationResultsProps) {
 
     const [viewMode, setViewMode] = useState<ViewMode>('chart');
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const processedData = useMemo(() => {
         const data: ProcessedData[] = [];
@@ -46,7 +34,7 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
 
         explorationStage.categories.forEach(category => {
             const indexCounts = new Map<string, number>();
-            
+
             category.registerUnits.forEach(unit => {
                 unit.foundIndices.forEach(index => {
                     indexCounts.set(index.name, (indexCounts.get(index.name) || 0) + 1);
@@ -71,37 +59,8 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
 
         return { categories: data, allIndices: Array.from(allIndicesMap.entries()) };
     }, [explorationStage]);
-    
 
-    // // 1. Lógica para processar os dados
-    // const { chartData, allIndexNames } = useMemo(() => {
-    //     const data: ChartData[] = [];
-    //     const indexNameSet = new Set<string>();
-    //     console.log(explorationStage);
-
-    //     // Para cada Categoria...
-    //     for (const category of explorationStage.categories) {
-    //         const categoryData: ChartData = { categoryName: category.name };
-    //         console.log(explorationStage.categories);
-    //         // Contar os índices...
-    //         const indexCounts: { [key: string]: number } = {};
-            
-    //         // Iterando pelas RegisterUnits e depois pelos FoundIndices
-    //         category.registerUnits.forEach(unit => {
-    //             unit.foundIndices.forEach(index => {
-    //                 indexNameSet.add(index.name); // Adiciona ao Set global de índices
-    //                 indexCounts[index.name] = (indexCounts[index.name] || 0) + 1;
-    //             });
-    //         });
-            
-    //         data.push({ ...categoryData, ...indexCounts });
-    //     }
-        
-    //     const allIndexNames = Array.from(indexNameSet);
-    //     return { chartData: data, allIndexNames };
-    // }, [explorationStage]);
-
-      // Dados para o gráfico de barras agrupadas
+    // Dados para o gráfico de barras agrupadas
     const chartData = useMemo(() => {
         return processedData.categories.map(cat => {
             const entry: any = { category: cat.categoryName };
@@ -120,158 +79,73 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
         return Array.from(names);
     }, [processedData]);
 
-    // return (
-    //     <section className={styles.container}>
-    //         <div className={styles.header}>
-    //             <h2 className={styles.title}>Resultados da Exploração</h2>
-    //             {/* Botões para o futuro (ex: exportar) */}
-    //         </div>
+    // Mapa de índices com suas descrições
+    const indexDescriptions = useMemo(() => {
+        const map = new Map<string, string>();
+        explorationStage.categories.forEach(cat => {
+            cat.registerUnits.forEach(unit => {
+                unit.foundIndices.forEach(index => {
+                    if (index.description && !map.has(index.name)) {
+                        map.set(index.name, index.description);
+                    }
+                });
+            });
+        });
+        return map;
+    }, [explorationStage]);
 
-    //         <p className={styles.description}>
-    //             Abaixo está a contagem de cada <strong>Índice</strong> encontrado,
-    //             agrupado pela <strong>Categoria</strong> em que foi identificado.
-    //         </p>
-
-    //         {/* 2. O Gráfico Interativo */}
-    //         <div className={styles.chartWrapper}>
-    //             <ResponsiveContainer width="100%" height={400}>
-    //                 <BarChart
-    //                     data={chartData}
-    //                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-    //                 >
-    //                     <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-    //                     <XAxis dataKey="categoryName" stroke="#4A4644" />
-    //                     <YAxis allowDecimals={false} stroke="#4A4644" />
-    //                     <Tooltip
-    //                         contentStyle={{ 
-    //                             backgroundColor: 'var(--background-light, #FBFBF8)', 
-    //                             border: '1px solid var(--background-medium, #EFEBE6)',
-    //                             borderRadius: '8px'
-    //                         }}
-    //                         cursor={{ fill: '#fef4f2' /* Cor de hover */ }}
-    //                     />
-    //                     <Legend />
-                        
-    //                     {/* 3. Cria uma <Bar> para cada Índice encontrado */}
-    //                     {allIndexNames.map((indexName, i) => (
-    //                         <Bar 
-    //                             key={indexName} 
-    //                             dataKey={indexName} 
-    //                             fill={CHART_COLORS[i % CHART_COLORS.length]} 
-    //                         />
-    //                     ))}
-    //                 </BarChart>
-    //             </ResponsiveContainer>
-    //         </div>
-    //     </section>
-    // );
-
-     return (
-        <div style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: '2rem',
-            fontFamily: 'system-ui, -apple-system, sans-serif'
-        }}>
+    return (
+        <div className={styles.container}>
             {/* Header com controles */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '2rem',
-                flexWrap: 'wrap',
-                gap: '1rem'
-            }}>
+            <div className={styles.header}>
                 <div>
-                    <h2 style={{
-                        fontSize: '2rem',
-                        fontWeight: 'bold',
-                        color: '#4A4644',
-                        margin: 0
-                    }}>
-                        Resultados da Exploração
-                    </h2>
-                    <p style={{ color: '#8E8883', margin: '0.5rem 0 0 0' }}>
+                    <h2 className={styles.title}>Resultados da Exploração</h2>
+                    <p className={styles.summaryText}>
                         {processedData.categories.length} categorias • {processedData.allIndices.length} índices únicos
                     </p>
                 </div>
 
                 {/* Botões de visualização */}
-                <div style={{
-                    display: 'flex',
-                    gap: '0.5rem',
-                    background: '#f5f5f5',
-                    padding: '0.25rem',
-                    borderRadius: '8px'
-                }}>
+                <div className={styles.viewControls}>
                     <button
                         onClick={() => setViewMode('chart')}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            background: viewMode === 'chart' ? '#B35848' : 'transparent',
-                            color: viewMode === 'chart' ? 'white' : '#4A4644',
-                            fontWeight: viewMode === 'chart' ? 'bold' : 'normal'
-                        }}
+                        className={`${styles.viewButton} ${viewMode === 'chart' ? styles.activeButton : ''}`}
                     >
-                        📊 Gráfico
+                        <AutoGraphIcon/> Gráfico    
                     </button>
                     <button
                         onClick={() => setViewMode('table')}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            background: viewMode === 'table' ? '#B35848' : 'transparent',
-                            color: viewMode === 'table' ? 'white' : '#4A4644',
-                            fontWeight: viewMode === 'table' ? 'bold' : 'normal'
-                        }}
+                        className={`${styles.viewButton} ${viewMode === 'table' ? styles.activeButton : ''}`}
                     >
-                        📋 Tabela
+                        <SpaceDashboardIcon/> Tabela
                     </button>
                     <button
                         onClick={() => setViewMode('cards')}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            background: viewMode === 'cards' ? '#B35848' : 'transparent',
-                            color: viewMode === 'cards' ? 'white' : '#4A4644',
-                            fontWeight: viewMode === 'cards' ? 'bold' : 'normal'
-                        }}
+                        className={`${styles.viewButton} ${viewMode === 'cards' ? styles.activeButton : ''}`}
                     >
-                        🎴 Cards
+                        <DescriptionIcon/> Cards
                     </button>
                 </div>
             </div>
 
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
-                <div style={{
-                    background: 'white',
-                    padding: '2rem',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}>
+                <div className={styles.chartContainer}>
                     <ResponsiveContainer width="100%" height={500}>
                         <BarChart
                             data={chartData}
                             margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-                            <XAxis 
-                                dataKey="category" 
+                            <XAxis
+                                dataKey="category"
                                 angle={-45}
                                 textAnchor="end"
                                 height={100}
                                 stroke="#4A4644"
                                 style={{ fontSize: '0.85rem' }}
                             />
-                            <YAxis 
+                            <YAxis
                                 allowDecimals={false}
                                 label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
                                 stroke="#4A4644"
@@ -284,7 +158,7 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                                     padding: '1rem'
                                 }}
                             />
-                            <Legend 
+                            <Legend
                                 wrapperStyle={{ paddingTop: '20px' }}
                                 layout="horizontal"
                                 verticalAlign="bottom"
@@ -302,81 +176,46 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                 </div>
             )}
 
-            {/* Visualização de Tabela */}
+            {/* Visualização de Tabela (Refatorada) */}
             {viewMode === 'table' && (
-                <div style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    overflow: 'hidden'
-                }}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            fontSize: '0.95rem'
-                        }}>
-                            <thead>
-                                <tr style={{ background: '#f8f8f8' }}>
-                                    <th style={{
-                                        padding: '1rem',
-                                        textAlign: 'left',
-                                        borderBottom: '2px solid #e0e0e0',
-                                        fontWeight: 'bold',
-                                        color: '#4A4644'
-                                    }}>
+                <div className={styles.tableContainer}>
+                    {/* O CSS do scrollbar agora está no .module.css
+                        e será aplicado a este contêiner */}
+                    <div className={styles.tableScrollContainer}>
+                        <table className={styles.table}>
+                            <thead className={styles.tableHead}>
+                                <tr>
+                                    <th className={`${styles.tableHeader} ${styles.categoryHeader}`}>
                                         Categoria
                                     </th>
-                                    <th style={{
-                                        padding: '1rem',
-                                        textAlign: 'center',
-                                        borderBottom: '2px solid #e0e0e0',
-                                        fontWeight: 'bold',
-                                        color: '#4A4644'
-                                    }}>
+                                    <th className={`${styles.tableHeader} ${styles.unitHeader}`}>
                                         Unidades
                                     </th>
+                                    <th colSpan={allIndexNames.length} className={`${styles.tableHeader} ${styles.indicesHeader}`}>
+                                        Índices Encontrados
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th className={styles.stickyColumn}></th>
+                                    <th></th>
                                     {allIndexNames.map(indexName => (
                                         <th
                                             key={indexName}
-                                            style={{
-                                                padding: '1rem',
-                                                textAlign: 'center',
-                                                borderBottom: '2px solid #e0e0e0',
-                                                fontWeight: 'bold',
-                                                color: '#4A4644',
-                                                minWidth: '100px'
-                                            }}
+                                            className={styles.indexNameHeader}
+                                            title={indexName}
                                         >
-                                            {indexName}
+                                            {indexName.length > 25 ? indexName.substring(0, 22) + '...' : indexName}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className={styles.tableBody}>
                                 {processedData.categories.map((cat, idx) => (
-                                    <tr
-                                        key={idx}
-                                        style={{
-                                            background: idx % 2 === 0 ? 'white' : '#fafafa',
-                                            transition: 'background 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.background = '#f0f0f0'}
-                                        onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? 'white' : '#fafafa'}
-                                    >
-                                        <td style={{
-                                            padding: '1rem',
-                                            borderBottom: '1px solid #e0e0e0',
-                                            fontWeight: '500'
-                                        }}>
+                                    <tr key={idx} className={styles.tableRow}>
+                                        <td className={`${styles.tableCell} ${styles.categoryCell}`}>
                                             {cat.categoryName}
                                         </td>
-                                        <td style={{
-                                            padding: '1rem',
-                                            textAlign: 'center',
-                                            borderBottom: '1px solid #e0e0e0',
-                                            color: '#8E8883'
-                                        }}>
+                                        <td className={`${styles.tableCell} ${styles.unitCell}`}>
                                             {cat.totalUnits}
                                         </td>
                                         {allIndexNames.map(indexName => {
@@ -385,13 +224,7 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                                             return (
                                                 <td
                                                     key={indexName}
-                                                    style={{
-                                                        padding: '1rem',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e0e0e0',
-                                                        fontWeight: count > 0 ? 'bold' : 'normal',
-                                                        color: count > 0 ? '#B35848' : '#d0d0d0'
-                                                    }}
+                                                    className={`${styles.tableCell} ${count > 0 ? styles.indexCellHasCount : styles.indexCellNoCount}`}
                                                 >
                                                     {count > 0 ? count : '—'}
                                                 </td>
@@ -407,128 +240,62 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
 
             {/* Visualização de Cards */}
             {viewMode === 'cards' && (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-                    gap: '1.5rem'
-                }}>
-                    {processedData.categories.map((cat, idx) => (
-                        <div
-                            key={idx}
-                            style={{
-                                background: 'white',
-                                borderRadius: '12px',
-                                padding: '1.5rem',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                cursor: 'pointer'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                            }}
-                        >
-                            <h3 style={{
-                                margin: '0 0 1rem 0',
-                                color: '#4A4644',
-                                fontSize: '1.25rem',
-                                borderBottom: '2px solid #B35848',
-                                paddingBottom: '0.5rem'
-                            }}>
-                                {cat.categoryName}
-                            </h3>
-                            
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                marginBottom: '1rem',
-                                color: '#8E8883',
-                                fontSize: '0.9rem'
-                            }}>
-                                <span>📄 {cat.totalUnits} unidades de registro</span>
+                <div className={styles.cardsScrollContainer}>
+                    <div className={styles.cardsGrid}>
+                        {processedData.categories.map((cat, idx) => (
+                            <div key={idx} className={styles.card}>
+                                <h3 className={styles.cardTitle}>
+                                    {cat.categoryName}
+                                </h3>
+                                <div className={styles.cardMeta}>
+                                    <TextSnippetIcon/> {cat.totalUnits} unidades de registro
+                                </div>
+                                <div className={styles.cardIndexList}>
+                                    {cat.indices.map((index, i) => {
+                                        const description = indexDescriptions.get(index.name);
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={styles.cardIndexItem}
+                                                style={{ borderLeftColor: index.color }}
+                                                title={description || index.name}
+                                            >
+                                                <div className={styles.cardIndexHeader}>
+                                                    <span className={styles.cardIndexName}>
+                                                        {index.name}
+                                                    </span>
+                                                    <span className={styles.cardIndexCount} style={{ color: index.color }}>
+                                                        {index.count}
+                                                    </span>
+                                                </div>
+                                                {description && (
+                                                    <p className={styles.cardIndexDescription}>
+                                                        {description.length > 120 ? description.substring(0, 117) + '...' : description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.75rem'
-                            }}>
-                                {cat.indices.map((index, i) => (
-                                    <div
-                                        key={i}
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: '0.75rem',
-                                            background: '#f8f8f8',
-                                            borderRadius: '8px',
-                                            borderLeft: `4px solid ${index.color}`
-                                        }}
-                                    >
-                                        <span style={{
-                                            fontWeight: '500',
-                                            color: '#4A4644',
-                                            flex: 1
-                                        }}>
-                                            {index.name}
-                                        </span>
-                                        <span style={{
-                                            fontWeight: 'bold',
-                                            color: index.color,
-                                            fontSize: '1.25rem',
-                                            minWidth: '40px',
-                                            textAlign: 'right'
-                                        }}>
-                                            {index.count}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
 
-            {/* Resumo estatístico */}
-            <div style={{
-                marginTop: '2rem',
-                padding: '1.5rem',
-                background: '#f8f8f8',
-                borderRadius: '12px',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1rem'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#B35848' }}>
-                        {processedData.categories.length}
+            {/* Resumo estatístico compacto */}
+            <div className={styles.summaryFooter}>
+                {[
+                    { value: processedData.categories.length, label: 'Categorias', color: '#B35848' },
+                    { value: processedData.allIndices.length, label: 'Índices Únicos', color: '#5a8d87' },
+                    { value: processedData.categories.reduce((sum, cat) => sum + cat.totalUnits, 0), label: 'Unidades de Registro', color: '#4A4644' },
+                    { value: processedData.allIndices.reduce((sum, [_, count]) => sum + count, 0), label: 'Total de Ocorrências', color: '#c7a97f' }
+                ].map(({ value, label, color }) => (
+                    <div key={label} className={styles.summaryItem}>
+                        <div className={styles.summaryValue} style={{ color }}>{value}</div>
+                        <div className={styles.summaryLabel}>{label}</div>
                     </div>
-                    <div style={{ color: '#8E8883', fontSize: '0.9rem' }}>Categorias</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5a8d87' }}>
-                        {processedData.allIndices.length}
-                    </div>
-                    <div style={{ color: '#8E8883', fontSize: '0.9rem' }}>Índices Únicos</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4A4644' }}>
-                        {processedData.categories.reduce((sum, cat) => sum + cat.totalUnits, 0)}
-                    </div>
-                    <div style={{ color: '#8E8883', fontSize: '0.9rem' }}>Unidades de Registro</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#c7a97f' }}>
-                        {processedData.allIndices.reduce((sum, [_, count]) => sum + count, 0)}
-                    </div>
-                    <div style={{ color: '#8E8883', fontSize: '0.9rem' }}>Total de Ocorrências</div>
-                </div>
+                ))}
             </div>
         </div>
     );

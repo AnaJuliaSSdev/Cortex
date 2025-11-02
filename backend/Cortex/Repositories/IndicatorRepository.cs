@@ -12,7 +12,6 @@ public class IndicatorRepository(AppDbContext context) : IIndicatorRepository
     public async Task<Indicator> AddAsync(Indicator indicator)
     {
         await _context.Indicators.AddAsync(indicator);
-        await _context.SaveChangesAsync();
         return indicator;
     }
 

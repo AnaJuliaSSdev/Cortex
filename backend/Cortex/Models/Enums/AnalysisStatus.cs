@@ -3,9 +3,8 @@
 public enum AnalysisStatus
 {
     Draft = 1,
-    Running,
-    Paused,
-    Completed,
-    Failed,
-    Cancelled 
+    Running = 2,
+    Paused = 3,
+    Completed = 4,
+    Failed = 5
 }

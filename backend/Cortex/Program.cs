@@ -135,6 +135,7 @@ builder.Services.AddScoped<IGeminiResponseHandler, GeminiResponseHandler>();
 
 //Indexes
 builder.Services.AddScoped<IIndexRepository, IndexRepository>();
+builder.Services.AddScoped<IIndexService, IndexService>();
 
 //Indexes References
 builder.Services.AddScoped<IIndexReferenceRepository, IndexReferenceRepository>();
@@ -150,6 +151,8 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 //Register units
 builder.Services.AddScoped<IRegisterUnitRepository, RegisterUnitRepository>();
 
+//Unity
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 // Logging

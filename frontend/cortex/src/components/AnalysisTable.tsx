@@ -18,7 +18,7 @@ const StatusBadge: React.FC<{ status: AnalysisStatus }> = ({ status }) => {
             text = 'Rascunho';
             className = styles.statusDraft;
             break;
-        case AnalysisStatus.InProgress:
+        case AnalysisStatus.Running:
             text = 'Em Progresso';
             className = styles.statusProgress;
             break;
@@ -26,7 +26,7 @@ const StatusBadge: React.FC<{ status: AnalysisStatus }> = ({ status }) => {
             text = 'Concluído';
             className = styles.statusCompleted;
             break;
-        case AnalysisStatus.Error:
+        case AnalysisStatus.Failed:
             text = 'Erro';
             className = styles.statusError;
             break;

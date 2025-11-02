@@ -10,16 +10,18 @@ using Cortex.Services.Interfaces;
 namespace Cortex.Services;
 
 public class AnalysisOrchestrator(IAnalysisRepository analysisRepository, 
-    StageStrategyFactory stageStrategyFactory, IStageRepository stageRepository, AppDbContext context) : IAnalysisOrchestrator
+    StageStrategyFactory stageStrategyFactory, IStageRepository stageRepository, AppDbContext context,
+    IUnitOfWork unitOfWork) : IAnalysisOrchestrator
 {
     private readonly IAnalysisRepository _analysisRepository = analysisRepository;
     private readonly StageStrategyFactory _stageStrategyFactory = stageStrategyFactory;
     private readonly IStageRepository _stageRepository = stageRepository;
     private readonly AppDbContext _context = context;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<AnalysisExecutionResult> StartAnalysisAsync(int analysisId, int userId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await _unitOfWork.BeginTransactionAsync();
         try
         {
             Analysis? analysis = await _analysisRepository.GetByIdAsync(analysisId);
@@ -34,21 +36,20 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
 
             Analysis updatedAnalysis = await _analysisRepository.UpdateAsync(analysis);
 
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await _unitOfWork.CommitTransactionAsync();
 
             return await ContinueAnalysisAsync(updatedAnalysis!);
         }
         catch (Exception)
         {
-            await transaction.RollbackAsync();
+            await _unitOfWork.RollbackTransactionAsync();
             throw;
         }
     }
 
     public async Task<AnalysisExecutionResult> ContinueAnalysisAsync(Analysis analysis)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await _unitOfWork.BeginTransactionAsync();
         try
         {
             if (analysis.Status == AnalysisStatus.Completed)
@@ -58,20 +59,37 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             var currentStageStrategy = _stageStrategyFactory.GetStrategy(lastStage);
             var resultcurrentStage = await currentStageStrategy.ExecuteStageAsync(analysis); // executa o stage e guarda o contexto nesse stage
 
-            //aqui verificar se n deu nenhum erro antes de continuar
-
-            var nextStage = FindNextStageStrategyFactory.GetNextStage(lastStage);
+            var nextStage = FindNextStageStrategyFactory.GetNextStage(currentStageStrategy);
             if (nextStage is null)
                 analysis.Status = AnalysisStatus.Completed;
 
+            //throw new Exception("Um teste");
+
             await _analysisRepository.UpdateAsync(analysis);
-            await transaction.CommitAsync();
+            await _unitOfWork.CommitTransactionAsync();
 
             return resultcurrentStage;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            // Cancela a transação atual
+            await _unitOfWork.RollbackTransactionAsync();
+
+            try
+            {
+                var analysisToFail = await _analysisRepository.GetByIdAsync(analysis.Id);
+
+                if(analysisToFail != null)
+                {
+                    await _analysisRepository.RevertLastStageAsync(analysis.Id);
+                    await _unitOfWork.SaveChangesAsync();
+                }                             
+            }
+            catch (Exception rollbackEx)
+            {
+                throw new AggregateException("Falha na operação E no rollback subsequente.", ex, rollbackEx);
+            }
+
             throw;
         }
     }

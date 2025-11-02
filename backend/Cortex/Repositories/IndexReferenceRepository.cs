@@ -11,6 +11,5 @@ public class IndexReferenceRepository(AppDbContext context) : IIndexReferenceRep
     public async Task AddAsync(IndexReference indexReference)
     {
         await _context.IndexReferences.AddAsync(indexReference);
-        await _context.SaveChangesAsync();
     }
 }

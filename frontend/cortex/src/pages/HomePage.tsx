@@ -8,6 +8,7 @@ import AnalysisTable from '../components/AnalysisTable';
 import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingState } from '../components/LoadingState';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 // Componente simples para o layout da página, inspirado nas referências
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -83,10 +84,11 @@ export default function HomePage() {
                     onClick={() => setIsModalOpen(true)}
                     style={{
                         padding: '0.75rem 1.5rem', background: 'var(--primary)', color: 'white',
-                        border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500
+                        border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500,
+                        display: 'flex', alignItems: 'center' , gap: '8px'
                     }}
                 >
-                    + Criar Nova Análise
+                   <AddCircleOutlineIcon/>  <strong>Criar Nova Análise</strong>
                 </button>
             </div>
 

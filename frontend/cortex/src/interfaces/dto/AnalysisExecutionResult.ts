@@ -10,4 +10,6 @@ export interface AnalysisExecutionResult {
     isSuccess: boolean;
     errorMessage: string;
     promptResult: string;
+    analysisTitle: string;
+    analysisQuestion: string;
 }

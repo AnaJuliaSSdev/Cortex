@@ -5,12 +5,22 @@ import type { IndexReference } from "../interfaces/IndexReference";
 import type { PreAnalysisStage } from "../interfaces/PreAnalysisStage";
 import styles from './css/PreAnalysisResults.module.css';
 import DocumentViewer from "./DocumentViewer";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import IndexFormModal from "./IndexFormModal";
+import { deleteIndex } from "../services/analysisService";
+import Alert from "./Alert";
+import ConfirmModal from "./ConfirmModal";
 
 interface IndexItemProps {
     index: Index;
     onReferenceClick: (reference: IndexReference) => void;
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
+    onEditClick: (index: Index) => void;
+    onDeleteClick: (index: Index) => void;
 }
 
 interface PreAnalysisResultsProps {
@@ -18,6 +28,9 @@ interface PreAnalysisResultsProps {
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
     onContinue: () => void;
+    onIndexAdded: (newIndex: Index) => void;
+    onIndexUpdated: (updatedIndex: Index) => void;
+    onIndexDeleted: (indexId: number) => void; 
 }
 
 // Um componente "filho" para renderizar cada item da lista
@@ -25,7 +38,9 @@ const IndexItem: React.FC<IndexItemProps> = ({
     index, 
     onReferenceClick,
     analysisDocuments,
-    referenceDocuments
+    referenceDocuments,
+    onEditClick,
+    onDeleteClick
 }) => {
     // Helper para encontrar o nome do arquivo a partir do URI
     const getFileNameFromUri = (uri: string): string => {
@@ -38,8 +53,14 @@ const IndexItem: React.FC<IndexItemProps> = ({
     return (
         <li className={styles.indexItem}>
             <div className={styles.indexContent}>
-                <span className={styles.indicatorName}>{index.indicator.name}</span>
-                <h3 className={styles.indexName}>{index.name}</h3>
+                <div>
+                    <label className={styles.label}>Indicador</label>
+                    <span className={styles.indicatorName}>{index.indicator.name}</span>
+                </div>
+                <div style={{ marginTop: '1rem' }}>
+                    <label className={styles.label}>Índice</label>
+                    <h3 className={styles.indexName}>{index.name}</h3>
+                </div>
                 {index.description && <p className={styles.indexDescription}>{index.description}</p>}
                 
                 {/* Lista de Referências Clicáveis */}
@@ -54,7 +75,7 @@ const IndexItem: React.FC<IndexItemProps> = ({
                                     onClick={() => onReferenceClick(ref)}
                                     title={getFileNameFromUri(ref.sourceDocumentUri)}
                                 >
-                                    📄 {ref.sourceDocumentUri} (p. {ref.page})
+                                    <FindInPageIcon/> {getFileNameFromUri(ref.sourceDocumentUri)} (p. {ref.page})
                                     {/* Tooltip com o trecho citado */}
                                     {ref.quotedContent && (
                                         <div className={styles.tooltip}>{ref.quotedContent}</div>
@@ -67,8 +88,12 @@ const IndexItem: React.FC<IndexItemProps> = ({
             </div>
             
             <div className={styles.indexActions}>
-                <button title="Editar" className={styles.actionButton}>✏️</button>
-                <button title="Excluir" className={styles.actionButton}>🗑️</button>
+               <button title="Editar" className={styles.actionButton} onClick={() => onEditClick(index)}>
+                    <EditIcon/>
+                </button>
+                <button title="Excluir" className={styles.actionButton} onClick={() => onDeleteClick(index)}>
+                    <DeleteForeverIcon/>
+                </button>
             </div>
         </li>
     );
@@ -79,7 +104,10 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     preAnalysisResult, 
     analysisDocuments, 
     referenceDocuments,
-    onContinue
+    onContinue, 
+    onIndexAdded,
+    onIndexUpdated,
+    onIndexDeleted
 }) => {
     
     const { indexes } = preAnalysisResult;
@@ -87,8 +115,32 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     // Estado para "linkar" o clique da referência ao visualizador
     const [selectedReference, setSelectedReference] = useState<IndexReference | null>(null);
 
+    // Gerenciamento de estado dos modais
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [indexToEdit, setIndexToEdit] = useState<Index | null>(null);
+    const [indexToDelete, setIndexToDelete] = useState<Index | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+
     const handleReferenceClick = (reference: IndexReference) => {
         setSelectedReference(reference);
+    };
+
+    // Função para confirmar e executar a exclusão
+    const handleConfirmDelete = async () => {
+        if (!indexToDelete) return;
+        
+        setIsDeleting(true);
+        setDeleteError(null);
+        try {
+            await deleteIndex(indexToDelete.id);
+            onIndexDeleted(indexToDelete.id); // Notifica o pai
+            setIndexToDelete(null); // Fecha o modal
+        } catch (err) {
+            setDeleteError("Falha ao excluir o índice. Tente novamente.");
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     return (
@@ -99,29 +151,42 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
             <section className={styles.resultsContainer}>
                 <div className={styles.header}>
                     <h2 className={styles.title}>Resultados da Pré-Análise</h2>
-                    <button className={styles.primaryButton}>+ Adicionar Novo Índice</button>
+                    <button className={styles.primaryButton} onClick={() => setIsAddModalOpen(true)}>
+                         <AddCircleOutlineIcon/> <strong>Adicionar Novo Índice</strong>
+                    </button>
                 </div>
                 
-                {indexes.length > 0 ? (
-                    <ul className={styles.indexList}>
-                        {indexes.map((index) => (
-                            <IndexItem 
-                                key={index.id} 
-                                index={index} 
-                                onReferenceClick={handleReferenceClick}
-                                analysisDocuments={analysisDocuments}
-                                referenceDocuments={referenceDocuments}
-                            />
-                        ))}
-                    </ul>
-                ) : (
-                    <p>Nenhum índice foi extraído automaticamente. Você pode adicioná-los manualmente.</p>
-                )}
+                {deleteError && <Alert message={deleteError} type="error" onClose={() => setDeleteError(null)} />}
+
+                <div className={styles.scrollableContent}>
+                    {indexes.length > 0 ? (
+                        <ul className={styles.indexList}>
+                            {indexes.map((index) => (
+                                <IndexItem 
+                                    key={index.id} 
+                                    index={index} 
+                                    onReferenceClick={handleReferenceClick}
+                                    analysisDocuments={analysisDocuments}
+                                    referenceDocuments={referenceDocuments}
+                                    onEditClick={setIndexToEdit}
+                                    onDeleteClick={setIndexToDelete}
+                                />
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className={styles.emptyMessage}>
+                            Nenhum índice foi extraído automaticamente. Você pode adicioná-los manualmente.
+                        </p>
+                    )}
+                </div>
                 
                 <footer className={styles.footer}>
                     <button 
-                    onClick={onContinue}
-                    className={styles.primaryButton}>Confirmar Índices e Avançar</button>
+                        onClick={onContinue}
+                        className={styles.primaryButton}
+                    >
+                        <strong>Confirmar Índices e Avançar</strong>
+                    </button>
                 </footer>
             </section>
 
@@ -133,6 +198,42 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                     selectedReference={selectedReference}
                 />
             </section>
+            
+            {/* MODAL PARA ADICIONAR NOVO ÍNDICE */}
+            <IndexFormModal
+                isOpen={isAddModalOpen || !!indexToEdit}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                    setIndexToEdit(null);
+                }}
+                preAnalysisStageId={preAnalysisResult.id}
+                indexToEdit={indexToEdit}
+                onIndexAdded={(newIndex) => {
+                    onIndexAdded(newIndex);
+                    setIsAddModalOpen(false); // Fecha o modal
+                }}
+                onIndexUpdated={(updatedIndex) => {
+                    onIndexUpdated(updatedIndex);
+                    setIndexToEdit(null); // Fecha o modal
+                }}
+            />
+
+            {/* Modal de Confirmação (Delete) */}
+            <ConfirmModal
+                isOpen={!!indexToDelete}
+                title="Confirmar Exclusão"
+                message={
+                    <p>
+                        Você tem certeza que deseja excluir o índice <strong>"{indexToDelete?.name}"</strong>?
+                        <br/><br/>
+                        Esta ação não pode ser desfeita.
+                    </p>
+                }
+                confirmText="Sim, Excluir"
+                isConfirming={isDeleting}
+                onClose={() => setIndexToDelete(null)}
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 };

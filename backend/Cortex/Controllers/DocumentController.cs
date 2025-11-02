@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Cortex.Exceptions;
+using Cortex.Helpers;
+using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
-using Cortex.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StockApp2._0.Mapper;
-using Cortex.Exceptions;
-using Cortex.Helpers;
 
 namespace Cortex.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DocumentsController(IDocumentService documentService, IFileStorageService fileStorageService) : ControllerBase
 {
     private readonly IDocumentService _documentService = documentService;

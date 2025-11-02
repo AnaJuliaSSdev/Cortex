@@ -12,5 +12,8 @@ public interface IIndexRepository
 
     Task<List<Models.Index>> GetByIdsAsync(List<int> ids);
     List<Models.Index> GetAll();
-    Task<Models.Index> GetByIdAsync(int id);
+    Task<Models.Index?> GetByIdAsync(int id);
+    Task<Models.Index?> GetByIdAAndUserIdsync(int id, int userId);
+    Task<Models.Index> UpdateIndexAsync(Models.Index index);
+    Task DeleteIndexAsync(Models.Index index);
 }

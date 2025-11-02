@@ -1,17 +1,18 @@
 ﻿using Cortex.Models;
+using Cortex.Services.Interfaces;
 
 namespace Cortex.Services.Factories;
 
 public static class FindNextStageStrategyFactory
 {
-    public static Stage? GetNextStage(Stage currentStage)
+    public static Stage? GetNextStage(AStageService currentStage)
     {
         return currentStage switch
         {
             null => new PreAnalysisStage(),
-            PreAnalysisStage => new ExplorationOfMaterialStage(),
-            ExplorationOfMaterialStage => new InferenceConclusionStage(),
-            InferenceConclusionStage => null, 
+            PreAnalysisStageService => new ExplorationOfMaterialStage(),
+            ExplorationOfMaterialStageService => null,
+            //InferenceConclusionStage => null, 
             _ => throw new NotSupportedException($"Unrecognized stage type: {currentStage.GetType().Name}")
         };
     }

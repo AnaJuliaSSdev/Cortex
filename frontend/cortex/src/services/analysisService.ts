@@ -2,6 +2,9 @@ import type { Analysis } from '../interfaces/Analysis';
 import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import type { CreateAnalysisPayload } from '../interfaces/dto/CreateAnalysisPayload';
+import type { CreateIndexPayload } from '../interfaces/dto/CreateIndexPayload';
+import type { UpdateIndexPayload } from '../interfaces/dto/UpdateIndexPayload';
+import type { Index } from '../interfaces/Index';
 import api from './api';
 
 /**
@@ -95,6 +98,50 @@ export const getAnalysisState = async (analysisId: string): Promise<AnalysisExec
         return response.data;
     } catch (error) {
         console.error(`Erro ao buscar o estado da análise ${analysisId}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Cria um novo Índice (e seu Indicador) manualmente.
+ * @param payload Os dados do novo índice
+ * @returns O objeto Index recém-criado
+ */
+export const createIndex = async (payload: CreateIndexPayload): Promise<Index> => {
+    try {
+        const response = await api.post<Index>('/indexes/createManual', payload);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao criar o índice:", error);
+        throw error;
+    }
+};
+
+/**
+ * Atualiza um Índice (e seu Indicador) existente.
+ * @param indexId O ID do índice a ser atualizado
+ * @param payload Os novos dados do índice
+ * @returns O objeto Index atualizado
+ */
+export const updateIndex = async (indexId: number, payload: UpdateIndexPayload): Promise<Index> => {
+    try {
+        const response = await api.put<Index>(`/indexes/${indexId}`, payload);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao atualizar o índice:", error);
+        throw error;
+    }
+};
+
+/**
+ * Exclui um Índice da análise.
+ * @param indexId O ID do índice a ser excluído
+ */
+export const deleteIndex = async (indexId: number): Promise<void> => {
+    try {
+        await api.delete(`/indexes/${indexId}`);
+    } catch (error) {
+        console.error("Erro ao excluir o índice:", error);
         throw error;
     }
 };

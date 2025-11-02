@@ -104,7 +104,11 @@ public class AnalysisService(IAnalysisRepository analysisRepository) : IAnalysis
                 detailsAnalysis.ExplorationOfMaterialStage = (ExplorationOfMaterialStage)analysis.Stages.Last();
             }
         }
+        if (analysis.Question != null)
+            detailsAnalysis.AnalysisQuestion = analysis.Question;
 
+
+        detailsAnalysis.AnalysisTitle = analysis.Title;
         detailsAnalysis.IsSuccess = true;
         detailsAnalysis.ReferenceDocuments = analysis.Documents.ToList().FindAll(x => x.Purpose == DocumentPurpose.Reference);
         detailsAnalysis.AnalysisDocuments = analysis.Documents.ToList().FindAll(x => x.Purpose == DocumentPurpose.Analysis);

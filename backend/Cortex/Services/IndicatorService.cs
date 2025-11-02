@@ -28,6 +28,8 @@ public class IndicatorService(IIndicatorRepository indicatorRepository) : IIndic
 
         // Criar um novo se não existir
         Indicator newIndicator = new() { Name = indicatorName };
-        return await _indicatorRepository.AddAsync(newIndicator);
+        Indicator result = await _indicatorRepository.AddAsync(newIndicator);
+
+        return result;
     }
 }

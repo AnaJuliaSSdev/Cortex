@@ -12,7 +12,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
     private static readonly IDictionary<Type, HttpStatusCode> _exceptionStatusCodeMappings =
         new Dictionary<Type, HttpStatusCode>
         {
-            { typeof(EmailAlreadyInUseException), HttpStatusCode.BadRequest },
+            { typeof(EmailAlreadyInUseException), HttpStatusCode.Conflict },
             { typeof(InvalidCredentialsException), HttpStatusCode.Unauthorized },
             { typeof(EntityNotFoundException), HttpStatusCode.NotFound },
             { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
@@ -21,7 +21,8 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
             { typeof(FailedToGenerateEmbeddingsException), HttpStatusCode.InternalServerError },
             { typeof(AnalysisWithoutDocumentException), HttpStatusCode.InternalServerError },
             { typeof(AnalysisAlreadyCompletedException), HttpStatusCode.BadRequest },
-            { typeof(JsonException), HttpStatusCode.InternalServerError }
+            { typeof(JsonException), HttpStatusCode.InternalServerError },
+            { typeof(StageDontBelongToUserException), HttpStatusCode.BadRequest }
         };
 
     public async Task InvokeAsync(HttpContext context)

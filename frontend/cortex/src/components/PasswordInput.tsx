@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './css/PasswordInput.css'; 
 
-import eyeOpenIconUrl from '../assets/eye-open.svg';
-import eyeClosedIconUrl from '../assets/eye-closed.svg';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
 interface PasswordInputProps {
     value: string;
@@ -30,9 +30,9 @@ export default function PasswordInput({ value, onChange }: Readonly<PasswordInpu
                 />
                 <span onClick={togglePasswordVisibility} className="password-toggle-icon">
                     {isPasswordVisible ? (
-                        <img className="icon-password" src={eyeClosedIconUrl} alt="Esconder senha" />
+                        <VisibilityOffOutlinedIcon/>
                     ) : (
-                        <img className="icon-password" src={eyeOpenIconUrl} alt="Mostrar senha" />
+                        <VisibilityOutlinedIcon/>
                     )}
                 </span>
             </div>

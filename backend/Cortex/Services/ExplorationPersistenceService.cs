@@ -5,12 +5,10 @@ using Cortex.Services.Interfaces;
 
 namespace Cortex.Services;
 
-public class ExplorationPersistenceService(IStageRepository stageRepository, ICategoryRepository categoryRepository,
-    IRegisterUnitRepository registerUnitRepository, IIndexRepository indexRepository, ILogger<ExplorationPersistenceService> logger) : IExplorationPersistenceService
+public class ExplorationPersistenceService(IStageRepository stageRepository, IIndexRepository indexRepository, 
+    ILogger<ExplorationPersistenceService> logger) : IExplorationPersistenceService
 {
     private readonly IStageRepository _stageRepository = stageRepository;
-    private readonly ICategoryRepository _categoryRepository = categoryRepository;
-    private readonly IRegisterUnitRepository _registerUnitRepository = registerUnitRepository;
     private readonly IIndexRepository _indexRepository = indexRepository;
     private readonly ILogger<ExplorationPersistenceService> _logger = logger;
 
@@ -36,14 +34,14 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, ICa
             // throw new InvalidOperationException("A resposta do Gemini não continha categorias para processar.");
         }
 
-        // 1. Cria a entidade Stage "pai" em memória (sem salvar ainda)
+        // Cria a entidade Stage "pai" em memória (sem salvar ainda)
         var stageEntity = new ExplorationOfMaterialStage
         {
             AnalysisId = analysisId,
             Categories = new List<Category>() // Inicializa a coleção
         };
 
-        // 2. Itera e Mapeia DTOs para Entidades (em memória)
+        // Itera e Mapeia DTOs para Entidades (em memória)
         foreach (var geminiCategory in geminiResponse.Categories)
         {
             var newCategory = new Category
@@ -86,19 +84,7 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, ICa
                             var existingIndexes = await _indexRepository.GetByIdsAsync(indexIds);
 
                             // Adiciona as entidades Index encontradas à coleção da RegisterUnit
-                            foreach (var index in existingIndexes)
-                            {
-                                newUnit.FoundIndices.Add(index);
-                            }
-
-                            // Log se nem todos os IDs foram encontrados (opcional)
-                            if (existingIndexes.Count != indexIds.Count)
-                            {
-                                var foundIds = existingIndexes.Select(i => i.Id).ToList();
-                                var missingIds = indexIds.Except(foundIds);
-                                _logger.LogWarning("Não foi possível encontrar os seguintes Index IDs: {MissingIndexIds} para a RegisterUnit: {UnitTextPreview}", string.Join(",", missingIds), newUnit.Text.Substring(0, Math.Min(newUnit.Text.Length, 50)));
-                            }
-
+                            newUnit.FoundIndices = existingIndexes;
                         }
                         else
                         {
@@ -113,23 +99,14 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, ICa
             stageEntity.Categories.Add(newCategory); // Adiciona a categoria (com suas unidades) à coleção da etapa
         }
 
-        // 3. Salva o Grafo Completo
+        // Salva o Grafo Completo
         // Adiciona a entidade Stage raiz ao contexto. O EF Core Change Tracker
         // detectará todas as entidades relacionadas (Categories, RegisterUnits)
         // e as inserirá no banco na ordem correta, gerenciando as FKs e a tabela de junção M-M.
         _logger.LogInformation("Adicionando grafo completo da ExplorationOfMaterialStage (ID: {StageId}) ao contexto...", stageEntity.Id); // ID será 0 aqui
         await _stageRepository.AddAsync(stageEntity); // Assumindo que AddAsync chama _context.Add(stageEntity) e _context.SaveChangesAsync()
 
-        // Verifica se o ID foi preenchido após o SaveChangesAsync dentro de AddAsync
-        if (stageEntity.Id == 0)
-        {
-            _logger.LogError("Falha ao salvar ExplorationOfMaterialStage ou obter seu ID após SaveChangesAsync para Analysis ID: {AnalysisId}.", analysisId);
-            throw new InvalidOperationException("Não foi possível salvar a etapa de exploração e obter seu ID após SaveChangesAsync.");
-        }
-
-        _logger.LogInformation("Persistência completa da ExplorationOfMaterialStage (ID: {StageId}) e suas entidades filhas.", stageEntity.Id);
-
-        // 4. Retorna a entidade salva (agora com todos os IDs preenchidos)
+        // Retorna a entidade salva
         return stageEntity;
     }
 

@@ -1,37 +1,330 @@
-/* Usando suas variáveis de cor */
+/* ======================================= */
+/* Contêiner Principal e Header            */
+/* ======================================= */
 .container {
-    padding: 1.5rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    background-color: var(--background-light, #FBFBF8);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--background-medium, #EFEBE6);
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .title {
     font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    font-size: 2rem;
+    font-weight: bold;
     color: var(--text-dark, #312F2F);
-    font-size: 1.75rem;
     margin: 0;
 }
 
-.description {
-    font-family: var(--font-principal, 'Roboto'), sans-serif;
-    color: var(--text-medium, #4A4644);
-    font-size: 1rem;
-    margin-bottom: 2rem;
+.summaryText {
+    color: var(--text-light, #8E8883);
+    margin: 0.5rem 0 0 0;
 }
 
-.chartWrapper {
+.viewControls {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--background-medium, #EFEBE6);
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+
+.viewButton {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-medium, #4A4644);
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    display: flex;        
+    align-items: center;  
+    gap: 8px;
+}
+
+.activeButton {
+    background: var(--primary, #B35848);
+    color: white;
+    font-weight: bold;
+}
+
+/* ======================================= */
+/* Visualização de Gráfico                 */
+/* ======================================= */
+.chartContainer {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ======================================= */
+/* Visualização de Tabela (CORREÇÕES)      */
+/* ======================================= */
+.tableContainer {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden; /* Importante para o border-radius */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 1. CORREÇÃO DO SCROLLBAR */
+.tableScrollContainer {
+    overflow: auto; /* Permite scroll horizontal E vertical */
+    max-height: 60vh; /* Limita a altura, ativando o scroll vertical */
+}
+
+/* Estilização do Scrollbar (Funciona em CSS, não inline) */
+.tableScrollContainer::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+.tableScrollContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.tableScrollContainer::-webkit-scrollbar-thumb {
+    background: var(--primary, #B35848);
+    border-radius: 10px;
+}
+.tableScrollContainer::-webkit-scrollbar-thumb:hover {
+    background: #9a4a3a;
+}
+
+.table {
     width: 100%;
-    height: 400px;
-    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    border-collapse: collapse;
     font-size: 0.9rem;
+}
+
+.tableHead {
+    position: sticky;
+    top: 0;
+    z-index: 10; /* Cabeçalho acima do body */
+    background: #fafafa;
+}
+
+.tableHeader {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: bold;
+    color: var(--text-dark, #312F2F);
+    white-space: nowrap;
+}
+
+/* 2. CORREÇÃO DO LAYOUT "ESTOURANDO" (STICKY) */
+.categoryHeader {
+    position: sticky;
+    left: 0;
+    top: 0; /* A linha que faltava */
+    z-index: 20; /* Acima do resto do cabeçalho */
+    background: #f8f8f8;
+    min-width: 200px;
+}
+
+.unitHeader {
+    text-align: center;
+    min-width: 80px;
+}
+
+/* 3. CORREÇÃO DE ESTÉTICA (VERMELHO) */
+.indicesHeader {
+    text-align: center;
+    border-bottom: 2px solid var(--text-dark, #312F2F); /* Corrigido */
+    color: var(--text-dark, #312F2F); /* Corrigido */
+    background: #f8f8f8;
+    font-size: 0.95rem;
+}
+
+.indexNameHeader {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+    color: var(--text-medium, #4A4644);
+    min-width: 120px;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.tableRow {
+    background: white;
+    transition: background 0.2s;
+}
+.tableRow:nth-child(even) {
+    background: #fafafa;
+}
+.tableRow:hover {
+    background: #f0f0f0;
+}
+
+.tableCell {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.categoryCell {
+    font-weight: 500;
+    position: sticky;
+    left: 0;
+    background: inherit; /* Pega o background do <tr> (branco ou #fafafa) */
+    font-size: 0.9rem;
+}
+
+.unitCell {
+    text-align: center;
+    color: var(--text-light, #8E8883);
+    font-weight: 600;
+}
+
+/* 3. CORREÇÃO DE ESTÉTICA (VERMELHO) */
+.indexCellHasCount {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-dark, #312F2F); /* Corrigido */
+    font-size: 1.1rem;
+}
+.indexCellNoCount {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+    font-weight: normal;
+    color: #d0d0d0;
+    font-size: 0.9rem;
+}
+
+
+/* ======================================= */
+/* Visualização de Cards                   */
+/* ======================================= */
+.cardsScrollContainer {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 0.5rem;
+    max-height: 70vh; /* Altura máxima para ativar scroll */
+}
+
+.cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.25rem;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    height: fit-content;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.cardTitle {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-medium, #4A4644);
+    font-size: 1.15rem;
+    border-bottom: 2px solid var(--primary, #B35848);
+    padding-bottom: 0.5rem;
+}
+
+.cardMeta {
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-light, #8E8883);
+    font-size: 0.85rem;
+     display: flex;        
+    align-items: center;  
+    gap: 8px;
+}
+
+.cardIndexList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cardIndexItem {
+    padding: 0.75rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+}
+
+.cardIndexHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.cardIndexName {
+    font-weight: 600;
+    color: var(--text-medium, #4A4644);
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.cardIndexCount {
+    font-weight: bold;
+    font-size: 1.25rem;
+    min-width: 40px;
+    text-align: right;
+}
+
+.cardIndexDescription {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-light, #8E8883);
+    line-height: 1.4;
+    font-style: italic;
+}
+
+/* ======================================= */
+/* Footer de Resumo                      */
+/* ======================================= */
+.summaryFooter {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.summaryItem {
+    text-align: center;
+}
+
+.summaryValue {
+    font-size: 1.75rem;
+    font-weight: bold;
+}
+
+.summaryLabel {
+    color: var(--text-light, #8E8883);
+    font-size: 0.85rem;
 }

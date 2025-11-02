@@ -1,0 +1,82 @@
+/* Estilo base, comum a todos os alertas */
+.alertBox {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid; /* A cor será definida pela classe de tipo */
+  border-radius: 8px;
+  color: var(--text-dark, #312F2F);
+  font-family: var(--font-principal, 'Roboto'), sans-serif;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.icon {
+  font-size: 1.25rem;
+  margin-right: 1rem;
+}
+
+.message {
+  flex: 1;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-light, #8E8883);
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin-left: 1rem;
+  line-height: 1;
+}
+.closeButton:hover {
+  color: var(--text-dark, #312F2F);
+}
+
+/* --- Classes de Tipo (Cores) --- */
+
+/* Error (usa sua paleta) */
+.error {
+  border-color: var(--primary, #B35848);
+  background-color: #fef4f2;
+}
+.error .icon {
+  color: var(--primary, #B35848);
+}
+
+/* Success */
+.success {
+  border-color: #15803d; /* Verde Escuro */
+  background-color: #f0fdf4; /* Verde Claro */
+}
+.success .icon {
+  color: #15803d;
+}
+
+/* Warning */
+.warning {
+  border-color: #f59e0b; /* Amarelo */
+  background-color: #fffbeb;
+}
+.warning .icon {
+  color: #f59e0b;
+}
+
+/* Info */
+.info {
+  border-color: #2563eb; /* Azul */
+  background-color: #eff6ff;
+}
+.info .icon {
+  color: #2563eb;
+}

@@ -7,6 +7,6 @@ public interface IPreAnalysisPersistenceService
     Task<PreAnalysisStage> SavePreAnalysisAsync(
         int analysisId);
 
-    Task<int> SaveIndexesAsync(List<Models.Index> indexes, int stageId);
+    Task<int> SaveIndexesAsync(List<Models.Index> indexes);
 
 }

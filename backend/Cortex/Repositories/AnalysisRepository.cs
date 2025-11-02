@@ -1,5 +1,6 @@
 ﻿using Cortex.Data;
 using Cortex.Models;
+using Cortex.Models.Enums;
 using Cortex.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,7 @@ namespace Cortex.Repositories
 
             if (analysis == null)
             {
-                return null; 
+                return null;
             }
 
             var lastStage = analysis.Stages.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
@@ -25,15 +26,25 @@ namespace Cortex.Repositories
             if (lastStage != null)
             {
                 _context.Stages.Remove(lastStage);
-                if (analysis.Stages.Count == 1) // Se a contagem ANTES da remoção era 1...
+                if (analysis.Status == AnalysisStatus.Completed)
                 {
-                    analysis.Status = Models.Enums.AnalysisStatus.Draft;
-                } 
+                    analysis.Status = AnalysisStatus.Running;
+                }
 
-                analysis.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                else if (analysis.Stages.Count == 0)
+                {
+                    analysis.Status = AnalysisStatus.Draft;
+                }
             }
+            else
+            {
+                if (analysis.Status != AnalysisStatus.Draft)
+                {
+                    analysis.Status = AnalysisStatus.Draft;
 
+                }
+            }
+            analysis.UpdatedAt = DateTime.UtcNow;
             return analysis;
         }
 
@@ -56,6 +67,15 @@ namespace Cortex.Repositories
                     .ThenInclude(i => i.Indicator)
                 .Include(p => p.Indexes)
                     .ThenInclude(i => i.References)
+                .LoadAsync();
+
+            await _context.Entry(analysis)
+                .Collection(a => a.Stages)
+                .Query()
+                .OfType<ExplorationOfMaterialStage>()
+                .Include(eos => eos.Categories)
+                    .ThenInclude(c => c.RegisterUnits)
+                        .ThenInclude(ru => ru.FoundIndices)
                 .LoadAsync();
 
             return analysis;
@@ -90,7 +110,6 @@ namespace Cortex.Repositories
         {
             analysis.UpdatedAt = DateTime.UtcNow;
             _context.Analyses.Update(analysis);
-            await _context.SaveChangesAsync();
             return analysis;
         }
 

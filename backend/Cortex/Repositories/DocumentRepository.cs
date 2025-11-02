@@ -1,6 +1,8 @@
 ﻿using Cortex.Data;
 using Cortex.Models;
+using Cortex.Models.Enums;
 using Cortex.Repositories.Interfaces;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cortex.Repositories;
@@ -28,5 +30,12 @@ public class DocumentRepository(AppDbContext context) : IDocumentRepository
         .Include(d => d.Analysis)
         .Where(d => d.AnalysisId == analysisId)
         .ToListAsync();
+    }
+
+    public async Task<long> SumTotalSizeDocumentsByAnalysisIdAsync(int analysisId, DocumentPurpose documentPurpose)
+    {
+        return await _context.Documents
+        .Where(d => d.AnalysisId == analysisId && d.Purpose == documentPurpose)
+        .SumAsync(d => d.FileSize); // FileSize deve ser 'long' no seu modelo
     }
 }

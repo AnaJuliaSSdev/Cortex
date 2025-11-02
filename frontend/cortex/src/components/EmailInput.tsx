@@ -1,6 +1,6 @@
 import React from "react";
 import "./css/EmailInput.css";
-import mail from "../assets/mail.svg";
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 interface EmailInputProps {
 	value: string;
@@ -21,7 +21,7 @@ export default function EmailInput({ value, onChange }: Readonly<EmailInputProps
 					required
 				/>
 				<span className="email-span">
-					<img className="icon-email" src={mail} alt="E-mail" />
+						<MailOutlineIcon/>
 				</span>
 			</div>
 		</div>

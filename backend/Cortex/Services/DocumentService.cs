@@ -5,6 +5,7 @@ using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Factories;
 using Cortex.Services.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Cortex.Services;
 
@@ -15,9 +16,12 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
     private readonly IFileStorageService _fileStorageService = fileStorageService;
     private readonly ILogger _logger = logger;
     private readonly IDocumentProcessingEmbeddingsService _documentProcessingEmbeddingsService = documentProcessingEmbeddingsService;
+    const long MAX_TOTAL_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
     public async Task<Cortex.Models.Document> UploadAsync(CreateDocumentDto dto, int analysisId)
     {
+        ValidateFileMaxSize(dto, analysisId);
+
         IDocumentProcessingStrategy? strategy = DocumentProcessingStrategyFactory.GetStrategy(dto.File);
         Models.Document? document = await strategy.ProcessAsync(dto.File);
 
@@ -34,8 +38,8 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
 
         await _repository.AddAsync(document);
         //por enquanto sem gerar embeddings, analisando se vai ser necessário usar
-        //DESCOMENTANDO LINHA PARA TRABALHO DO PINTO
-        await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
+        //DESCOMENTAR LINHA PARA TRABALHO DO PINTO
+        //await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
 
         return document;
     }
@@ -79,5 +83,19 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
         }
 
         return documentInfos;
+    }
+
+    private async void ValidateFileMaxSize(CreateDocumentDto dto, int analysisId)
+    {
+        //Tamanho do novo arquivo
+        long newFileSize = dto.File.Length;
+
+        // 3. Calcule o tamanho dos arquivos existentes para esta análise E este propósito
+        var existingSize = await repository.SumTotalSizeDocumentsByAnalysisIdAsync(analysisId, dto.Purpose);
+
+        if (existingSize + newFileSize > MAX_TOTAL_SIZE_BYTES)
+        {
+            throw new ValidationException($"Limite de 100MB para documentos de '{dto.Purpose}' foi excedido.");
+        }
     }
 }

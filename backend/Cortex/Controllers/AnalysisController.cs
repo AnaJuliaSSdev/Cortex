@@ -108,13 +108,6 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
         return Ok(analysisResult);
     }
 
-    private int GetCurrentUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return int.Parse(userIdClaim ?? "0");
-    }
-
-
     // <summary>
     /// Gets the Indexes and related data from the PreAnalysisStage of a specific Analysis.
     /// </summary>
@@ -161,4 +154,12 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
         // Return the collection of Indexes. The serializer (with IgnoreCycles) will handle the response.
         return Ok(preAnalysisStage.Indexes);
     }
+
+
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.Parse(userIdClaim ?? "0");
+    }
+
 }

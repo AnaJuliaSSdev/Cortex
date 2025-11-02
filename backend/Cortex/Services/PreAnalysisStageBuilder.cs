@@ -27,7 +27,7 @@ public class PreAnalysisStageBuilder(
     /// <returns>Lista de entidades Index prontas para persistência</returns>
     public async Task<List<Models.Index>> BuildIndexesAsync(
         GeminiIndexResponse geminiResponse,
-        int preAnalysisStageId,
+        PreAnalysisStage preAnalysisStage,
         IEnumerable<Cortex.Models.Document> allDocuments)
     {
         _logger.LogInformation("Iniciando construção de {Count} índices...", geminiResponse.Indices.Count);
@@ -35,7 +35,7 @@ public class PreAnalysisStageBuilder(
 
         foreach (var geminiIndex in geminiResponse.Indices)
         {
-            var index = await BuildSingleIndexAsync(geminiIndex, preAnalysisStageId, allDocuments);
+            var index = await BuildSingleIndexAsync(geminiIndex, preAnalysisStage, allDocuments);
             indexes.Add(index);
         }
 
@@ -47,12 +47,12 @@ public class PreAnalysisStageBuilder(
     /// Busca ou cria o Indicator e mapeia todas as References.
     /// </summary>
     /// <param name="geminiIndex">Índice individual da resposta do Gemini</param>
-    /// <param name="preAnalysisStageId">ID do PreAnalysisStage pai</param>
+    /// <param name="preAnalysisStage">Stage PreAnalysisStage pai</param>
     /// <param name="allDocuments">Documentos para mapear as referências</param>
     /// <returns>Entidade Index completa</returns>
     private async Task<Models.Index> BuildSingleIndexAsync(
         GeminiIndex geminiIndex,
-        int preAnalysisStageId,
+        PreAnalysisStage preAnalysisStage,
         IEnumerable<Cortex.Models.Document> allDocuments)
     {
         Indicator indicator = await _indicatorService.GetOrCreateIndicatorAsync(geminiIndex.Indicator);
@@ -62,7 +62,7 @@ public class PreAnalysisStageBuilder(
             Name = geminiIndex.Name,
             Description = geminiIndex.Description,
             IndicatorId = indicator.Id,
-            PreAnalysisStageId = preAnalysisStageId
+            PreAnalysisStage = preAnalysisStage
         };
 
         if (geminiIndex.References != null)

@@ -11,6 +11,5 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
     public async Task AddAsync(Category category)
     {
         await _context.Categories.AddAsync(category);
-        await _context.SaveChangesAsync();
     }
 }
