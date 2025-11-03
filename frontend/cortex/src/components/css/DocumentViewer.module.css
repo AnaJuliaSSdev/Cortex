@@ -71,8 +71,9 @@
 
 .pageInfo {
     font-size: 0.9rem;
-    color: var(--text-light, #8E8883);
-    margin-top: 0.5rem;
+    color: var(--text-medium, #4A4644);
+    font-weight: 500;
+    margin: 0;
 }
 
 .txtViewer {
@@ -88,4 +89,49 @@
 }
 .react-pdf__Page__annotationLayer {
     display: none;
+}
+
+.docItemEmpty {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: var(--text-light, #8E8883);
+    text-align: center;
+    font-style: italic;
+}
+
+/* Container para os controles */
+.paginationControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background-color: var(--background-medium, #EFEBE6);
+    border-radius: 8px;
+    user-select: none; /* Impede que o texto seja selecionado ao clicar */
+}
+
+/* Botões de Próximo/Anterior */
+.paginationButton {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary, #B35848);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.paginationButton:hover {
+    background-color: #a04e40; /* Tom mais escuro de --primary */
+}
+
+/* Estilo do botão desabilitado */
+.paginationButton:disabled {
+    background-color: #d1d5db; /* Um cinza neutro */
+    color: var(--text-light, #8E8883);
+    cursor: not-allowed;
 }

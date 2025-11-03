@@ -5,7 +5,8 @@ using Google.Cloud.Storage.V1;
 
 namespace Cortex.Services;
 
-public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, StorageClient storageClient, IConfiguration configuration) : IFileStorageService
+public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, StorageClient storageClient,
+    IConfiguration configuration) : IFileStorageService
 {
     private readonly string BasePath = "storage/documents";
     private readonly ILogger<GcsFileStorageService> _logger = logger;
@@ -101,5 +102,78 @@ public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, Storag
             sanitized = "document";
 
         return sanitized;
+    }
+
+    public async Task DeleteAnalysisStorageAsync(int analysisId)
+    {
+        //Excluir Pasta Local
+        var userDirectoryName = $"analysis-{analysisId}";
+        var userDirectoryPath = Path.Combine(this.BasePath, userDirectoryName);
+        var fullDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), userDirectoryPath);
+
+        if (Directory.Exists(fullDirectoryPath))
+        {
+            Directory.Delete(fullDirectoryPath, recursive: true);
+            _logger.LogInformation("Diretório local excluído: {DirectoryPath}", fullDirectoryPath);
+        }
+        else
+        {
+            _logger.LogWarning("Diretório local não encontrado para exclusão: {DirectoryPath}", fullDirectoryPath);
+        }
+
+        var gcsPathBase = Path.Combine(this.BasePath, userDirectoryName);
+        var gcsPrefix = $"{gcsPathBase}/";
+
+        _logger.LogInformation("Iniciando exclusão de objetos GCS com prefixo: {Prefix} no bucket {Bucket}", gcsPrefix, _bucketName);
+        // Lista todos os objetos com o prefixo
+        var objects = _storageClient.ListObjectsAsync(_bucketName, gcsPrefix);
+        var deleteTasks = new List<Task>();
+        int count = 0;
+
+        await foreach (var obj in objects)
+        {
+            // Adiciona a tarefa de exclusão à lista
+            deleteTasks.Add(_storageClient.DeleteObjectAsync(obj.Bucket, obj.Name));
+            count++;
+        }
+
+        // Executa todas as exclusões em paralelo
+        if (deleteTasks.Any())
+        {
+            await Task.WhenAll(deleteTasks);
+            _logger.LogInformation("Excluídos {Count} objetos do GCS com prefixo: {Prefix}", count, gcsPrefix);
+        }
+        else
+        {
+            _logger.LogInformation("Nenhum objeto encontrado no GCS com prefixo: {Prefix}", gcsPrefix);
+        }
+
+    }
+
+    public async Task DeleteSingleFileAsync(string fullLocalPath, string gcsUri)
+    {
+        // Excluir Arquivo Local
+        if (File.Exists(fullLocalPath))
+        {
+            File.Delete(fullLocalPath);
+            _logger.LogInformation("Arquivo local excluído: {FilePath}", fullLocalPath);
+        }
+        else
+        {
+            _logger.LogWarning("Arquivo local não encontrado para exclusão: {FilePath}", fullLocalPath);
+        }
+
+        //  Excluir Objeto do GCS
+        if (string.IsNullOrEmpty(gcsUri) || !gcsUri.StartsWith("gs://"))
+        {
+            _logger.LogWarning("URI GCS inválido ou vazio, não é possível excluir: {GcsUri}", gcsUri);
+            return; // Ou lançar exceção se GCS for obrigatório
+        }
+
+        // Parseia o GCS URI para obter o nome do bucket e do objeto
+        var gcsPath = GcsPath.Parse(gcsUri);
+
+        await _storageClient.DeleteObjectAsync(gcsPath.Bucket, gcsPath.ObjectName);
+        _logger.LogInformation("Objeto GCS excluído: {GcsUri}", gcsUri);
     }
 }

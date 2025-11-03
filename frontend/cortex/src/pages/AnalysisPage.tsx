@@ -165,9 +165,11 @@ export default function AnalysisPage() {
             if (result.isSuccess) {
                 setAnalysisResult(result); // Atualiza o estado com o NOVO resultado
             } else {
+                console.log("deu erro tinha q lançar excecao")
                 setAlertInfo({ message: result.errorMessage || 'Falha ao continuar a análise.', type: "error" });
             }
         } catch (error) {
+            console.log("deu erro tinha q lançar excecao")
             const friendlyMessage = handleApiError(error, analysisActionErrorMap);
             setAlertInfo({ message: friendlyMessage, type: "error" });
         } finally {
@@ -266,12 +268,14 @@ export default function AnalysisPage() {
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
                 <PreAnalysisResults
                     preAnalysisResult={analysisResult.preAnalysisResult}
-                    analysisDocuments={analysisResult.analysisDocuments}
-                    referenceDocuments={analysisResult.referenceDocuments}
+                    analysisDocuments={analysisDocuments}
+                    referenceDocuments={referenceDocuments}
                     onIndexAdded={handleIndexAdded}
                     onContinue={handleContinueToExploration}
                     onIndexUpdated={handleIndexUpdated}
                     onIndexDeleted={handleIndexDeleted}
+                    alertInfo={alertInfo}
+                    onCloseAlert={() => setAlertInfo(null)}
                 />
             </MainLayout>
         );

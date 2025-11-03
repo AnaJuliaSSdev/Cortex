@@ -3,6 +3,7 @@ import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import type { CreateAnalysisPayload } from '../interfaces/dto/CreateAnalysisPayload';
 import type { CreateIndexPayload } from '../interfaces/dto/CreateIndexPayload';
+import type { PaginatedResult, PaginationParams } from '../interfaces/dto/Pagination';
 import type { UpdateIndexPayload } from '../interfaces/dto/UpdateIndexPayload';
 import type { Index } from '../interfaces/Index';
 import api from './api';
@@ -58,13 +59,17 @@ export const startAnalysis = async (analysisId: string): Promise<any> => {
 };
 
 /**
- * Busca todas as análises do usuário logado.
- * @returns Uma lista de análises.
+ * Busca uma lista paginada de análises do usuário logado.
+ * @returns Um objeto PaginatedResult com as análises.
  */
-export const getAnalyses = async (): Promise<AnalysisDto[]> => {
+export const getAnalyses = async (params: PaginationParams): Promise<PaginatedResult<AnalysisDto>> => {
     try {
-        // Assumindo que a rota GET /Analysis retorna a lista (padrão REST)
-        const response = await api.get<AnalysisDto[]>('/analysis');
+        const response = await api.get<PaginatedResult<AnalysisDto>>('/analysis', { 
+            params: {
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize
+            } 
+        });
         return response.data;
     } catch (error) {
         console.error("Erro ao buscar as análises:", error);
@@ -142,6 +147,19 @@ export const deleteIndex = async (indexId: number): Promise<void> => {
         await api.delete(`/indexes/${indexId}`);
     } catch (error) {
         console.error("Erro ao excluir o índice:", error);
+        throw error;
+    }
+};
+
+/**
+ * Exclui permanentemente uma análise inteira.
+ * @param analysisId O ID da análise a ser excluída
+ */
+export const deleteAnalysis = async (analysisId: number): Promise<void> => {
+    try {
+        await api.delete(`/analysis/${analysisId}`);
+    } catch (error) {
+        console.error(`Erro ao excluir a análise ${analysisId}:`, error);
         throw error;
     }
 };

@@ -13,4 +13,6 @@ public interface IAnalysisRepository
     Task<bool> ExistsAsync(int id);
     Task<bool> BelongsToUserAsync(int analysisId, int userId);
     Task<Analysis?> RevertLastStageAsync(int analysisId);
+    Task<List<Analysis>> GetByUserIdPaginatedAsync(int userId, int pageNumber, int pageSize);
+    Task<int> GetCountByUserIdAsync(int userId);
 }

@@ -11,7 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import IndexFormModal from "./IndexFormModal";
 import { deleteIndex } from "../services/analysisService";
-import Alert from "./Alert";
+import Alert, { type AlertType } from "./Alert";
 import ConfirmModal from "./ConfirmModal";
 
 interface IndexItemProps {
@@ -30,7 +30,9 @@ interface PreAnalysisResultsProps {
     onContinue: () => void;
     onIndexAdded: (newIndex: Index) => void;
     onIndexUpdated: (updatedIndex: Index) => void;
-    onIndexDeleted: (indexId: number) => void; 
+    onIndexDeleted: (indexId: number) => void;
+    alertInfo: { message: string; type: AlertType } | null;
+    onCloseAlert: () => void;
 }
 
 // Um componente "filho" para renderizar cada item da lista
@@ -107,7 +109,9 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     onContinue, 
     onIndexAdded,
     onIndexUpdated,
-    onIndexDeleted
+    onIndexDeleted,
+    alertInfo,
+    onCloseAlert
 }) => {
     
     const { indexes } = preAnalysisResult;
@@ -156,6 +160,14 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                     </button>
                 </div>
                 
+                {alertInfo && (
+                    <Alert 
+                        message={alertInfo.message}
+                        type={alertInfo.type}
+                        onClose={onCloseAlert}
+                    />
+                )}
+
                 {deleteError && <Alert message={deleteError} type="error" onClose={() => setDeleteError(null)} />}
 
                 <div className={styles.scrollableContent}>

@@ -131,21 +131,22 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
-                    <ResponsiveContainer width="100%" height={500}>
+                    <ResponsiveContainer width="100%" minHeight={600}>
                         <BarChart
                             data={chartData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 150 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-                            <XAxis
+                             <XAxis
                                 dataKey="category"
                                 angle={-45}
                                 textAnchor="end"
-                                height={100}
+                                height={150}
+                                interval={0}
                                 stroke="#4A4644"
                                 style={{ fontSize: '0.85rem' }}
                             />
-                            <YAxis
+                           <YAxis
                                 allowDecimals={false}
                                 label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
                                 stroke="#4A4644"
@@ -159,9 +160,9 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                                 }}
                             />
                             <Legend
-                                wrapperStyle={{ paddingTop: '20px' }}
+                                wrapperStyle={{ paddingBottom: '20px' }}
                                 layout="horizontal"
-                                verticalAlign="bottom"
+                                verticalAlign="top"
                             />
                             {allIndexNames.map((indexName, i) => (
                                 <Bar
@@ -197,7 +198,7 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                                 </tr>
                                 <tr>
                                     <th className={styles.stickyColumn}></th>
-                                    <th></th>
+                                    <th className={styles.stickyColumn}></th>
                                     {allIndexNames.map(indexName => (
                                         <th
                                             key={indexName}

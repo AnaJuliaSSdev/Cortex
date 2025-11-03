@@ -89,17 +89,27 @@ export default function DocumentViewer({
                 d => d.gcsFilePath === selectedReference.sourceDocumentUri
             );
             
+            if (!doc) return;
+
+            // Determina para qual aba o documento pertence
+            const isAnalysisDoc = analysisDocuments.some(d => d.id === doc.id);
+            const targetTab = isAnalysisDoc ? 'analysis' : 'reference';
+            
+            // Força a troca da aba, se necessário
+            if (activeTab !== targetTab) {
+                setActiveTab(targetTab);
+            }
+
             // Se a referência for do documento já selecionado
-            if (doc && selectedDocument && doc.id === selectedDocument.id) {
+            if (selectedDocument?.id !== doc.id) {
+                // Se o documento for diferente, define-o como selecionado
+                // O 'onDocumentLoadSuccess' cuidará de pular a página
+                setSelectedDocument(doc);
+            } else {
                 const page = parseInt(selectedReference.page, 10);
                 if (!isNaN(page) && page > 0 && page <= numPages) {
                     setPageNumber(page);
-                    // Futuro: Adicionar lógica de scroll/highlight
                 }
-            } else if (doc) {
-                // Se a referência for de OUTRO documento, selecione-o
-                setSelectedDocument(doc);
-                // O useEffect acima vai carregar o doc, e este useEffect rodará de novo
             }
         }
     }, [selectedReference, numPages, analysisDocuments, referenceDocuments, selectedDocument]);
@@ -111,7 +121,27 @@ export default function DocumentViewer({
         setPageNumber(isNaN(page) ? 1 : page);
     };
 
+    // Esta função controla a troca de abas e limpa o visualizador.
+    const handleChangeTab = (tab: ViewTab) => {
+        setActiveTab(tab);
+        setSelectedDocument(null); // Limpa o documento selecionado
+        setFileUrl(null);           // Limpa o visualizador de PDF
+        setFileContent(null);       // Limpa o visualizador de TXT
+        setNumPages(0);
+        setPageNumber(1);
+    };
+
     const docsToDisplay = activeTab === 'analysis' ? analysisDocuments : referenceDocuments;
+
+    /** Navega para a página anterior, se não estiver na primeira */
+    const goToPrevPage = () => {
+        setPageNumber(prevPageNumber => Math.max(prevPageNumber - 1, 1));
+    };
+
+    /** Navega para a próxima página, se não estiver na última */
+    const goToNextPage = () => {
+        setPageNumber(prevPageNumber => Math.min(prevPageNumber + 1, numPages));
+    };
 
     return (
         <div className={styles.viewerContainer}>
@@ -119,29 +149,35 @@ export default function DocumentViewer({
             <div className={styles.tabs}>
                 <button 
                     className={activeTab === 'analysis' ? styles.activeTab : ''}
-                    onClick={() => setActiveTab('analysis')}
+                    onClick={() => handleChangeTab('analysis')}
                 >
                     Análise ({analysisDocuments.length})
                 </button>
                 <button 
                     className={activeTab === 'reference' ? styles.activeTab : ''}
-                    onClick={() => setActiveTab('reference')}
+                    onClick={() => handleChangeTab('reference')}
                 >
                     Referência ({referenceDocuments.length})
                 </button>
             </div>
 
             {/* Lista de Documentos da Aba */}
-            <ul className={styles.docList}>
-                {docsToDisplay.map(doc => (
-                    <li 
-                        key={doc.id} 
-                        className={`${styles.docItem} ${selectedDocument?.id === doc.id ? styles.docActive : ''}`}
-                        onClick={() => setSelectedDocument(doc)}
-                    >
-                        {doc.fileName}
+             <ul className={styles.docList}>
+                 {docsToDisplay.length === 0 ? (
+                    <li className={styles.docItemEmpty}>
+                        Nenhum documento de referência foi adicionado.
                     </li>
-                ))}
+                ) : (
+                    docsToDisplay.map(doc => (
+                     <li 
+                         key={doc.id} 
+                         className={`${styles.docItem} ${selectedDocument?.id === doc.id ? styles.docActive : ''}`}
+                         onClick={() => setSelectedDocument(doc)}
+                     >
+                         {doc.fileName}
+                     </li>
+                 ))
+                )}
             </ul>
 
             {/* O Visualizador em si */}
@@ -158,13 +194,36 @@ export default function DocumentViewer({
                         >
                             <Page pageNumber={pageNumber} />
                         </Document>
-                        <p className={styles.pageInfo}>
-                            Página {pageNumber} de {numPages}
-                        </p>
+                        
+                        {/* Controles de Paginação */}
+                        <div className={styles.paginationControls}>
+                            <button 
+                                className={styles.paginationButton}
+                                onClick={goToPrevPage}
+                                disabled={pageNumber <= 1}
+                                title="Página Anterior"
+                            >
+                                ‹ Anterior
+                            </button>
+                            
+                            <p className={styles.pageInfo}>
+                                Página {pageNumber} de {numPages}
+                            </p>
+                            
+                            <button 
+                                className={styles.paginationButton}
+                                onClick={goToNextPage}
+                                disabled={pageNumber >= numPages}
+                                title="Próxima Página"
+                            >
+                                Próxima ›
+                            </button>
+                        </div>
                     </div>
                 )}
+                {/* --- FIM DA MUDANÇA 2 --- */}
                 
-                {/* Visualizador de TXT */}
+                {/* Visualizador de TXT (Não muda) */}
                 {fileContent && (
                     <pre className={styles.txtViewer}>
                         {fileContent}

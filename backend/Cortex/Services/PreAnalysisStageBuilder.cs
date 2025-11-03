@@ -22,7 +22,7 @@ public class PreAnalysisStageBuilder(
     /// Cada Index contém seus Indicators e References associados.
     /// </summary>
     /// <param name="geminiResponse">Resposta processada do Gemini contendo os índices</param>
-    /// <param name="preAnalysisStageId">ID do PreAnalysisStage ao qual os índices pertencem</param>
+    /// <param name="preAnalysisStage">PreAnalysisStage ao qual os índices pertencem</param>
     /// <param name="allDocuments">Todos os documentos da análise (referência + análise)</param>
     /// <returns>Lista de entidades Index prontas para persistência</returns>
     public async Task<List<Models.Index>> BuildIndexesAsync(
@@ -61,7 +61,7 @@ public class PreAnalysisStageBuilder(
         {
             Name = geminiIndex.Name,
             Description = geminiIndex.Description,
-            IndicatorId = indicator.Id,
+            Indicator = indicator,
             PreAnalysisStage = preAnalysisStage
         };
 

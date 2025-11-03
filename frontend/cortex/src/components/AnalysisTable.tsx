@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import styles from './css/AnalysisTable.module.css'; // Vamos criar este CSS
 import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
 import { AnalysisStatus } from '../interfaces/enum/AnalysisStatus';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'; // Importe o ícone
 
 interface AnalysisTableProps {
     analyses: AnalysisDto[];
+    onDeleteClick: (analysis: AnalysisDto) => void; // Callback para o pai
 }
 
 // Componente "filho" para o Status, para darmos cor a ele
@@ -35,7 +37,7 @@ const StatusBadge: React.FC<{ status: AnalysisStatus }> = ({ status }) => {
     return <span className={`${styles.statusBadge} ${className}`}>{text}</span>;
 };
 
-export default function AnalysisTable({ analyses }: AnalysisTableProps) {
+export default function AnalysisTable({ analyses, onDeleteClick }: AnalysisTableProps) {
     const navigate = useNavigate();
 
     // Navega para a página de detalhes da análise
@@ -55,11 +57,12 @@ export default function AnalysisTable({ analyses }: AnalysisTableProps) {
     return (
         <div className={styles.tableContainer}>
             {/* Cabeçalho da Tabela */}
-            <header className={styles.tableHeader}>
+           <header className={styles.tableHeader}>
                 <div className={styles.colTitle}>Título</div>
                 <div className={styles.colStatus}>Status</div>
                 <div className={styles.colCount}>Documentos</div>
                 <div className={styles.colDate}>Criado em</div>
+                <div className={styles.colAction}>Ações</div>
             </header>
 
             {/* Linhas da Tabela */}
@@ -70,12 +73,24 @@ export default function AnalysisTable({ analyses }: AnalysisTableProps) {
                         className={styles.tableRow}
                         onClick={() => handleRowClick(analysis.id)}
                     >
-                        <div className={styles.colTitle}>{analysis.title}</div>
+                        <div className={styles.colTitle}>{analysis.title} {analysis.id}</div>
                         <div className={styles.colStatus}>
                             <StatusBadge status={analysis.status} />
                         </div>
                         <div className={styles.colCount}>{analysis.documentsCount}</div>
                         <div className={styles.colDate}>{formatDate(analysis.createdAt)}</div>
+                        <div className={styles.colAction}>
+                                <button 
+                                    className={styles.actionButton}
+                                    title="Excluir Análise"
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Impede o clique de ir para a linha
+                                        onDeleteClick(analysis);
+                                    }}
+                                >
+                                    <DeleteForeverIcon />
+                                </button>
+                        </div>
                     </li>
                 ))}
             </ul>

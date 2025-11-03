@@ -119,7 +119,6 @@ namespace Cortex.Repositories
             if (analysis != null)
             {
                 _context.Analyses.Remove(analysis);
-                await _context.SaveChangesAsync();
             }
         }
 
@@ -132,6 +131,34 @@ namespace Cortex.Repositories
         {
             return await _context.Analyses
                 .AnyAsync(a => a.Id == analysisId && a.UserId == userId);
+        }
+
+        /// <summary>
+        /// Busca eficientemente uma página de Análises do banco de dados.
+        /// </summary>
+        public async Task<List<Analysis>> GetByUserIdPaginatedAsync(int userId, int pageNumber, int pageSize)
+        {
+            // Validação de página (deve ser 1 ou maior)
+            if (pageNumber < 1) pageNumber = 1;
+
+            return await _context.Analyses
+                .Where(a => a.UserId == userId)
+                .Include(a => a.Documents) // Inclui para contagem de Documentos
+                .Include(a => a.User)     // Inclui para o UserName
+                .OrderByDescending(a => a.CreatedAt) // Ordenação é OBRIGATÓRIA para paginação
+                .Skip((pageNumber - 1) * pageSize)   // Pula os registros das páginas anteriores
+                .Take(pageSize)                      // Pega apenas o número de itens da página
+                .ToListAsync();                      // Executa a query no banco
+        }
+
+        /// <summary>
+        /// Conta eficientemente o total de Análises no banco de dados.
+        /// </summary>
+        public async Task<int> GetCountByUserIdAsync(int userId)
+        {
+            return await _context.Analyses
+                .Where(a => a.UserId == userId)
+                .CountAsync();
         }
     }
 }
