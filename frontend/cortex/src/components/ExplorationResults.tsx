@@ -1,14 +1,18 @@
 import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import styles from './css/ExplorationResults.module.css'
-import type { ExplorationOfMaterialStage } from '../interfaces/dto/AnalysisResult';
+import type { Category, ExplorationOfMaterialStage } from '../interfaces/dto/AnalysisResult';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import DescriptionIcon from '@mui/icons-material/Description';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import CategoryDetailsModal from './CategoryDetailsModal';
+import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
+    analysisDocuments: UploadedDocument[];
+    referenceDocuments: UploadedDocument[];
 }
 
 type ViewMode = 'chart' | 'table' | 'cards';
@@ -24,9 +28,19 @@ interface ProcessedData {
     totalUnits: number;
 }
 
-export default function ExplorationResults({ explorationStage }: ExplorationResultsProps) {
+export default function ExplorationResults({ explorationStage, analysisDocuments,
+    referenceDocuments }: ExplorationResultsProps) {
 
     const [viewMode, setViewMode] = useState<ViewMode>('chart');
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+    // Função auxiliar para encontrar a categoria completa
+    const handleCategoryClick = (categoryName: string) => {
+        const fullCategory = explorationStage.categories.find(c => c.name === categoryName);
+        if (fullCategory) {
+            setSelectedCategory(fullCategory);
+        }
+    };
 
     const processedData = useMemo(() => {
         const data: ProcessedData[] = [];
@@ -170,6 +184,7 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                                     dataKey={indexName}
                                     fill={CHART_COLORS[i % CHART_COLORS.length]}
                                     name={indexName}
+                                    barSize={20}
                                 />
                             ))}
                         </BarChart>
@@ -244,7 +259,10 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                 <div className={styles.cardsScrollContainer}>
                     <div className={styles.cardsGrid}>
                         {processedData.categories.map((cat, idx) => (
-                            <div key={idx} className={styles.card}>
+                            <div 
+                            onClick={() => handleCategoryClick(cat.categoryName)}
+                            key={idx} 
+                            className={styles.card}>
                                 <h3 className={styles.cardTitle}>
                                     {cat.categoryName}
                                 </h3>
@@ -298,6 +316,12 @@ export default function ExplorationResults({ explorationStage }: ExplorationResu
                     </div>
                 ))}
             </div>
+            <CategoryDetailsModal
+                isOpen={!!selectedCategory}
+                onClose={() => setSelectedCategory(null)}
+                category={selectedCategory}
+                allDocuments={[...analysisDocuments, ...referenceDocuments]}
+            />
         </div>
     );
 }

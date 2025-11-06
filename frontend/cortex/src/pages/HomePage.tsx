@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CreateAnalysisModal from '../components/CreateAnalysisModal';
-import Logo from '../components/Logo';
 import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
 import type { AnalysisDto } from '../interfaces/dto/AnalysisDto';
 import { deleteAnalysis, getAnalyses } from '../services/analysisService';
@@ -14,24 +13,6 @@ import Alert from '../components/Alert';
 import DeleteAnalysisModal from '../components/DeleteAnalysisModal';
 import PaginationControls from '../components/PaginationControls';
 
-// Componente simples para o layout da página, inspirado nas referências
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--background-light)' }}>
-        <header style={{
-            padding: '1rem 2rem', borderBottom: '1px solid var(--background-medium)',
-            backgroundColor: 'var(--background-light)', color: 'var(--text-dark)',
-            display: 'flex', alignItems: 'center', gap: '0.5rem'
-        }}>
-            <div style={{ margin: "0", }}>
-                <Logo />
-            </div>
-        </header>
-        <main style={{ flex: 1, padding: '2rem' }}>
-            {children}
-        </main>
-    </div>
-);
-
 const homeErrorMap: ApiErrorMap = {
     byStatusCode: {
         500: "Erro ao buscar suas análises. Tente novamente mais tarde."
@@ -39,9 +20,9 @@ const homeErrorMap: ApiErrorMap = {
     default: "Ocorreu um erro inesperado ao carregar seus dados."
 };
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 5;
 
-export default function HomePage() {
+export default function  HomePage() {
     // Estado para controlar se o modal está aberto ou fechado
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [analyses, setAnalyses] = useState<AnalysisDto[]>([]);
@@ -116,7 +97,7 @@ export default function HomePage() {
     };
 
     return (
-        <MainLayout>
+        <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.75rem', color: 'var(--text-dark)', margin: 0 }}>Suas Análises</h2>
                 <button
@@ -167,6 +148,6 @@ export default function HomePage() {
                     isConfirming={isDeleting}
                 />
             )}
-        </MainLayout>
+        </>
     );
 }

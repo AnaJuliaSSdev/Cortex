@@ -5,8 +5,7 @@ import FileList from '../components/FileList';
 import styles from './css/AnalysisPage.module.css'; // Novo CSS
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 import { DocumentPurpose } from '../interfaces/enum/DocumentPurpose';
-import Logo from '../components/Logo';
-import { continueAnalysis, getAnalysisState, postAnalysisQuestion, startAnalysis } from '../services/analysisService';
+import { continueAnalysis, deleteDocument, getAnalysisState, postAnalysisQuestion, startAnalysis } from '../services/analysisService';
 import type { AnalysisExecutionResult } from '../interfaces/dto/AnalysisExecutionResult';
 import PreAnalysisResults from '../components/PreAnalysisResults';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,6 +14,7 @@ import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
 import { ErrorState } from '../components/ErrorState';
 import Alert, { type AlertType } from '../components/Alert';
 import type { Index } from '../interfaces/Index';
+import ConfirmModal from '../components/ConfirmModal';
 
 
 // Dicionário de erros para AÇÕES (iniciar, continuar)
@@ -59,18 +59,6 @@ const analysisPageErrorMap: ApiErrorMap = {
 const MAX_TOTAL_SIZE_MB = 100;
 const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024; 
 
-// Componente de Layout (pode ser movido para components/Layout.tsx)
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className={styles.layout}>
-        <header className={styles.header}>
-            <Logo></Logo>
-        </header>
-        <main className={styles.mainContent}>
-            {children}
-        </main>
-    </div>
-);
-
 
 export default function AnalysisPage() {
     const { id } = useParams<{ id: string }>();
@@ -85,6 +73,8 @@ export default function AnalysisPage() {
     const [error, setError] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisExecutionResult | null>(null);
     const [alertInfo, setAlertInfo] = useState<{ message: string; type: AlertType } | null>(null);
+    const [docToDelete, setDocToDelete] = useState<UploadedDocument | null>(null);
+    const [isDeletingDoc, setIsDeletingDoc] = useState(false);
 
     useEffect(() => {
         const fetchAnalysis = async () => {
@@ -117,6 +107,31 @@ export default function AnalysisPage() {
 
     const handleReferenceUpload = (doc: UploadedDocument) => {
         setReferenceDocuments((prevDocs) => [...prevDocs, doc]);
+    };
+
+    const handleConfirmDeleteDoc = async () => {
+        if (!docToDelete) return;
+
+        setIsDeletingDoc(true);
+        setAlertInfo(null);
+        try {
+            // Chama a API
+            await deleteDocument(docToDelete.id);
+
+            // Remove o documento do estado local
+            if (docToDelete.purpose === DocumentPurpose.Analysis) {
+                setAnalysisDocuments(prev => prev.filter(d => d.id !== docToDelete.id));
+            } else {
+                setReferenceDocuments(prev => prev.filter(d => d.id !== docToDelete.id));
+            }
+
+            setAlertInfo({ message: "Documento excluído com sucesso.", type: "success" });
+        } catch (error) {
+            setAlertInfo({ message: "Falha ao excluir o documento.", type: "error" });
+        } finally {
+            setIsDeletingDoc(false);
+            setDocToDelete(null); // Fecha o modal
+        }
     };
 
     // Função para enviar a pergunta e "iniciar" a análise
@@ -226,6 +241,8 @@ export default function AnalysisPage() {
         });
     };
 
+
+
     //tamanho total usado para cada tipo, usando useMemo
     const analysisSizeUsed = useMemo(() => {
         return analysisDocuments.reduce((sum, doc) => sum + doc.fileSize, 0);
@@ -241,9 +258,9 @@ export default function AnalysisPage() {
 
     if (isSubmitting) {
         return (
-            <MainLayout>
+            <>
                 <LoadingSpinner messages={loadingMessages} />
-            </MainLayout>
+            </>
         );
     }
 
@@ -253,18 +270,20 @@ export default function AnalysisPage() {
 
     if (analysisResult?.explorationOfMaterialStage) {
         return (
-            <MainLayout>
+            <>
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
                 <ExplorationResults
                     explorationStage={analysisResult.explorationOfMaterialStage}
+                    analysisDocuments={analysisDocuments}
+                    referenceDocuments={referenceDocuments}
                 />
-            </MainLayout>
+            </>
         );
     }
 
     if (analysisResult?.preAnalysisResult) {
         return (
-            <MainLayout>
+            <>
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
                 <PreAnalysisResults
                     preAnalysisResult={analysisResult.preAnalysisResult}
@@ -277,12 +296,12 @@ export default function AnalysisPage() {
                     alertInfo={alertInfo}
                     onCloseAlert={() => setAlertInfo(null)}
                 />
-            </MainLayout>
+            </>
         );
     }
 
     return (
-        <MainLayout>
+        <>
             <form onSubmit={handleStartAnalysis} className={styles.analysisForm}>
                 <h1 className={styles.pageTitle}>Configurar Análise: {analysisResult.analysisTitle}</h1>
 
@@ -322,7 +341,10 @@ export default function AnalysisPage() {
                         currentTotalSize={analysisSizeUsed}
                         maxTotalSize={MAX_TOTAL_SIZE_BYTES}
                     />
-                    <FileList files={analysisDocuments} />
+                   <FileList 
+                        files={analysisDocuments} 
+                        onDeleteClick={setDocToDelete} 
+                    />
                 </section>
 
                 {/* Documentos de Referência (Opcional) */}
@@ -336,7 +358,7 @@ export default function AnalysisPage() {
                         currentTotalSize={referenceSizeUsed}
                         maxTotalSize={MAX_TOTAL_SIZE_BYTES}
                     />
-                    <FileList files={referenceDocuments} />
+                    <FileList files={referenceDocuments}  onDeleteClick={setDocToDelete}  />
                 </section>
 
                 {/* 4. Ação Final */}
@@ -355,6 +377,22 @@ export default function AnalysisPage() {
                     )}
                 </footer>
             </form>
-        </MainLayout>
+            <ConfirmModal
+                isOpen={!!docToDelete}
+                title="Excluir Documento"
+                message={
+                    <p>
+                        Você tem certeza que deseja excluir o documento 
+                        <strong> "{docToDelete?.fileName}"</strong>?
+                        <br/><br/>
+                        Esta ação não pode ser desfeita.
+                    </p>
+                }
+                confirmText="Sim, Excluir"
+                isConfirming={isDeletingDoc}
+                onClose={() => setDocToDelete(null)}
+                onConfirm={handleConfirmDeleteDoc}
+            />
+        </>
     );
 }

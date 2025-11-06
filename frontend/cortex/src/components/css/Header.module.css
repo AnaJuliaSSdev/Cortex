@@ -1,0 +1,30 @@
+.header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--background-medium);
+    background-color: var(--background-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Empurra o Logo e o Botão para as extremidades */
+}
+
+.logoutButton {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--cor-destaque, #B35848); /* Usa sua cor de destaque */
+    color: var(--cor-destaque, #B35848);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    transition: background-color 0.2s, color 0.2s;
+    
+    /* Para alinhar o ícone e o texto */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logoutButton:hover {
+    background-color: var(--cor-destaque, #B35848);
+    color: white;
+}

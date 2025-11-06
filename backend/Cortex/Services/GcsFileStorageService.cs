@@ -1,7 +1,7 @@
 ﻿using Cortex.Exceptions;
+using Google.Cloud.Storage.V1;
 using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
-using Google.Cloud.Storage.V1;
 
 namespace Cortex.Services;
 
