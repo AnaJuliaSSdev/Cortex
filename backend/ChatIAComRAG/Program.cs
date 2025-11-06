@@ -34,7 +34,7 @@ class Program
 
         if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
         {
-            Console.WriteLine("❌ Arquivo não encontrado!");
+            Console.WriteLine("Arquivo não encontrado!");
             return;
         }
 
@@ -42,14 +42,14 @@ class Program
         var title = Console.ReadLine() ?? "Documento sem título";
 
         Console.WriteLine();
-        Console.WriteLine("⏳ Processando PDF (pode levar alguns minutos)...");
+        Console.WriteLine("Processando PDF (pode levar alguns minutos)...");
         Console.WriteLine();
 
         try
         {
             var document = await pdfProcessor.ProcessPdfAsync(pdfPath, title);
 
-            Console.WriteLine("✅ PDF processado com sucesso!");
+            Console.WriteLine("PDF processado com sucesso");
             Console.WriteLine($"   - ID do documento: {document.Id}");
             Console.WriteLine($"   - Total de caracteres: {document.Content?.Length ?? 0}");
             Console.WriteLine();
@@ -75,7 +75,7 @@ class Program
                     question.Equals("sair", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine();
-                    Console.WriteLine("👋 Encerrando chat. Até logo!");
+                    Console.WriteLine("Encerrando chat.");
                     break;
                 }
 

@@ -171,9 +171,10 @@ public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, Storag
         }
 
         // Parseia o GCS URI para obter o nome do bucket e do objeto
-        var gcsPath = GcsPath.Parse(gcsUri);
+        string uriPrefix = $"gs://{_bucketName}/";
+        string objectName = gcsUri.Substring(uriPrefix.Length);
 
-        await _storageClient.DeleteObjectAsync(gcsPath.Bucket, gcsPath.ObjectName);
+        await _storageClient.DeleteObjectAsync(_bucketName, objectName);
         _logger.LogInformation("Objeto GCS excluído: {GcsUri}", gcsUri);
     }
 }

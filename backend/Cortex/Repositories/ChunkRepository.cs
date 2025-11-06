@@ -53,12 +53,12 @@ public class ChunkRepository : IChunkRepository
             .Include(c => c.Document)
             .AsQueryable();
 
-        // Filtrar por documento se especificado
+
         if (documentId.HasValue)
         {
             query = query.Where(c => c.DocumentId == documentId.Value);
         }
-        // Filtrar por análise se especificado
+
         else if (analysisId.HasValue)
         {
             query = query.Where(c => c.Document.AnalysisId == analysisId.Value);
@@ -76,7 +76,7 @@ public class ChunkRepository : IChunkRepository
 
         return await _context.Chunks
             .Include(c => c.Document)
-            .Where(c => c.DocumentId == documentId)  // Filtrar por documento específico
+            .Where(c => c.DocumentId == documentId) 
             .OrderBy(c => c.Embedding.CosineDistance(queryVector))
             .Take(limit)
             .ToListAsync();

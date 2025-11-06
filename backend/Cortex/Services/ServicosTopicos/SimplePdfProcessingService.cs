@@ -43,7 +43,7 @@ namespace Cortex.Services.ServicosTopicos
             document.GcsFilePath = ""; // Não usamos GCS
             document.CreatedAt = DateTime.UtcNow;
             document.Purpose = Models.Enums.DocumentPurpose.Reference;
-            document.AnalysisId = 1; // Análise padrão para o console
+            document.AnalysisId = 17; // Análise padrão para o console
 
             await _documentRepository.AddAsync(document);
             _logger.LogInformation("Documento salvo. ID: {Id}", document.Id);

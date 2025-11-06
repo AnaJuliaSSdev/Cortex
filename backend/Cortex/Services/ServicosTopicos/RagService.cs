@@ -25,26 +25,15 @@ public class RagService : IRagService
 
     public async Task<string> AskQuestionAsync(string question, int documentId)
     {
-        // 1. Gerar embedding da pergunta
         _logger.LogInformation("Gerando embedding da pergunta...");
         var questionEmbedding = await _embeddingService.GenerateEmbeddingAsync(question);
 
-        // 2. Buscar chunks mais similares do documento específico
         _logger.LogInformation("Buscando chunks relevantes do documento {DocumentId}...", documentId);
-
-        // USANDO OPÇÃO 1 (método novo):
         var relevantChunks = await _chunkRepository.SearchSimilarByDocumentIdAsync(
             documentId,
             questionEmbedding,
             limit: 5
         );
-
-        // OU USANDO OPÇÃO 2 (método modificado):
-        // var relevantChunks = await _chunkRepository.SearchSimilarAsync(
-        //     questionEmbedding, 
-        //     limit: 5, 
-        //     documentId: documentId
-        // );
 
         if (!relevantChunks.Any())
         {
@@ -54,10 +43,8 @@ public class RagService : IRagService
 
         _logger.LogInformation("Encontrados {Count} chunks relevantes.", relevantChunks.Count);
 
-        // 3. Montar contexto com os chunks (RAG manual!)
         var context = string.Join("\n\n---\n\n", relevantChunks.Select(c => c.Content));
 
-        // 4. Criar prompt estruturado
         var prompt = $@"Você é um assistente que responde perguntas baseado APENAS no contexto fornecido abaixo.
 
         CONTEXTO DO DOCUMENTO:
@@ -74,7 +61,6 @@ public class RagService : IRagService
 
         RESPOSTA:";
 
-        // 5. Chamar Gemini (RAG manual - você monta o contexto!)
         _logger.LogInformation("Enviando prompt para o Gemini...");
         var response = await _geminiService.GenerateTextAsync(prompt);
 
