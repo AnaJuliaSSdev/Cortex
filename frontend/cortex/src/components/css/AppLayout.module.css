@@ -1,0 +1,12 @@
+.appContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background-light);
+}
+
+.mainContent {
+  flex: 1; /* Ocupa todo o espaço restante */
+  padding: 2rem;
+  overflow-y: auto; /* Permite que apenas o conteúdo principal role */
+}

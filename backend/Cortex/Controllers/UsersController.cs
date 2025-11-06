@@ -33,4 +33,6 @@ public class UsersController(IUserService userService) : ControllerBase
         var token = await _userService.LoginAsync(loginDto);
         return Ok(new { token });
     }
+    
+
 }

@@ -44,6 +44,7 @@ const IndexItem: React.FC<IndexItemProps> = ({
     onEditClick,
     onDeleteClick
 }) => {
+    
     // Helper para encontrar o nome do arquivo a partir do URI
     const getFileNameFromUri = (uri: string): string => {
         const allDocuments = [...analysisDocuments, ...referenceDocuments];

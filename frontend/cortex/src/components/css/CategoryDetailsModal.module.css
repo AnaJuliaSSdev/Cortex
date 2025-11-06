@@ -1,0 +1,187 @@
+/* ... (overlay, modal, animations - sem mudanças significativas) ... */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); display: flex;
+    align-items: center; justify-content: center; z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+.modal {
+    background: var(--background-light, #FBFBF8); width: 90%; max-width: 900px;
+    max-height: 90vh; border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex;
+    flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- HEADER (Ajustado para melhor alinhamento) --- */
+.header {
+    padding: 1.5rem 2rem; background: white;
+    border-bottom: 1px solid var(--background-medium, #EFEBE6);
+    display: flex; justify-content: space-between; alignItems: flex-start;
+    flex-shrink: 0;
+}
+.title {
+    margin: 0; font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    color: var(--primary, #B35848); font-size: 1.75rem;
+    line-height: 1.3; /* Melhor para títulos longos que quebram linha */
+}
+.subtitle {
+    color: var(--text-light, #8E8883); font-size: 0.9rem;
+    margin-top: 0.5rem; display: block; font-weight: 500;
+}
+.closeButton {
+    background: transparent; border: none; 
+    cursor: pointer;
+    color: var(--text-light, #8E8883); 
+    padding: 0.5rem;
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    transition: all 0.2s; 
+    flex-shrink: 0; /* Não esmaga o botão */
+    height: 2.5rem;
+}
+.closeButton:hover {
+    background-color: var(--background-medium, #EFEBE6);
+    color: var(--text-dark, #312F2F);
+}
+
+/* --- ÁREA DE CONTEÚDO --- */
+.content {
+    padding: 2rem; overflow-y: auto; display: flex;
+    flex-direction: column; gap: 2.5rem;
+}
+.sectionTitle {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    color: var(--text-dark, #312F2F); font-size: 1.25rem;
+    margin: 0 0 1.25rem 0; padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--background-medium, #EFEBE6);
+    display: flex; align-items: center; /* Alinha ícone e texto */
+}
+
+/* --- SEÇÃO DE DEFINIÇÃO --- */
+.definition {
+    font-size: 1.05rem; line-height: 1.7; color: var(--text-medium, #4A4644);
+    background: white; padding: 1.5rem; border-radius: 12px;
+    border-left: 5px solid var(--primary, #B35848); /* Borda mais grossa */
+    margin: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* --- GRID DE ÍNDICES (Melhorado para textos longos) --- */
+.indicesGrid {
+    display: grid;
+    /* Usa auto-fit para melhor responsividade em telas variadas */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.indexCard {
+    background: white; padding: 1.5rem; border-radius: 12px;
+    border: 1px solid var(--background-medium, #EFEBE6);
+    display: flex; flex-direction: column; gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.indexCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-color: var(--primary, #B35848);
+}
+.indexHeader {
+    display: flex; flex-direction: column; gap: 0.75rem;
+}
+.indexName {
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    font-weight: 700; color: var(--text-dark, #312F2F);
+    font-size: 1.1rem; line-height: 1.4;
+}
+
+/* NOVO ESTILO PARA O INDICADOR (não mais uma tag pequena) */
+.indicatorTag {
+    font-size: 0.9rem;
+    color: var(--text-medium, #4A4644);
+    background-color: var(--background-light, #FBFBF8); /* Fundo sutil */
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid #5a8d87; /* Uma cor secundária da sua paleta para diferenciar */
+    line-height: 1.5;
+    font-style: italic;
+}
+/* Adiciona um prefixo "Indicador:" visualmente */
+.indicatorTag::before {
+    content: "Indicador: ";
+    font-weight: 600;
+    font-style: normal;
+    color: #5a8d87;
+}
+
+.indexDescription {
+    margin: 0; font-size: 0.95rem; color: var(--text-light, #8E8883);
+    line-height: 1.6;
+}
+
+/* --- LISTA DE UNIDADES (Melhorada para destaque) --- */
+.unitsList {
+    display: flex; flex-direction: column; gap: 2rem;
+}
+.unitItem {
+    background: white; border-radius: 12px; padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+.unitItem:hover {
+    border-color: var(--background-medium, #EFEBE6);
+}
+.unitText {
+    margin: 0 0 1.5rem 0; font-size: 1.1rem; line-height: 1.8;
+    color: var(--text-dark, #312F2F);
+    font-family: 'Georgia', serif; /* Mantém o destaque serifado */
+    padding-left: 1rem;
+    border-left: 3px solid var(--background-medium, #EFEBE6);
+}
+
+.unitMeta {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 1.5rem; padding-top: 1rem;
+    border-top: 1px solid var(--background-light, #FBFBF8);
+}
+.unitSource {
+    display: flex; align-items: center; color: var(--text-light, #8E8883);
+    font-size: 0.9rem; font-weight: 500; background: var(--background-light, #FBFBF8);
+    padding: 0.5rem 0.75rem; border-radius: 6px;
+}
+
+/* --- TAGS DE ÍNDICES NAS UNIDADES (Mais destaque) --- */
+.unitIndices {
+    display: flex; gap: 0.75rem; flex-wrap: wrap;
+    flex: 1; justify-content: flex-start; /* Alinha à direita se houver espaço */
+}
+.unitIndexTag {
+    font-size: 0.85rem;
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    font-weight: 600;
+    color: white; /* Texto branco para contraste */
+    background-color: var(--primary, #B35848); /* Cor de destaque */
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px; /* Mais arredondado */
+    cursor: help; /* Cursor de ajuda para indicar tooltip */
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(179, 88, 72, 0.2); /* Sombra sutil na cor primária */
+}
+.unitIndexTag:hover {
+    transform: translateY(-2px);
+    background-color: #a04e40; /* Tom um pouco mais escuro no hover */
+}
+
+.justification {
+    margin-top: 1.5rem; padding: 1rem;
+    background: var(--background-light, #FBFBF8);
+    border-radius: 8px; font-size: 0.95rem; line-height: 1.6;
+    color: var(--text-medium, #4A4644);
+    border-left: 3px solid var(--text-light, #8E8883);
+}
+.justification strong {
+    color: var(--text-dark, #312F2F);
+}

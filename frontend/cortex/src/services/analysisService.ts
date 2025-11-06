@@ -163,3 +163,18 @@ export const deleteAnalysis = async (analysisId: number): Promise<void> => {
         throw error;
     }
 };
+
+
+/**
+ * Exclui um documento de uma análise.
+ * @param documentId O ID do documento a ser excluído
+ */
+export const deleteDocument = async (documentId: string): Promise<void> => {
+  try {
+    // Chama o endpoint que você criou: [HttpDelete("documents/{documentId}")]
+    await api.delete(`/Analysis/documents/${documentId}`);
+  } catch (error) {
+    console.error(`Erro ao excluir o documento ${documentId}:`, error);
+    throw error; // Deixa o handler da página tratar
+  }
+};

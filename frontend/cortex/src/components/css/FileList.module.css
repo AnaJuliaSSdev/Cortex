@@ -32,3 +32,21 @@
     background-color: #FDFDFC;
     border-radius: 4px;
 }
+
+.deleteButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light, #8E8883);
+  border-radius: 50%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #ddd8d3;
+  color: var(--primary, #B35848);
+}
