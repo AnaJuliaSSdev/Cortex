@@ -28,7 +28,7 @@ const FileList: React.FC<FileListProps> = ({ files, onDeleteClick }) => {
       {files.map((file) => (
         <li key={file.id} className={styles.fileItem}>
           <div className={styles.fileInfo}>
-            <span className={styles.fileName}>{file.fileName}</span>
+            <span className={styles.fileName}>{file.fileName + " "}</span> 
             <span className={styles.fileSize}>{formatBytes(file.fileSize)}</span>
           </div>
           
