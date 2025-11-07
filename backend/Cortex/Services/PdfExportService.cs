@@ -167,7 +167,7 @@ public class PdfExportService : IExportService
         {
             builder.AddPageBreak();
             builder.AddSection("Resumo das Categorias");
-            var summaryTable = CreateCategorySummaryTable(explorationStage.Categories.ToList());
+            var summaryTable = CreateCategorySummaryTable(explorationStage.Categories.ToList(), analysis.Documents);
             builder.AddTable(summaryTable);
         }
 
@@ -179,12 +179,12 @@ public class PdfExportService : IExportService
 
             foreach (var category in explorationStage.Categories.OrderByDescending(c => c.Frequency))
             {
-                BuildCategoryDetail(builder, category, options.IncludeReferences);
+                BuildCategoryDetail(builder, category, options.IncludeReferences, analysis.Documents);
             }
         }
     }
 
-    private void BuildCategoryDetail(PdfDocumentBuilder builder, Category category, bool includeReferences)
+    private void BuildCategoryDetail(PdfDocumentBuilder builder, Category category, bool includeReferences, ICollection<Document> allDocuments)
     {
         builder.AddSection($"{category.Name}");
         builder.AddParagraph($"Definição: {category.Definition}");
@@ -220,7 +220,7 @@ public class PdfExportService : IExportService
                     Headers = new List<string> { "Documento", "Página", "Linha", "Trecho" },
                     Rows = firstIndex.References.Select(r => new List<string>
                     {
-                        ExtractDocumentName(r.SourceDocumentUri),
+                        GetOriginalFileName(r.SourceDocumentUri, allDocuments),
                         r.Page ?? "-",
                         r.Line ?? "-",
                         TruncateText(r.QuotedContent, 100)
@@ -241,7 +241,7 @@ public class PdfExportService : IExportService
                     Rows = unitsForThisIndex.Select(ru => new List<string>
                     {
                         TruncateText(ru.Text, 150),
-                        ExtractDocumentName(ru.SourceDocumentUri),
+                        GetOriginalFileName(ru.SourceDocumentUri, allDocuments),
                         ru.Page ?? "-",
                         ru.Line ?? "-",
                         TruncateText(ru.Justification, 100)
@@ -254,7 +254,7 @@ public class PdfExportService : IExportService
         builder.AddPageBreak();
     }
 
-    private TableData CreateCategorySummaryTable(List<Category> categories)
+    private TableData CreateCategorySummaryTable(List<Category> categories, ICollection<Document> allDocuments)
     {
         var table = new TableData
         {
@@ -287,19 +287,15 @@ public class PdfExportService : IExportService
         return table;
     }
 
-    private static string ExtractDocumentName(string uri)
+    private static string GetOriginalFileName(string gcsUri, IEnumerable<Document> allDocuments)
     {
-        if (string.IsNullOrEmpty(uri)) return "-";
+        if (string.IsNullOrEmpty(gcsUri) || allDocuments == null) return "-";
 
-        // Extrai o nome do arquivo do URI
-        try
-        {
-            return System.IO.Path.GetFileName(new Uri(uri).LocalPath);
-        }
-        catch
-        {
-            return uri;
-        }
+        // Procura na lista de documentos pelo GcsFilePath correspondente
+        var doc = allDocuments.FirstOrDefault(d => d.GcsFilePath == gcsUri);
+
+        // Retorna o FileName original, ou o GcsUri se não for encontrado
+        return doc?.FileName ?? gcsUri;
     }
 
     private static string TruncateText(string? text, int maxLength)

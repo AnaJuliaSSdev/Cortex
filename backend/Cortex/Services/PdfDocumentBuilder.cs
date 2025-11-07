@@ -78,84 +78,86 @@ public class PdfDocumentBuilder : IDocumentBuilder
         });
     }
 
+    [Obsolete]
     public void AddTable(TableData tableData)
     {
-        if (!tableData.Rows.Any()) return;
+        if (tableData == null || tableData.Rows.Count == 0) return;
 
         _contentActions.Add(column =>
         {
-            column.Item().PaddingTop(10).PaddingBottom(10).Table(table =>
+            column.Item().ShowEntire().PaddingVertical(10).Element(container =>
             {
-                // Define colunas
-                // --- CORREÇÃO NA DEFINIÇÃO DE COLUNAS ---
-                // Você precisa definir todas as colunas de uma vez
-                table.ColumnsDefinition(columns =>
+                container.Column(innerColumn =>
                 {
-                    // Exemplo: 1ª coluna maior, outras iguais
-                    // Assumindo que a 1ª é "Categoria" e as outras são dados
-                    columns.RelativeColumn(1.5f); // Primeira coluna
-                    for (int i = 1; i < tableData.Headers.Count; i++)
+                    // --- Título ---
+                    if (!string.IsNullOrEmpty(tableData.Caption))
                     {
-                        columns.RelativeColumn(); // Colunas restantes
+                        innerColumn.Item().PaddingBottom(5)
+                            .Text(tableData.Caption)
+                            .FontSize(11)
+                            .SemiBold()
+                            .FontColor(Colors.Blue.Darken2);
                     }
+
+                    // --- Tabela ---
+                    innerColumn.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(1.5f);
+                            for (int i = 1; i < tableData.Headers.Count; i++)
+                                columns.RelativeColumn();
+                        });
+
+                        // Cabeçalho
+                        table.Header(header =>
+                        {
+                            foreach (var headerText in tableData.Headers)
+                            {
+                                header.Cell().Element(CellStyleHeader)
+                                    .Text(headerText)
+                                    .FontSize(10)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                            }
+                        });
+
+                        // Corpo
+                        var rowIndex = 0;
+                        foreach (var row in tableData.Rows)
+                        {
+                            var isEven = rowIndex++ % 2 == 0;
+                            foreach (var cellText in row)
+                            {
+                                table.Cell().Element(c => CellStyleBody(c, isEven))
+                                    .Text(cellText ?? "-")
+                                    .FontSize(9)
+                                    .LineHeight(1.3f)
+                                     .WrapAnywhere();
+                            }
+                        }
+
+                        static IContainer CellStyleHeader(IContainer container) =>
+                            container.Background(Colors.Blue.Darken2)
+                                     .Padding(5)
+                                     .BorderBottom(1)
+                                     .BorderColor(Colors.Grey.Lighten1);
+
+                        static IContainer CellStyleBody(IContainer container, bool isEven) =>
+                            container.Background(isEven ? Colors.Grey.Lighten3 : Colors.White)
+                                     .Padding(5)
+                                     .BorderBottom(1)
+                                     .BorderColor(Colors.Grey.Lighten1);
+                    });
+
+                    // --- Legenda ---
+                    innerColumn.Item().PaddingTop(3)
+                        .Text($"Tabela: {tableData.Caption}")
+                        .FontSize(9)
+                        .Italic()
+                        .FontColor(Colors.Grey.Darken1);
                 });
-
-                // Cabeçalho
-                table.Header(header =>
-                {
-                    foreach (var headerText in tableData.Headers)
-                    {
-                        header.Cell().Element(CellStyle).Text(headerText)
-                            .FontSize(10)
-                            .Bold()
-                            .FontColor(Colors.White);
-                    }
-
-                    static IContainer CellStyle(IContainer container)
-                    {
-                        return container
-                            .Background(Colors.Blue.Darken2)
-                            .Padding(5)
-                            .BorderBottom(1)
-                            .BorderColor(Colors.Grey.Lighten1);
-                    }
-                });
-
-                // Linhas
-                var rowIndex = 0;
-                foreach (var row in tableData.Rows)
-                {
-                    var isEven = rowIndex % 2 == 0;
-                    rowIndex++;
-
-                    foreach (var cellText in row)
-                    {
-                        table.Cell().Element(container => CellStyle(container, isEven))
-                            .Text(cellText ?? "-")
-                            .FontSize(9)
-                            .LineHeight(1.3f);
-                    }
-                }
-
-                static IContainer CellStyle(IContainer container, bool isEven)
-                {
-                    var backgroundColor = isEven ? Colors.Grey.Lighten3 : Colors.White;
-                    return container
-                        .Background(backgroundColor)
-                        .Padding(5)
-                        .BorderBottom(1)
-                        .BorderColor(Colors.Grey.Lighten1);
-                }
             });
-
-            // Legenda da tabela
-            if (!string.IsNullOrEmpty(tableData.Caption))
-            {
-                column.Item().PaddingTop(3).Text(tableData.Caption)
-                    .FontSize(9)
-                    .Italic()
-                    .FontColor(Colors.Grey.Darken1);
-            }
         });
     }
 
@@ -163,10 +165,11 @@ public class PdfDocumentBuilder : IDocumentBuilder
     {
         _contentActions.Add(column =>
         {
-            column.Item().PaddingTop(15).PaddingBottom(10).Column(imageColumn =>
+            column.Item().EnsureSpace().PaddingTop(15).PaddingBottom(10).Column(imageColumn =>
             {
                 imageColumn.Item()
                     .AlignCenter()
+                    .PaddingTop(15)
                     .MaxWidth(450) // Ajustado para margens ABNT (A4 ~15cm útil)
                     .Image(imageData);
 
@@ -174,6 +177,7 @@ public class PdfDocumentBuilder : IDocumentBuilder
                 {
                     imageColumn.Item()
                         .PaddingTop(8)
+                        .PaddingBottom(10)
                         .AlignCenter()
                         .Text(caption)
                         .FontSize(10)
@@ -226,12 +230,11 @@ public class PdfDocumentBuilder : IDocumentBuilder
 
                 // Rodapé (Footer)
                 page.Footer()
-                    .AlignCenter()
+                    .AlignRight()
+                    .PaddingRight(0.5f, Unit.Centimetre) 
                     .Text(x =>
                     {
                         x.CurrentPageNumber();
-                        x.Span(" / ");
-                        x.TotalPages();
                     });
 
                 // Conteúdo (Content)

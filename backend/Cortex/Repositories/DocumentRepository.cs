@@ -25,7 +25,6 @@ public class DocumentRepository(AppDbContext context) : IDocumentRepository
     public async Task<IEnumerable<Document>> GetByAnalysisIdAsync(int analysisId)
     {
         return await _context.Documents
-        .Include(d => d.Chunks)
         .Include(d => d.Analysis)
         .Where(d => d.AnalysisId == analysisId)
         .ToListAsync();
