@@ -305,63 +305,61 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             </div>
             )}
 
-            {/* Visualização de Tabela */}
+             {/* Visualização de Tabela */}
             {viewMode === 'table' && (
-                <div className={styles.tableContainer}>
-                    <div className={styles.tableScrollContainer}>
-                        <table className={styles.table}>
-                            <thead className={styles.tableHead}>
-                                <tr>
-                                    <th className={`${styles.tableHeader} ${styles.categoryHeader}`}>
-                                        Categoria
+                <div className={styles.tableWrapper}>
+                    <table className={styles.tableFixed}>
+                        <thead>
+                            <tr>
+                                <th className={styles.thCategory} rowSpan={2}>
+                                    Categoria
+                                </th>
+                                <th className={styles.thUnits} rowSpan={2}>
+                                    Unidades
+                                </th>
+                                <th className={styles.thIndicesGroup} colSpan={allIndexNames.length}>
+                                    Índices Encontrados
+                                </th>
+                            </tr>
+                            <tr className={styles.indexNamesRow}>
+                                {allIndexNames.map(indexName => (
+                                    <th
+                                        key={indexName}
+                                        className={styles.thIndexName}
+                                        title={indexName}
+                                    >
+                                        <div className={styles.indexNameText}>
+                                            {indexName.length > 40 ? indexName.substring(0, 35) + '...' : indexName}
+                                        </div>
                                     </th>
-                                    <th className={`${styles.tableHeader} ${styles.unitHeader}`}>
-                                        Unidades
-                                    </th>
-                                    <th colSpan={allIndexNames.length} className={`${styles.tableHeader} ${styles.indicesHeader}`}>
-                                        Índices Encontrados
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th className={styles.stickyColumn}></th>
-                                    <th className={styles.stickyColumn}></th>
-                                    {allIndexNames.map(indexName => (
-                                        <th
-                                            key={indexName}
-                                            className={styles.indexNameHeader}
-                                            title={indexName}
-                                        >
-                                            {indexName.length > 25 ? indexName.substring(0, 22) + '...' : indexName}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className={styles.tableBody}>
-                                {processedData.categories.map((cat, idx) => (
-                                    <tr key={idx} className={styles.tableRow}>
-                                        <td className={`${styles.tableCell} ${styles.categoryCell}`}>
-                                            {cat.categoryName}
-                                        </td>
-                                        <td className={`${styles.tableCell} ${styles.unitCell}`}>
-                                            {cat.totalUnits}
-                                        </td>
-                                        {allIndexNames.map(indexName => {
-                                            const indexData = cat.indices.find(i => i.name === indexName);
-                                            const count = indexData?.count || 0;
-                                            return (
-                                                <td
-                                                    key={indexName}
-                                                    className={`${styles.tableCell} ${count > 0 ? styles.indexCellHasCount : styles.indexCellNoCount}`}
-                                                >
-                                                    {count > 0 ? count : '—'}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {processedData.categories.map((cat, idx) => (
+                                <tr key={idx} className={styles.dataRow}>
+                                    <td className={styles.tdCategory}>
+                                        {cat.categoryName}
+                                    </td>
+                                    <td className={styles.tdUnits}>
+                                        {cat.totalUnits}
+                                    </td>
+                                    {allIndexNames.map(indexName => {
+                                        const indexData = cat.indices.find(i => i.name === indexName);
+                                        const count = indexData?.count || 0;
+                                        return (
+                                            <td
+                                                key={indexName}
+                                                className={count > 0 ? styles.tdIndexValue : styles.tdIndexEmpty}
+                                            >
+                                                {count > 0 ? count : '—'}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
