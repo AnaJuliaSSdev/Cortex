@@ -158,6 +158,8 @@ export default function AnalysisPage() {
 
             if (result.isSuccess) {
                 setAnalysisResult(result);
+                setAnalysisDocuments(result.analysisDocuments || []);
+                setReferenceDocuments(result.referenceDocuments || []);
             } else {
                 // Se o backend retornar isSuccess = false
                 setAlertInfo({ message: result.errorMessage || 'Ocorreu um erro desconhecido ao processar a análise.', type: "error" });
@@ -179,6 +181,8 @@ export default function AnalysisPage() {
             const result = await continueAnalysis(id);
             if (result.isSuccess) {
                 setAnalysisResult(result); // Atualiza o estado com o NOVO resultado
+                setAnalysisDocuments(result.analysisDocuments || []);
+                setReferenceDocuments(result.referenceDocuments || []);
             } else {
                 console.log("deu erro tinha q lançar excecao")
                 setAlertInfo({ message: result.errorMessage || 'Falha ao continuar a análise.', type: "error" });
@@ -272,10 +276,12 @@ export default function AnalysisPage() {
         return (
             <>
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
+                <p>{analysisResult.analysisQuestion}</p>
                 <ExplorationResults
                     explorationStage={analysisResult.explorationOfMaterialStage}
                     analysisDocuments={analysisDocuments}
                     referenceDocuments={referenceDocuments}
+                    analysisId={id}
                 />
             </>
         );

@@ -93,7 +93,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
       4.Tenha sentido literal (desconsidere ironias ou negações)
     
     REGRAS RIGOROSAS
-    1. Use APENAS os índices e indicadores fornecidos (referencie pelo ID)
+    1. Use APENAS os índices e indicadores fornecidos (referencie pelo nome sempre que for citá-los, nunca pelos ID's)
     2. Cada unidade de registro deve citar o trecho EXATO do documento fonte
     3. Categorias devem emergir do agrupamento temático das unidades
     4. Não invente ou infira informações não presentes nos textos
@@ -664,9 +664,9 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
 
             _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
             //peguei a ultima resposta e mockei pra n ficar gastando crédito
-            string jsonResponse = GetMockedGeminiResponse();
+            //string jsonResponse = GetMockedGeminiResponse();
             //deixei comentado por enquanto pra não gastar recurso
-            //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
+            string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
 
             _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -676,6 +676,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
           
             ExplorationOfMaterialStage stageEntity = await _explorationPersistenceService.MapAndSaveExplorationResultAsync(analysis.Id, geminiResponse, allDocuments);
 
+            resultBaseClass.AnalysisQuestion = analysis.Question;
             resultBaseClass.ExplorationOfMaterialStage = stageEntity;
             resultBaseClass.PromptResult = jsonResponse;
             resultBaseClass.IsSuccess = true;

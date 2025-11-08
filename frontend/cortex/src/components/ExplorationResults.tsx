@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import html2canvas from 'html2canvas';
 import styles from './css/ExplorationResults.module.css'
 import type { Category, ExplorationOfMaterialStage } from '../interfaces/dto/AnalysisResult';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
@@ -8,11 +9,18 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import CategoryDetailsModal from './CategoryDetailsModal';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
+import { exportAnalysisToPdf } from '../services/exportService';
+import type { AlertType } from './Alert';
+import Alert from './Alert';
+import DownloadingIcon from '@mui/icons-material/Downloading';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
+    analysisId: string;
 }
 
 type ViewMode = 'chart' | 'table' | 'cards';
@@ -29,16 +37,93 @@ interface ProcessedData {
 }
 
 export default function ExplorationResults({ explorationStage, analysisDocuments,
-    referenceDocuments }: ExplorationResultsProps) {
+    referenceDocuments, analysisId }: ExplorationResultsProps) {
 
     const [viewMode, setViewMode] = useState<ViewMode>('chart');
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
-    // Função auxiliar para encontrar a categoria completa
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportAlert, setExportAlert] = useState<{ message: string; type: AlertType } | null>(null);
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+    const chartRef = useRef<HTMLDivElement>(null);
+
     const handleCategoryClick = (categoryName: string) => {
         const fullCategory = explorationStage.categories.find(c => c.name === categoryName);
         if (fullCategory) {
             setSelectedCategory(fullCategory);
+        }
+    };
+
+    const handleExportPdf = async () => {
+        setIsExporting(true);
+        setExportAlert(null);
+        setIsExportMenuOpen(false);
+
+        setViewMode('chart');
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const options = {
+            backgroundColor: '#ffffff',
+            scale: window.devicePixelRatio || 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            width: chartRef.current!.scrollWidth,
+            height: chartRef.current!.scrollHeight
+            } as any;
+
+
+        let chartImageBase64: string | null = null;
+
+        // Capturar o gráfico como imagem
+        if (chartRef.current) {
+            try {
+                // Aguardar renderização completa
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Usar html2canvas que funciona melhor com Recharts
+               const canvas = await html2canvas(chartRef.current as HTMLElement, options);
+                // Converter canvas para Base64
+                const dataUrl = canvas.toDataURL('image/png');
+                
+                // Remover o prefixo "data:image/png;base64,"
+                chartImageBase64 = dataUrl.split(',')[1];
+                
+                console.log('Gráfico capturado com sucesso! Tamanho:', chartImageBase64.length, 'chars');
+
+            } catch (err) {
+                console.error("Falha ao capturar o gráfico:", err);
+                setExportAlert({ 
+                    message: "Falha ao capturar a imagem do gráfico. O PDF será gerado sem o gráfico.", 
+                    type: "warning" 
+                });
+                chartImageBase64 = null;
+            }
+        }
+
+        // Chamar o serviço de exportação
+        try {
+            await exportAnalysisToPdf(analysisId, {
+                chartImageBase64: chartImageBase64 || undefined,
+                options: {
+                    includeCharts: true,
+                    includeTables: true,
+                    includeRegisterUnits: true
+                }
+            });
+            
+            setExportAlert({ 
+                message: "Seu PDF foi baixado com sucesso!", 
+                type: "success" 
+            });
+        } catch (err) {
+            console.error("Erro na exportação:", err);
+            setExportAlert({ 
+                message: "Falha ao gerar o PDF. Verifique sua conexão e tente novamente.", 
+                type: "error" 
+            });
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -74,7 +159,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         return { categories: data, allIndices: Array.from(allIndicesMap.entries()) };
     }, [explorationStage]);
 
-    // Dados para o gráfico de barras agrupadas
     const chartData = useMemo(() => {
         return processedData.categories.map(cat => {
             const entry: any = { category: cat.categoryName };
@@ -93,7 +177,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         return Array.from(names);
     }, [processedData]);
 
-    // Mapa de índices com suas descrições
     const indexDescriptions = useMemo(() => {
         const map = new Map<string, string>();
         explorationStage.categories.forEach(cat => {
@@ -125,33 +208,62 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                         onClick={() => setViewMode('chart')}
                         className={`${styles.viewButton} ${viewMode === 'chart' ? styles.activeButton : ''}`}
                     >
-                        <AutoGraphIcon/> Gráfico    
+                        <AutoGraphIcon /> Gráfico
                     </button>
                     <button
                         onClick={() => setViewMode('table')}
                         className={`${styles.viewButton} ${viewMode === 'table' ? styles.activeButton : ''}`}
                     >
-                        <SpaceDashboardIcon/> Tabela
+                        <SpaceDashboardIcon /> Tabela
                     </button>
                     <button
                         onClick={() => setViewMode('cards')}
                         className={`${styles.viewButton} ${viewMode === 'cards' ? styles.activeButton : ''}`}
                     >
-                        <DescriptionIcon/> Cards
+                        <DescriptionIcon /> Cards
                     </button>
                 </div>
+
+                <div className={styles.exportContainer}>
+                    <button
+                        className={styles.exportButton}
+                        onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                        disabled={isExporting}
+                    >
+                        <DownloadingIcon />
+                        {isExporting ? 'Exportando...' : 'Exportar Relatório'}
+                        <ArrowDropDownIcon />
+                    </button>
+
+                    {isExportMenuOpen && (
+                        <div className={styles.exportMenu}>
+                            <button onClick={handleExportPdf}>
+                                <PictureAsPdfIcon /> Exportar como PDF
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {exportAlert && (
+                <Alert
+                    message={exportAlert.message}
+                    type={exportAlert.type}
+                    onClose={() => setExportAlert(null)}
+                />
+            )}
 
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
+                     <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
                     <ResponsiveContainer width="100%" minHeight={600}>
                         <BarChart
                             data={chartData}
                             margin={{ top: 20, right: 30, left: 20, bottom: 150 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-                             <XAxis
+                            <XAxis
                                 dataKey="category"
                                 angle={-45}
                                 textAnchor="end"
@@ -160,7 +272,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                                 stroke="#4A4644"
                                 style={{ fontSize: '0.85rem' }}
                             />
-                           <YAxis
+                            <YAxis
                                 allowDecimals={false}
                                 label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
                                 stroke="#4A4644"
@@ -190,13 +302,12 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+            </div>
             )}
 
-            {/* Visualização de Tabela (Refatorada) */}
+            {/* Visualização de Tabela */}
             {viewMode === 'table' && (
                 <div className={styles.tableContainer}>
-                    {/* O CSS do scrollbar agora está no .module.css
-                        e será aplicado a este contêiner */}
                     <div className={styles.tableScrollContainer}>
                         <table className={styles.table}>
                             <thead className={styles.tableHead}>
@@ -259,15 +370,15 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                 <div className={styles.cardsScrollContainer}>
                     <div className={styles.cardsGrid}>
                         {processedData.categories.map((cat, idx) => (
-                            <div 
-                            onClick={() => handleCategoryClick(cat.categoryName)}
-                            key={idx} 
-                            className={styles.card}>
+                            <div
+                                onClick={() => handleCategoryClick(cat.categoryName)}
+                                key={idx}
+                                className={styles.card}>
                                 <h3 className={styles.cardTitle}>
                                     {cat.categoryName}
                                 </h3>
                                 <div className={styles.cardMeta}>
-                                    <TextSnippetIcon/> {cat.totalUnits} unidades de registro
+                                    <TextSnippetIcon /> {cat.totalUnits} unidades de registro
                                 </div>
                                 <div className={styles.cardIndexList}>
                                     {cat.indices.map((index, i) => {
@@ -302,7 +413,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                 </div>
             )}
 
-            {/* Resumo estatístico compacto */}
+            {/* Resumo estatístico */}
             <div className={styles.summaryFooter}>
                 {[
                     { value: processedData.categories.length, label: 'Categorias', color: '#B35848' },
@@ -316,6 +427,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     </div>
                 ))}
             </div>
+            
             <CategoryDetailsModal
                 isOpen={!!selectedCategory}
                 onClose={() => setSelectedCategory(null)}

@@ -3,8 +3,7 @@
 /* ======================================= */
 
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
+
     padding: 2rem;
     font-family: var(--font-principal, 'Roboto'), sans-serif;
     background-color: var(--background-light, #FBFBF8);
@@ -13,10 +12,10 @@
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; 
     margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+    flex-wrap: wrap; 
+    gap: 1.5rem; 
 }
 
 .title {
@@ -60,13 +59,101 @@
     font-weight: bold;
 }
 
+
+.headerControls {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1; 
+}
+
+.viewControls {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--background-medium, #EFEBE6);
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+
+.exportContainer {
+    position: relative; /* Para o menu dropdown */
+}
+
+.exportButton {
+    /* Usa o estilo do seu botão primário */
+    padding: 0.75rem 1.5rem;
+    background: var(--primary, #B35848);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exportButton:hover {
+    background-color: #a04e40;
+}
+
+.exportButton:disabled {
+    background-color: #f3d9d5;
+    cursor: not-allowed;
+}
+
+/* NOVO: Menu Dropdown */
+.exportMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid var(--background-medium, #EFEBE6);
+    z-index: 50;
+    width: 200px;
+    overflow: hidden;
+}
+
+.exportMenu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    color: var(--text-dark, #312F2F);
+    font-size: 0.9rem;
+    display: flex;         
+    align-items: center; 
+    gap: 8px;
+}
+
+.exportMenu button:hover {
+    background-color: var(--background-light, #FBFBF8);
+}
+
+.exportMenu button:disabled {
+    color: var(--text-light, #8E8883);
+    cursor: not-allowed;
+    background-color: #fafafa;
+}
+
 /* ======================================= */
 /* Visualização de Gráfico                 */
 /* ======================================= */
 .chartContainer {
-    background: white;
+    background-color: #FFFFFF;
     padding: 2rem;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 

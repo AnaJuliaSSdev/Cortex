@@ -157,7 +157,6 @@ public class PdfExportService : IExportService
         // Imagem do gráfico
         if (options.IncludeChartImage && request.ChartImage != null && request.ChartImage.Length > 0)
         {
-            builder.AddPageBreak();
             builder.AddSection("Distribuição das Categorias");
             builder.AddImage(request.ChartImage, "Gráfico de frequência das categorias e índices");
         }
@@ -223,7 +222,7 @@ public class PdfExportService : IExportService
                         GetOriginalFileName(r.SourceDocumentUri, allDocuments),
                         r.Page ?? "-",
                         r.Line ?? "-",
-                        TruncateText(r.QuotedContent, 100)
+                        r.QuotedContent ?? "-"
                     }).ToList()
                 };
                 builder.AddTable(refTable);
@@ -234,24 +233,24 @@ public class PdfExportService : IExportService
 
             if (unitsForThisIndex.Any())
             {
+                var unitsToShow = unitsForThisIndex;
                 var unitsTable = new TableData
                 {
-                    Caption = $"Unidades de Registro - {firstIndex.Name}",
+                    Caption = $"Unidades de Registro - {firstIndex.Name} ({unitsToShow.Count} de {unitsForThisIndex.Count})",
                     Headers = new List<string> { "Texto", "Documento", "Página", "Linha", "Justificativa" },
                     Rows = unitsForThisIndex.Select(ru => new List<string>
                     {
-                        TruncateText(ru.Text, 150),
+                        ru.Text ?? "-",
                         GetOriginalFileName(ru.SourceDocumentUri, allDocuments),
                         ru.Page ?? "-",
                         ru.Line ?? "-",
-                        TruncateText(ru.Justification, 100)
+                        ru.Justification ?? "-"
                     }).ToList()
                 };
                 builder.AddTable(unitsTable);
             }
         }
 
-        builder.AddPageBreak();
     }
 
     private TableData CreateCategorySummaryTable(List<Category> categories, ICollection<Document> allDocuments)
@@ -278,9 +277,9 @@ public class PdfExportService : IExportService
             table.Rows.Add(new List<string>
             {
                 category.Name,
-                TruncateText(category.Definition, 100),
+                category.Definition ?? "-",
                 category.Frequency.ToString(),
-                TruncateText(indicesText, 100)
+                indicesText
             });
         }
 
@@ -296,11 +295,5 @@ public class PdfExportService : IExportService
 
         // Retorna o FileName original, ou o GcsUri se não for encontrado
         return doc?.FileName ?? gcsUri;
-    }
-
-    private static string TruncateText(string? text, int maxLength)
-    {
-        if (string.IsNullOrEmpty(text)) return "-";
-        return text.Length <= maxLength ? text : text.Substring(0, maxLength) + "...";
     }
 }

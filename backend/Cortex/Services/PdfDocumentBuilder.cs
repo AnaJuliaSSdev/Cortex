@@ -85,7 +85,7 @@ public class PdfDocumentBuilder : IDocumentBuilder
 
         _contentActions.Add(column =>
         {
-            column.Item().ShowEntire().PaddingVertical(10).Element(container =>
+            column.Item().PaddingVertical(10).Element(container =>
             {
                 container.Column(innerColumn =>
                 {
@@ -104,9 +104,12 @@ public class PdfDocumentBuilder : IDocumentBuilder
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.RelativeColumn(1.5f);
+                            columns.RelativeColumn(2);
+
                             for (int i = 1; i < tableData.Headers.Count; i++)
-                                columns.RelativeColumn();
+                            {
+                                columns.RelativeColumn(1);
+                            }
                         });
 
                         // Cabeçalho
@@ -124,7 +127,9 @@ public class PdfDocumentBuilder : IDocumentBuilder
 
                         // Corpo
                         var rowIndex = 0;
-                        foreach (var row in tableData.Rows)
+                        var rowsToDisplay = tableData.Rows;
+
+                        foreach (var row in rowsToDisplay)
                         {
                             var isEven = rowIndex++ % 2 == 0;
                             foreach (var cellText in row)
@@ -132,20 +137,20 @@ public class PdfDocumentBuilder : IDocumentBuilder
                                 table.Cell().Element(c => CellStyleBody(c, isEven))
                                     .Text(cellText ?? "-")
                                     .FontSize(9)
-                                    .LineHeight(1.3f)
-                                     .WrapAnywhere();
+                                    .LineHeight(1.2f)
+                                    .WrapAnywhere();
                             }
                         }
 
                         static IContainer CellStyleHeader(IContainer container) =>
                             container.Background(Colors.Blue.Darken2)
-                                     .Padding(5)
+                                     .Padding(4)
                                      .BorderBottom(1)
                                      .BorderColor(Colors.Grey.Lighten1);
 
                         static IContainer CellStyleBody(IContainer container, bool isEven) =>
                             container.Background(isEven ? Colors.Grey.Lighten3 : Colors.White)
-                                     .Padding(5)
+                                     .Padding(4)
                                      .BorderBottom(1)
                                      .BorderColor(Colors.Grey.Lighten1);
                     });
@@ -171,6 +176,7 @@ public class PdfDocumentBuilder : IDocumentBuilder
                     .AlignCenter()
                     .PaddingTop(15)
                     .MaxWidth(450) // Ajustado para margens ABNT (A4 ~15cm útil)
+                    .MaxHeight(500)
                     .Image(imageData);
 
                 if (!string.IsNullOrEmpty(caption))

@@ -283,7 +283,9 @@ namespace Cortex.Services
             try
             {
                 string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass);
-                IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+                IEnumerable<Cortex.Models.Document> allDocumentsEnumerable = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+                List<Cortex.Models.Document> allDocuments = [.. allDocumentsEnumerable];
+
                 List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
@@ -307,10 +309,11 @@ namespace Cortex.Services
                  );
 
                 await _preAnalysisPersistenceService.SaveIndexesAsync(indexes);
-
-                resultBaseClass.PromptResult = jsonResponse;
+                resultBaseClass.AnalysisDocuments = resultBaseClass.AnalysisDocuments.ToList();
+                resultBaseClass.ReferenceDocuments = resultBaseClass.ReferenceDocuments.ToList();
                 resultBaseClass.IsSuccess = true;
                 resultBaseClass.PreAnalysisResult = savedStage;
+                resultBaseClass.AnalysisQuestion = analysis.Question;
                 _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
             }
             catch (InvalidOperationException ex)

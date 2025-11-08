@@ -13,6 +13,7 @@ import IndexFormModal from "./IndexFormModal";
 import { deleteIndex } from "../services/analysisService";
 import Alert, { type AlertType } from "./Alert";
 import ConfirmModal from "./ConfirmModal";
+import { getFileNameFromUri } from "../utils/documentUtils";
 
 interface IndexItemProps {
     index: Index;
@@ -44,15 +45,6 @@ const IndexItem: React.FC<IndexItemProps> = ({
     onEditClick,
     onDeleteClick
 }) => {
-    
-    // Helper para encontrar o nome do arquivo a partir do URI
-    const getFileNameFromUri = (uri: string): string => {
-        const allDocuments = [...analysisDocuments, ...referenceDocuments];
-        // Compara o URI da referência com o GCSPath do documento
-        const doc = allDocuments.find(d => d.gcsFilePath === uri);
-        return doc ? doc.fileName : "Documento não encontrado";
-    };
-
     return (
         <li className={styles.indexItem}>
             <div className={styles.indexContent}>
@@ -76,9 +68,9 @@ const IndexItem: React.FC<IndexItemProps> = ({
                                     key={ref.id} 
                                     className={styles.referenceItem} 
                                     onClick={() => onReferenceClick(ref)}
-                                    title={getFileNameFromUri(ref.sourceDocumentUri)}
+                                    title={getFileNameFromUri(ref.sourceDocumentUri, [...analysisDocuments, ...referenceDocuments])}
                                 >
-                                    <FindInPageIcon/> {getFileNameFromUri(ref.sourceDocumentUri)} (p. {ref.page})
+                                    <FindInPageIcon/> {getFileNameFromUri(ref.sourceDocumentUri, [...analysisDocuments, ...referenceDocuments])} (p. {ref.page})
                                     {/* Tooltip com o trecho citado */}
                                     {ref.quotedContent && (
                                         <div className={styles.tooltip}>{ref.quotedContent}</div>
