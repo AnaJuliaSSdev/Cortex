@@ -257,10 +257,16 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
                      <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
-                    <ResponsiveContainer width="100%" minHeight={600}>
+                    <ResponsiveContainer width="100%" minHeight={730}>
                         <BarChart
                             data={chartData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 150 }}
+                            margin={{ 
+                                top: 20, 
+                                right: 30, 
+                                left: 60,
+                                bottom: 150 
+                            }}
+                        barGap={2} 
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
                             <XAxis
@@ -271,6 +277,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                                 interval={0}
                                 stroke="#4A4644"
                                 style={{ fontSize: '0.85rem' }}
+                                padding={{ left: 10, right: 10 }}
                             />
                             <YAxis
                                 allowDecimals={false}
@@ -286,7 +293,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                                 }}
                             />
                             <Legend
-                                wrapperStyle={{ paddingBottom: '20px' }}
+                                wrapperStyle={{ paddingBottom: '70px' }}                    
                                 layout="horizontal"
                                 verticalAlign="top"
                             />

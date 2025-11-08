@@ -118,9 +118,29 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     const [indexToDelete, setIndexToDelete] = useState<Index | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    
 
-    const handleReferenceClick = (reference: IndexReference) => {
+    type ViewTab = 'analysis' | 'reference';
+    const [activeTab, setActiveTab] = useState<ViewTab>('analysis');
+
+   const handleReferenceClick = (reference: IndexReference) => {
+        // 1. Descobre para qual aba o documento pertence
+        const doc = [...analysisDocuments, ...referenceDocuments].find(
+            d => d.gcsFilePath === reference.sourceDocumentUri
+        );
+        if (doc) {
+            const isAnalysisDoc = analysisDocuments.some(d => d.id === doc.id);
+            // 2. Força a troca da aba, se necessário
+            setActiveTab(isAnalysisDoc ? 'analysis' : 'reference');
+        }
+        
+        // 3. Define a referência
         setSelectedReference(reference);
+    };
+
+    const handleChangeTab = (tab: ViewTab) => {
+        setActiveTab(tab);
+        setSelectedReference(null); 
     };
 
     // Função para confirmar e executar a exclusão
@@ -201,6 +221,8 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                     analysisDocuments={analysisDocuments}
                     referenceDocuments={referenceDocuments}
                     selectedReference={selectedReference}
+                    activeTab={activeTab}        
+                    onTabChange={handleChangeTab} 
                 />
             </section>
             

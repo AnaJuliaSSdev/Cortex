@@ -17,39 +17,24 @@ public class PdfDocumentProcessingStrategy : IDocumentProcessingStrategy
         await file.CopyToAsync(ms);
         byte[] fileBytes = ms.ToArray();
 
-        Console.WriteLine($"[iTextSharp] Tamanho do arquivo: {fileBytes.Length} bytes");
-
         using PdfReader pdfReader = new(fileBytes);
 
         int numberOfPages = pdfReader.NumberOfPages;
-        Console.WriteLine($"[iTextSharp] Número de páginas: {numberOfPages}");
 
         StringBuilder sb = new();
 
         for (int i = 1; i <= numberOfPages; i++)
         {
-            try
-            {
-                // Tentar extrair texto com estratégia simples
                 string pageText = PdfTextExtractor.GetTextFromPage(pdfReader, i);
-
-                Console.WriteLine($"[iTextSharp] Página {i}: {pageText?.Length ?? 0} caracteres");
 
                 if (!string.IsNullOrWhiteSpace(pageText))
                 {
                     sb.Append(pageText);
                     sb.Append("\n\n");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[iTextSharp] Erro ao processar página {i}: {ex.Message}");
-            }
         }
 
         string text = sb.ToString().Replace("\0", "").Trim();
-
-        Console.WriteLine($"[iTextSharp] Texto final extraído: {text.Length} caracteres");
 
         if (string.IsNullOrWhiteSpace(text))
         {

@@ -290,9 +290,9 @@ namespace Cortex.Services
 
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
                 //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                string jsonResponse = GetMockedGeminiResponse();
+                //string jsonResponse = GetMockedGeminiResponse();
                 //deixei comentado por enquanto pra não gastar recurso
-                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
+                string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
                 _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
