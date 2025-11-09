@@ -19,8 +19,6 @@ public class IndexReference
     public string SourceDocumentUri { get; set; } // O URI do arquivo que o Gemini usou
 
     public string Page { get; set; } //pagina da citação
-    public string Line { get; set; } //linha da citação
 
-    // Aqui da pra guardar o trecho exato
-    public string? QuotedContent { get; set; }
+    public string QuotedContent { get; set; }
 }

@@ -9,7 +9,7 @@ public interface IAnalysisDataFormatter
     string FormatCategoryName(string name);
     string FormatFrequency(int frequency);
     string FormatIndexName(string name);
-    string FormatReference(string document, string page, string line);
+    string FormatReference(string document, string page);
     TableData CreateCategorySummaryTable(List<Category> categories);
     TableData CreateIndexDetailTable(Index index);
 }

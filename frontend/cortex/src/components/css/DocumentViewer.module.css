@@ -63,10 +63,20 @@
     background-color: var(--background-light, #FBFBF8);
 }
 
+.highlightPdf {
+  background-color: #fef4f2 !important;
+  color: #B35848 !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  text-decoration-color: #B35848 !important;
+}
+
+/* :global(.react-pdf__Page__textContent) span {
+    color: transparent !important;
+}  */
+
 .pdfViewer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;
 }
 
 .pageInfo {
@@ -77,19 +87,35 @@
 }
 
 .txtViewer {
-    white-space: pre-wrap; /* Quebra linha no TXT */
+    white-space: pre-wrap;
     word-wrap: break-word;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
     color: var(--text-dark, #312F2F);
+    line-height: 1.6;
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
 }
 
-.react-pdf__Page__textLayer {
-    display: none;
-}
 .react-pdf__Page__annotationLayer {
     display: none;
 }
+
+.highlight,
+.txtViewer mark {
+    background-color: #fef4f2 !important;
+    color: #B35848 !important;
+    font-weight: bold !important;
+    text-decoration: underline !important;
+    text-decoration-color: #B35848 !important;
+    text-decoration-thickness: 2px !important;
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 
 .docItemEmpty {
     padding: 0.75rem 1rem;

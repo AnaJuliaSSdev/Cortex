@@ -88,9 +88,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                 
                 // Remover o prefixo "data:image/png;base64,"
                 chartImageBase64 = dataUrl.split(',')[1];
-                
-                console.log('Gráfico capturado com sucesso! Tamanho:', chartImageBase64.length, 'chars');
-
             } catch (err) {
                 console.error("Falha ao capturar o gráfico:", err);
                 setExportAlert({ 
@@ -257,7 +254,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
                      <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
-                    <ResponsiveContainer width="100%" minHeight={730}>
+                    <ResponsiveContainer width="100%" minHeight={690}>
                         <BarChart
                             data={chartData}
                             margin={{ 

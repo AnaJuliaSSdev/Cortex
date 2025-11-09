@@ -150,10 +150,8 @@ export default function AnalysisPage() {
         try {
             // Passo 1: Enviar e salvar a pergunta central
             await postAnalysisQuestion(id, question);
-            console.log('Pergunta salva com sucesso!');
 
             // Passo 2: Iniciar a análise (agora que a pergunta e os docs estão lá)
-            console.log('Iniciando a análise...');
             const result = await startAnalysis(id);
 
             if (result.isSuccess) {
@@ -184,11 +182,9 @@ export default function AnalysisPage() {
                 setAnalysisDocuments(result.analysisDocuments || []);
                 setReferenceDocuments(result.referenceDocuments || []);
             } else {
-                console.log("deu erro tinha q lançar excecao")
                 setAlertInfo({ message: result.errorMessage || 'Falha ao continuar a análise.', type: "error" });
             }
         } catch (error) {
-            console.log("deu erro tinha q lançar excecao")
             const friendlyMessage = handleApiError(error, analysisActionErrorMap);
             setAlertInfo({ message: friendlyMessage, type: "error" });
         } finally {

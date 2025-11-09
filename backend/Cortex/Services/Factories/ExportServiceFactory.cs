@@ -77,7 +77,7 @@ public class AnalysisDataFormatter : IAnalysisDataFormatter
         return name?.Trim() ?? "Índice sem nome";
     }
 
-    public string FormatReference(string document, string page, string line)
+    public string FormatReference(string document, string page)
     {
         var parts = new List<string>();
 
@@ -86,9 +86,6 @@ public class AnalysisDataFormatter : IAnalysisDataFormatter
 
         if (!string.IsNullOrEmpty(page))
             parts.Add($"p. {page}");
-
-        if (!string.IsNullOrEmpty(line))
-            parts.Add($"l. {line}");
 
         return parts.Any() ? string.Join(", ", parts) : "Sem referência";
     }

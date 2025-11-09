@@ -216,12 +216,11 @@ public class PdfExportService : IExportService
                 var refTable = new TableData
                 {
                     Caption = $"Referências do índice '{firstIndex.Name}'",
-                    Headers = new List<string> { "Documento", "Página", "Linha", "Trecho" },
+                    Headers = new List<string> { "Documento", "Página", "Trecho" },
                     Rows = firstIndex.References.Select(r => new List<string>
                     {
                         GetOriginalFileName(r.SourceDocumentUri, allDocuments),
                         r.Page ?? "-",
-                        r.Line ?? "-",
                         r.QuotedContent ?? "-"
                     }).ToList()
                 };
@@ -237,13 +236,12 @@ public class PdfExportService : IExportService
                 var unitsTable = new TableData
                 {
                     Caption = $"Unidades de Registro - {firstIndex.Name} ({unitsToShow.Count} de {unitsForThisIndex.Count})",
-                    Headers = new List<string> { "Texto", "Documento", "Página", "Linha", "Justificativa" },
+                    Headers = new List<string> { "Texto", "Documento", "Página", "Justificativa" },
                     Rows = unitsForThisIndex.Select(ru => new List<string>
                     {
                         ru.Text ?? "-",
                         GetOriginalFileName(ru.SourceDocumentUri, allDocuments),
                         ru.Page ?? "-",
-                        ru.Line ?? "-",
                         ru.Justification ?? "-"
                     }).ToList()
                 };

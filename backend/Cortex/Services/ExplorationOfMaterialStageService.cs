@@ -49,7 +49,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                                                 { "text", new OpenApiSchema { Type = Type.String, Description = "Trecho EXATO extraído do documento" } },
                                                 { "document", new OpenApiSchema { Type = Type.String, Description = "Nome do arquivo fonte" } },
                                                 { "page", new OpenApiSchema { Type = Type.String, Description = "Número da página" } },
-                                                { "line", new OpenApiSchema { Type = Type.String, Description = "Número da linha" } },
                                                 { "justification", new OpenApiSchema { Type = Type.String, Description = "Justificativa para categorização" } },
                                                 { "found_indices", new OpenApiSchema
                                                     {
@@ -60,7 +59,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                                                 },
                                                 { "indicator", new OpenApiSchema { Type = Type.String, Description = "ID do indicador associado" } }
                                             },
-                                            Required = { "text", "document", "page", "line", "justification", "found_indices", "indicator" }
+                                            Required = { "text", "document", "page", "justification", "found_indices", "indicator" }
                                         }
                                     }
                                 }
@@ -118,7 +117,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Trecho EXATO extraído do documento",
               "document": "nome_arquivo",
               "page": "2",
-              "line": "8",
               "found_indices": ["index_id_1", "index_id_2"],
               "indicator": "indicator_id_X",
               "justification": "Explicação de por que esta unidade pertence à categoria"
@@ -181,7 +179,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "A internet caiu três vezes durante a aula, foi horrível",
               "document": "entrevista_prof_01.pdf",
               "page": "2",
-              "line": "15",
               "found_indices": ["idx_001"],
               "main_indicator": "idx_001", 
               "justification": "Relata problema técnico que prejudicou a aula"
@@ -190,7 +187,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Me sentia completamente esgotado, não tinha energia para preparar aulas",
               "document": "entrevista_prof_01.pdf",
               "page": "3",
-              "line": "22",
               "found_indices": ["idx_002"],
               "main_indicator": "idx_002",
               "justification": "Expressa exaustão relacionada ao trabalho remoto"
@@ -199,7 +195,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "O Zoom travou e perdi todos os alunos da sala",
               "document": "entrevista_prof_03.pdf",
               "page": "1",
-              "line": "8",
               "found_indices": ["idx_001"],
               "main_indicator": "idx_001",
               "justification": "Outro problema técnico que impactou a aula"
@@ -208,7 +203,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Sozinho na frente da tela, sem ver o rosto de ninguém, me sentia isolado",
               "document": "entrevista_prof_02.pdf",
               "page": "4",
-              "line": "30",
               "found_indices": ["idx_003"],
               "main_indicator": "idx_003",
               "justification": "Relata impacto emocional do isolamento"
@@ -224,7 +218,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Aprendi a usar o Moodle, o Google Classroom, várias ferramentas novas",
               "document": "entrevista_prof_02.pdf",
               "page": "2",
-              "line": "12",
               "found_indices": ["idx_004"],
               "main_indicator": "idx_004",
               "justification": "Relata aprendizado de competências tecnológicas"
@@ -233,7 +226,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Trabalhando de casa, tive mais tempo com minha família",
               "document": "entrevista_prof_04.pdf",
               "page": "3",
-              "line": "18",
               "found_indices": ["idx_005"],
               "main_indicator": "idx_005",
               "justification": "Identifica benefício relacionado à flexibilidade"
@@ -242,7 +234,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Me capacitei em ferramentas digitais que nunca tinha usado",
               "document": "entrevista_prof_01.pdf",
               "page": "5",
-              "line": "40",
               "found_indices": ["idx_004"],
               "main_indicator": "idx_004",
               "justification": "Outro relato de desenvolvimento de competências"
@@ -251,7 +242,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
               "text": "Evitar duas horas de trânsito por dia foi libertador",
               "document": "entrevista_prof_03.pdf",
               "page": "2",
-              "line": "25",
               "found_indices": ["idx_005"],
               "main_indicator": "idx_005",
               "justification": "Benefício relacionado ao tempo economizado"
@@ -738,7 +728,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "4",
-                      "line": "1",
                       "justification": "A unidade de registro expressa a centralidade da afetividade no processo de aprendizagem, alinhando-se diretamente ao índice de Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -749,7 +738,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "(risos) de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "19",
                       "justification": "O trecho destaca a amizade e a diversão como elementos centrais da aula, caracterizando um ambiente de Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -760,7 +748,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu descreveria como uma metodologia mais contemporânea, mais humana né, não, sei lá, nada a ver com a varetinha que se acredita que aprende, mas mais humana, mais, mais próxima.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "23",
-                      "line": "33",
                       "justification": "A entrevistada define a metodologia como 'humana' e 'próxima', em contraste com métodos tradicionais, o que corresponde ao índice de Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -771,7 +758,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "mas o ambiente era bom, era tranquilo...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "24",
-                      "line": "4",
                       "justification": "A descrição do ambiente como 'bom' e 'tranquilo' é um claro indicador de uma Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -782,7 +768,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "é muito...tranquila, muito tranquila... não tinha aquela rigidez formal que às vezes distaciada que alguns professores gostam de impor",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "10",
-                      "line": "1",
                       "justification": "A ausência de rigidez formal e a tranquilidade do ambiente são características que se enquadram na definição do índice de Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -793,7 +778,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "a gente sempre foi muito, muito amigas... muito, muito amigas. Desde os cinco anos de idade até sempre. A gente sempre foi muito junta e unida, a nossa turma sempre foi assim.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "33",
-                      "line": "32",
                       "justification": "O relato de uma relação de amizade forte e duradoura entre professora e alunas exemplifica o pilar da Relação Afetiva e Humanizada.",
                       "found_indices": [
                         "272"
@@ -804,7 +788,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "como eu ria muito dos meus erros e eu adoro os meus erros (risos)... e eu acho que era isso assim.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "21",
                       "justification": "A unidade de registro demonstra uma atitude positiva e de humor em relação aos próprios erros, alinhada ao índice de Tratamento Pedagógico do Erro.",
                       "found_indices": [
                         "273"
@@ -815,7 +798,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "(risos) era um divertimento né? (risos) não tem outra explicação.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "26",
                       "justification": "A descrição do erro como 'divertimento' captura a essência do índice de Tratamento Pedagógico do Erro, que vê o erro como algo leve e natural.",
                       "found_indices": [
                         "273"
@@ -826,7 +808,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "em questão dos erros assim eu não me sentia pressionada pela professora",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "28",
                       "justification": "A ausência de pressão ao errar é um indicador direto de um Tratamento Pedagógico do Erro que não é punitivo.",
                       "found_indices": [
                         "273"
@@ -837,7 +818,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu não me lembro do erro me traumatizar, não não, não me traumatizava, não me causava angústia, era uma coisa que eu errava e tentava ter consciência para não fazer de novo, mas ele não me traumatizava.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "24",
-                      "line": "8",
                       "justification": "Este trecho descreve a ausência de trauma ou angústia associada ao erro, o que caracteriza um Tratamento Pedagógico do Erro positivo e construtivo.",
                       "found_indices": [
                         "273"          ],
@@ -847,7 +827,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "o erro era tratado com naturalidade, porque ele faz parte né",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "9",
-                      "line": "9",
                       "justification": "A afirmação de que o erro era 'tratado com naturalidade' e 'faz parte' corresponde exatamente à descrição do índice de Tratamento Pedagógico do Erro.",
                       "found_indices": [
                         "273"
@@ -858,7 +837,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "ninguém ali ia morrer, se atirar pela janela porque não levantou a perna na cabeça, sabe?",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "9",
-                      "line": "13",
                       "justification": "A expressão hiperbólica e bem-humorada ilustra a leveza com que o erro era tratado, diminuindo a ansiedade e a pressão, conforme o índice 273.",
                       "found_indices": [
                         "273"
@@ -876,7 +854,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eram aulas que contribuíam muito pra eu descobrir outras coisas possibilidades do meu corpo que eu não conhecia assim.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
-                      "line": "21",
                       "justification": "O trecho aponta para a 'descoberta' de possibilidades do corpo, alinhando-se ao índice da Pedagogia da Descoberta e do Prazer.",
                       "found_indices": [
                         "270"
@@ -887,7 +864,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
-                      "line": "23",
                       "justification": "A unidade de registro contrasta a experiência da aula com a visão tradicional do Balé como 'sacrifício', o que é central para o índice 270.",
                       "found_indices": [
                         "270"
@@ -898,7 +874,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "Ah eu acho que eu desconstruí a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "1",
-                      "line": "41",
                       "justification": "A desconstrução da ideia do Balé como 'coisa chata' e 'sacrificante' é um indicador explícito da Pedagogia da Descoberta e do Prazer.",
                       "found_indices": [
                         "270"
@@ -909,7 +884,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "depois (risos) que eu fiz Balé com a Mônica eu vi que não precisa ser sacrificante, não precisa ser isso...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "14",
                       "justification": "A afirmação 'não precisa ser sacrificante' é um termo-chave do indicador 38, ressignificando a prática do Balé.",
                       "found_indices": [
                         "270"
@@ -920,7 +894,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "e ai eu tinha prazer... aí depois de um mês, dois meses, eu já sabia o que ia acontecer, já ficava mais tranquila... e aí tu faz aquilo com prazer",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "2",
-                      "line": "7",
                       "justification": "A presença da palavra 'prazer' para descrever a experiência da aula é um indicador direto do índice 270.",
                       "found_indices": [
                         "270"
@@ -931,7 +904,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu percebi que o balé não precisa ser uma coisa tão séria quanto ele parece ser. O balé pode ser uma coisa feliz, ele não po... ele não precisa ser uma coisa monótona",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "35",
-                      "line": "10",
                       "justification": "Este trecho contrapõe a seriedade e monotonia com a felicidade, desconstruindo a visão rígida do Balé e alinhando-se à Pedagogia do Prazer.",
                       "found_indices": [
                         "270"
@@ -942,7 +914,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "26",
                       "justification": "A unidade de registro lista explicitamente os termos 'consciência corporal', 'cinesiológica' e 'anatômica' como aprendizados, correspondendo ao índice de Consciência Corporal e Somática.",
                       "found_indices": [
                         "271"
@@ -953,7 +924,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "o Balé, ele é todo explicadinho, ãaa relacionado né, À Anatomia, Fisiologia, Cinesiologia, tudo né, certinho.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "35",
                       "justification": "A menção à relação do Balé com 'Anatomia' e 'Cinesiologia' evidencia o foco no entendimento do corpo, característico do índice 271.",
                       "found_indices": [
                         "271"
@@ -964,7 +934,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "o Balé o que faz? É te proteger, ele te protege",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "39",
                       "justification": "A ideia de que a técnica do Balé serve para 'proteger o corpo' é um pilar do índice de Consciência Corporal e Somática.",
                       "found_indices": [
                         "271"
@@ -975,7 +944,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "Eu aprendi a ter uma melhor consciência do meu corpo, a ter uma melhor aaaa... movimentação do meu corpo",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "10",
-                      "line": "10",
                       "justification": "O relato de aprendizado da 'consciência do meu corpo' é uma manifestação direta do índice 271.",
                       "found_indices": [
                         "271"
@@ -986,7 +954,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "lembro que tu dava claro Balé, e tem umas coisas da... como é que chama aquilo? Educação Somática(...)",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "48",
                       "justification": "A identificação de elementos da 'Educação Somática' nas aulas de Balé conecta a prática diretamente ao índice de Consciência Corporal e Somática.",
                       "found_indices": [
                         "271"
@@ -997,7 +964,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "4",
-                      "line": "13",
                       "justification": "A descrição da professora explicando o 'pra que que é aquilo' (o propósito do movimento) exemplifica a Integração Teoria-Prática.",
                       "found_indices": [
                         "275"
@@ -1008,7 +974,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "tu explicava o movimento a gente ia fazer de uma forma bem simples, e a gente sabia pra que que era aquilo, pra que que poderia servir aquilo.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "4",
-                      "line": "18",
                       "justification": "Este trecho mostra que a professora 'explicava o movimento' e seu propósito ('pra que que era aquilo'), o que define o índice de Integração Teoria-Prática.",
                       "found_indices": [
                         "275"
@@ -1019,7 +984,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "tu sempre explicava como era, como se escreve né, pra saber, pra ensinar, acho que isso eu acabei levando...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "23",
-                      "line": "18",
                       "justification": "A menção à explicação de 'como se escreve' o passo (nomenclatura) é um indicador da abordagem teórica vinculada à prática, conforme o índice 275.",
                       "found_indices": [
                         "275"
@@ -1030,7 +994,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "ter este momento de trazer a teoria ajuda a tu compreender a importância de se fazer aquilo ali do jeito que tem que ser feito e não fazer de qualquer jeito",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "11",
-                      "line": "12",
                       "justification": "A unidade de registro valoriza o 'trazer a teoria' para dar sentido e corrigir a execução do movimento, o que é a essência do índice de Integração Teoria-Prática.",
                       "found_indices": [
                         "275"
@@ -1048,7 +1011,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "E quando tu ia dando as aulas, tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "7",
-                      "line": "50",
                       "justification": "O relato de que a professora explicava como 'adaptar aquilo pra outros contextos' corresponde diretamente ao índice de Adaptação e Flexibilidade Metodológica.",
                       "found_indices": [
                         "274"
@@ -1059,7 +1021,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "tu respeitavas o, o tempo de desenvolvimento de cada um. E isso é uma coisa boa também, porque dentro de uma turma tu pode ter alguém super avançado... e alguém que nunca fez nada",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "8",
-                      "line": "11",
                       "justification": "A menção a 'respeitavas o tempo de cada um' e a consideração dos diferentes níveis na turma são indicadores claros de Adaptação e Flexibilidade Metodológica.",
                       "found_indices": [
                         "274"
@@ -1070,7 +1031,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "aprendizagem de repente de culturas novas né porque tu traz coisas assim de outras danças, de coisas que tavam passando na TV...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "25",
-                      "line": "2",
                       "justification": "A incorporação de elementos de 'outras danças' e da cultura contemporânea ('TV') demonstra uma abordagem aberta e flexível, alinhada ao índice 274.",
                       "found_indices": [
                         "274"
@@ -1081,7 +1041,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "sempre teve aquela ideia da gente brincar assim",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "3",
-                      "line": "50",
                       "justification": "A presença da ideia de 'brincar' como um elemento constante nas aulas é um indicador do índice de Ludicidade como Ferramenta Pedagógica.",
                       "found_indices": [
                         "277"
@@ -1092,7 +1051,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu acho que tem que ter essa leveza que o Balé sabe traz assim historicamente, que não tem...",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "3",
-                      "line": "55",
                       "justification": "A valorização da 'leveza' na prática do Balé, em contraste com a rigidez, aponta para o uso de elementos lúdicos e uma abordagem menos solene.",
                       "found_indices": [
                         "277"
@@ -1103,7 +1061,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "a gente também fazia no final um teatrinho que a gente tinha que fazer passos de balé e essas coisas.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "32",
-                      "line": "14",
                       "justification": "O uso de 'teatrinho' como atividade de aula é um exemplo explícito de Ludicidade como Ferramenta Pedagógica.",
                       "found_indices": [
                         "277"
@@ -1114,7 +1071,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "Eu lembro uma que eu nunca mais vou esquecer que é do tubarão que tu desenhava no chão e era pra gente pular. Eu lembro de uma vez também que a gente fez, que tu fez um castelo e a gente tinha que ir passando pelos desafios do castelo pra gente poder chegar no chá das princesas.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "32",
-                      "line": "23",
                       "justification": "A descrição de atividades imaginativas e narrativas, como 'tubarão' e 'castelo', são exemplos concretos do uso da ludicidade no ensino.",
                       "found_indices": [
                         "277"
@@ -1125,7 +1081,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "tu não vai encontra outro curso onde a professora brinca e conversa direito contigo.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "33",
-                      "line": "27",
                       "justification": "A palavra 'brinca' é usada para caracterizar o modo de ensinar da professora, o que corresponde diretamente ao índice 277.",
                       "found_indices": [
                         "277",
@@ -1136,8 +1091,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                     {
                       "text": "Então eu acho que esse jeito teu de ensinar, esse jeito teu de brincar, me estimula a continuar dançando balé até hoje.",
                       "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "line": "10",
+                      "page": "35"
                       "justification": "O 'jeito de brincar' é identificado como um fator de estímulo e permanência na dança, validando a ludicidade como uma ferramenta pedagógica eficaz.",
                       "found_indices": [
                         "277"
@@ -1155,7 +1109,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "eu já comecei a dar aula de Balé de forma compartilhada... Desdo primeiro ano que eu comecei a dar aula lá em 1990, ãa, já foi com essa proposta de trabalhar junto com a Aline Peres",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "13",
-                      "line": "32",
                       "justification": "O trecho descreve o início da carreira docente da professora como uma experiência 'compartilhada' e de 'trabalhar junto', alinhando-se ao índice de Formação pela Experiência e Colaboração.",
                       "found_indices": [
                         "276"
@@ -1166,7 +1119,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "e ao mesmo tempo com uma supervisão, vamos dizer assim, da Tia Beth, que dava todo o suporte, né... da gente di di dá ideias e de... e da gente fazer aquela... tinha aquela rotina da gente montar a aula lá e os exercícios, de mostrar pra ela antes, pra ela dar alguma dica, algum ajuste",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "13",
-                      "line": "40",
                       "justification": "A descrição do processo de 'supervisão' e mentoria por uma professora mais experiente é um indicador claro de Formação pela Experiência e Colaboração.",
                       "found_indices": [
                         "276"
@@ -1177,7 +1129,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "Eu acho Fun da men tal !! (fala pausada e enfática) Eu acho que a gente aprende com o outro, a gente ensina o outro.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "14",
-                      "line": "21",
                       "justification": "Esta unidade de registro expressa a crença fundamental de que se 'aprende com o outro', que é a base do índice de Formação pela Experiência e Colaboração.",
                       "found_indices": [
                         "276"
@@ -1188,7 +1139,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "além dessa, dessa conversa anterior a aula, ãa sim, a Tia Beth assistia as aulas da gente assim, assistia e se não assistia por inteiro entrava num pedaço, entrava dava uma olhada... tinha essa figura que supervisionava... tinha.",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "15",
-                      "line": "45",
                       "justification": "O relato da existência de uma 'figura que supervisionava' as aulas reforça a ideia de uma formação docente baseada na prática supervisionada e na colaboração.",
                       "found_indices": [
                         "276"
@@ -1199,7 +1149,6 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
                       "text": "Eu boto uma pessoa dando aula e outra pessoa de auxiliar. De auxiliar, pra te ajudar. Se um dia tu não puderes vir, essa pessoa que ta te ajudando, eu entro na sala com ela... ela tem capacidade de dar aula e sabe onde anda o programa. (COLABORAÇÃO)",
                       "document": "EntrevistasExemplo.pdf",
                       "page": "44",
-                      "line": "17",
                       "justification": "A descrição da dinâmica de 'professora e uma auxiliar' como um sistema de apoio e colaboração é um exemplo prático do índice de Formação pela Experiência e Colaboração.",
                       "found_indices": [
                         "276"

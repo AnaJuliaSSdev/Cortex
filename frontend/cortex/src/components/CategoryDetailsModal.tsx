@@ -97,7 +97,7 @@ export default function CategoryDetailsModal({ isOpen, onClose, category, allDoc
                                             <FindInPageIcon sx={{ fontSize: 16, marginRight: 0.5 }}/>
                                             <span title={getFileNameFromUri(unit.sourceDocumentUri, allDocuments)}>
                                                 {getFileNameFromUri(unit.sourceDocumentUri, allDocuments)} 
-                                                {' '}(p. {unit.page}, L. {unit.line})
+                                                {' '}(p. {unit.page})
                                             </span>
                                         </div>
                                         

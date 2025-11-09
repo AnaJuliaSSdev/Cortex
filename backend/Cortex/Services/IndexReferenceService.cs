@@ -1,7 +1,6 @@
 ﻿using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
-using Mscc.GenerativeAI;
 
 namespace Cortex.Services;
 
@@ -24,9 +23,7 @@ public class IndexReferenceService(ILogger<IndexReferenceService> logger) : IInd
             Index = newIndex, // EF Core associará automaticamente
             SourceDocumentUri = gcsUri,
             Page = geminiReference.Page,
-            Line = geminiReference.Line,
-            // aqui teria que pedir pra ele gerar jutno o trecho exato, além das páginas e linhas
-            QuotedContent = $"Pág: {geminiReference.Page}, Linha: {geminiReference.Line}"
+            QuotedContent = geminiReference.QuotedContent
         };
 
         return newReference;
