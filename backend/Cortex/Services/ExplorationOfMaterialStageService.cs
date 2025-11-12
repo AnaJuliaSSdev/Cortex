@@ -98,7 +98,8 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     4. Não invente ou infira informações não presentes nos textos
     5. Justifique cada classificação com base nos índices encontrados
     6. Mantenha fidelidade ao método de Bardin: categorias devem ser mutuamente exclusivas, homogêneas, pertinentes, objetivas e produtivas
-    
+    7. Caso você receba documentos em TXT, quando/se for referenciá-los, mantenha a página sempre como 1. 
+
     COMPREENSÃO IMPORTANTE:
     NÃO existe NECESSARIAMENTE uma relação 1:1 entre índices e categorias!
     - Índices são elementos concretos no texto (palavras, frases, expressões)
@@ -116,7 +117,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
             {{
               "text": "Trecho EXATO extraído do documento",
               "document": "nome_arquivo",
-              "page": "2",
+              "page": "2", //sempre 1 para documentos TXT
               "found_indices": ["index_id_1", "index_id_2"],
               "indicator": "indicator_id_X",
               "justification": "Explicação de por que esta unidade pertence à categoria"
@@ -667,6 +668,7 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
             ExplorationOfMaterialStage stageEntity = await _explorationPersistenceService.MapAndSaveExplorationResultAsync(analysis.Id, geminiResponse, allDocuments);
 
             resultBaseClass.AnalysisQuestion = analysis.Question;
+            resultBaseClass.AnalysisTitle = analysis.Title;
             resultBaseClass.ExplorationOfMaterialStage = stageEntity;
             resultBaseClass.PromptResult = jsonResponse;
             resultBaseClass.IsSuccess = true;

@@ -1,4 +1,5 @@
 ﻿using Cortex.Models.DTO;
+using Cortex.Services.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -11,21 +12,14 @@ namespace Cortex.Services;
 /// </summary>
 public class PdfDocumentBuilder : IDocumentBuilder
 {
-    // --- CORREÇÃO ARQUITETURAL ---
-    // Em vez de compor o documento no construtor,
-    // armazenamos uma lista de ações (comandos) a serem executadas.
     private readonly List<Action<ColumnDescriptor>> _contentActions = new();
 
-    // Armazenamos a configuração da página
     private readonly PageSettings _pageSettings;
 
-    // Construtor
     public PdfDocumentBuilder()
     {
-        // Configuração da licença
         QuestPDF.Settings.License = LicenseType.Community;
 
-        // Configurações de página padrão ABNT
         _pageSettings = new PageSettings
         {
             Size = PageSizes.A4,
@@ -37,10 +31,6 @@ public class PdfDocumentBuilder : IDocumentBuilder
             FontSize = 12
         };
     }
-
-    // --- MÉTODOS DO BUILDER (MODIFICADOS) ---
-    // Agora, eles adicionam uma AÇÃO à lista, em vez de
-    // tentar modificar um documento já composto.
 
     public void AddTitle(string title)
     {
@@ -270,18 +260,4 @@ internal class PageSettings
     public float MarginRight { get; set; } = 2;
     public string FontFamily { get; set; } = Fonts.Arial;
     public int FontSize { get; set; } = 12;
-}
-
-// Defina a interface IDocumentBuilder se ainda não o fez
-// (Este arquivo assume que IDocumentBuilder existe)
-// Ex: Cortex/Services/Interfaces/IDocumentBuilder.cs
-public interface IDocumentBuilder
-{
-    void AddTitle(string title);
-    void AddSection(string sectionTitle);
-    void AddParagraph(string text);
-    void AddTable(TableData tableData);
-    void AddImage(byte[] imageData, string caption);
-    void AddPageBreak();
-    byte[] Build();
 }

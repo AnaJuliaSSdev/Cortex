@@ -23,8 +23,7 @@ public class ExportServiceFactory : IExportServiceFactory
         _serviceMap = new Dictionary<ExportType, Type>
         {
             { ExportType.PDF, typeof(PdfExportService) },
-            // Futuros tipos:
-            // { ExportType.LaTeX, typeof(LatexExportService) },
+            // { ExportType.LaTeX, typeof(LatexExportService) }
             // { ExportType.Word, typeof(WordExportService) },
             // { ExportType.Excel, typeof(ExcelExportService) }
         };
@@ -136,8 +135,6 @@ public static class ExportServiceExtensions
 
         // Registrar serviços de exportação específicos
         services.AddScoped<PdfExportService>();
-
-        // Futuros serviços:
         // services.AddScoped<LatexExportService>();
         // services.AddScoped<WordExportService>();
         // services.AddScoped<ExcelExportService>();

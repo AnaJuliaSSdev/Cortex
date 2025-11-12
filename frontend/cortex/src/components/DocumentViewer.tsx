@@ -110,13 +110,11 @@ export default function DocumentViewer({
         );
 
         if (!doc) {
-            console.warn('⚠️ Documento não encontrado para a referência');
             return;
         }
 
         // Normalizar e limpar o texto para highlight
         const textToHighlight = selectedReference.quotedContent?.trim() || null;
-        console.log('🎨 Texto para destacar:', textToHighlight);
         setHighlightText(textToHighlight);
 
         // Se o documento for diferente, seleciona ele
@@ -149,78 +147,78 @@ export default function DocumentViewer({
         setHighlightText(null);
     };
 
-    const onPageRenderSuccess = () => {
-        if (!highlightText) 
-            return;
-        setTimeout(() => {
-            const pdfContainer = document.querySelector('.react-pdf__Page');
+//     const onPageRenderSuccess = () => {
+//         if (!highlightText) 
+//             return;
+//         setTimeout(() => {
+//             const pdfContainer = document.querySelector('.react-pdf__Page');
             
-            if (!pdfContainer) 
-                return;
+//             if (!pdfContainer) 
+//                 return;
 
-            const textLayer = pdfContainer.querySelector('.react-pdf__Page__textContent');
+//             const textLayer = pdfContainer.querySelector('.react-pdf__Page__textContent');
 
-            if (!textLayer) {
-                const allSpans = pdfContainer.querySelectorAll('span');
+//             if (!textLayer) {
+//                 const allSpans = pdfContainer.querySelectorAll('span');
                 
-                if (allSpans.length === 0) 
-                    return;
+//                 if (allSpans.length === 0) 
+//                     return;
                 
-                highlightInSpans(allSpans);
-                return;
-            }
+//                 highlightInSpans(allSpans);
+//                 return;
+//             }
 
-            const spans = textLayer.querySelectorAll('span');
+//             const spans = textLayer.querySelectorAll('span');
 
-            if (spans.length === 0) {
-                return;
-            }
+//             if (spans.length === 0) {
+//                 return;
+//             }
 
-            highlightInSpans(spans);
-        }, 500);
-    };
+//             highlightInSpans(spans);
+//         }, 500);
+//     };
 
-   const highlightInSpans = (spans: NodeListOf<Element> | Element[]) => {
-        Array.from(spans).forEach(span => {
-            const s = span as HTMLElement;
-            s.style.backgroundColor = 'transparent';
-            s.style.color = 'inherit';
-            s.style.textDecoration = 'none';
-        });
+//    const highlightInSpans = (spans: NodeListOf<Element> | Element[]) => {
+//         Array.from(spans).forEach(span => {
+//             const s = span as HTMLElement;
+//             s.style.backgroundColor = 'transparent';
+//             s.style.color = 'inherit';
+//             s.style.textDecoration = 'none';
+//         });
 
-        if (!highlightText) return; 
+//         if (!highlightText) return; 
 
-        const normalizeText = (text: string): string => {
-            return text
-                .normalize('NFD') 
-                .replace(/[\u0300-\u036f]/g, '') 
-                .toLowerCase()
-                .trim();
-        };
-        const needle = normalizeText(highlightText).substring(0, 20);
+//         const normalizeText = (text: string): string => {
+//             return text
+//                 .normalize('NFD') 
+//                 .replace(/[\u0300-\u036f]/g, '') 
+//                 .toLowerCase()
+//                 .trim();
+//         };
+//         const needle = normalizeText(highlightText).substring(0, 20);
         
-        if (needle.length === 0) return;
+//         if (needle.length === 0) return;
 
-        for (const span of Array.from(spans)) {
-            const spanText = span.textContent;
+//         for (const span of Array.from(spans)) {
+//             const spanText = span.textContent;
             
-            if (spanText) {
-                const haystack = normalizeText(spanText);
+//             if (spanText) {
+//                 const haystack = normalizeText(spanText);
 
-                if (haystack.includes(needle)) {           
-                    const el = span as HTMLElement;
-                    el.style.backgroundColor = '#fef4f2';
-                    el.style.color = '#B35848';
-                    el.style.fontWeight = 'bold';
-                    el.style.textDecoration = 'underline';
-                    el.style.textDecorationColor = '#B35848';
+//                 if (haystack.includes(needle)) {           
+//                     const el = span as HTMLElement;
+//                     el.style.backgroundColor = '#fef4f2';
+//                     el.style.color = '#B35848';
+//                     el.style.fontWeight = 'bold';
+//                     el.style.textDecoration = 'underline';
+//                     el.style.textDecorationColor = '#B35848';
 
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return; 
-                }
-            }
-        }
-    };
+//                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//                     return; 
+//                 }
+//             }
+//         }
+//     };
 
     return (
         <div className={styles.viewerContainer}>
@@ -274,8 +272,7 @@ export default function DocumentViewer({
                         >
                             <Page 
                                 pageNumber={pageNumber} 
-                                onRenderSuccess={onPageRenderSuccess}
-                                renderTextLayer={true}
+                                renderTextLayer={false} 
                                 renderAnnotationLayer={false}
                                 loading={<div>Carregando página...</div>}
                             />

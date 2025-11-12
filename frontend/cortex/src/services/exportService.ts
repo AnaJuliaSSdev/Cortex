@@ -2,9 +2,35 @@ import api from './api';
 import type { ExportRequestDto } from '../interfaces/dto/ExportRequest';
 
 /**
+ * Helper genérico para disparar o download de um blob
+ */
+function triggerDownload(blob: Blob, filename: string) {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Extrai o nome do arquivo do header 'content-disposition'
+ */
+function getFilenameFromHeader(headers: any, defaultName: string): string {
+    const contentDisposition = headers['content-disposition'];
+    if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch.length > 1) {
+            return filenameMatch[1];
+        }
+    }
+    return defaultName;
+}
+
+/**
  * Chama o backend para gerar um PDF e dispara o download.
- * @param analysisId O ID da análise
- * @param payload O DTO contendo a imagem do gráfico e opções
  */
 export const exportAnalysisToPdf = async (analysisId: string, payload: ExportRequestDto): Promise<void> => {
     try {
@@ -14,33 +40,33 @@ export const exportAnalysisToPdf = async (analysisId: string, payload: ExportReq
             { responseType: 'blob' } // Diz ao Axios para esperar um arquivo
         );
 
-        // 1. Criar um URL temporário para o arquivo (blob)
         const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-
-        // 2. Tentar pegar o nome do arquivo do header (opcional, mas bom)
-        let filename = `analise_${analysisId}.pdf`;
-        const contentDisposition = response.headers['content-disposition'];
-        if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-            if (filenameMatch && filenameMatch.length > 1) {
-                filename = filenameMatch[1];
-            }
-        }
-
-        // 3. Criar um link "invisível" e clicar nele para baixar
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-
-        // 4. Limpar
-        link.remove();
-        window.URL.revokeObjectURL(url);
+        const filename = getFilenameFromHeader(response.headers, `analise_${analysisId}.pdf`);
+        triggerDownload(blob, filename);
 
     } catch (error) {
         console.error("Erro ao exportar para PDF:", error);
         throw new Error("Falha ao gerar o PDF. Verifique o console.");
+    }
+};
+
+/**
+ * Chama o backend para gerar um LaTeX (.tex) e dispara o download.
+ */
+export const exportAnalysisToLatex = async (analysisId: string, payload: ExportRequestDto): Promise<void> => {
+    try {
+        const response = await api.post(
+            `/Export/latex/${analysisId}`,
+            payload,
+            { responseType: 'blob' }
+        );
+
+        const blob = new Blob([response.data], { type: 'application/x-tex' }); 
+        const filename = getFilenameFromHeader(response.headers, `analise_${analysisId}.tex`);
+        triggerDownload(blob, filename);
+
+    } catch (error) {
+        console.error("Erro ao exportar para LaTeX:", error);
+        throw new Error("Falha ao gerar o arquivo .tex. Verifique o console.");
     }
 };

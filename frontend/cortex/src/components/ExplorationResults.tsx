@@ -9,12 +9,13 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import CategoryDetailsModal from './CategoryDetailsModal';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
-import { exportAnalysisToPdf } from '../services/exportService';
+import { exportAnalysisToLatex, exportAnalysisToPdf } from '../services/exportService';
 import type { AlertType } from './Alert';
 import Alert from './Alert';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArticleIcon from '@mui/icons-material/Article';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
@@ -54,13 +55,20 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         }
     };
 
-    const handleExportPdf = async () => {
-        setIsExporting(true);
-        setExportAlert(null);
-        setIsExportMenuOpen(false);
 
+    /**
+     * Força a view para 'chart', espera a renderização e captura
+     * a imagem do gráfico, retornando-a como Base64.
+     */
+    const captureChartImage = async (): Promise<string | null> => {
+        // Força a visualização do gráfico
         setViewMode('chart');
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // Espera o React renderizar
+
+        if (!chartRef.current) {
+            console.error("Referência do gráfico não encontrada.");
+            return null;
+        }
 
         const options = {
             backgroundColor: '#ffffff',
@@ -68,35 +76,37 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             useCORS: true,
             allowTaint: true,
             logging: false,
-            width: chartRef.current!.scrollWidth,
-            height: chartRef.current!.scrollHeight
-            } as any;
+            width: chartRef.current.scrollWidth,
+            height: chartRef.current.scrollHeight
+        } as any;
 
+        try {
+            // Aguarda o gráfico (Recharts) desenhar as animações
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-        let chartImageBase64: string | null = null;
+            const canvas = await html2canvas(chartRef.current as HTMLElement, options);
+            const dataUrl = canvas.toDataURL('image/png');
 
-        // Capturar o gráfico como imagem
-        if (chartRef.current) {
-            try {
-                // Aguardar renderização completa
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Usar html2canvas que funciona melhor com Recharts
-               const canvas = await html2canvas(chartRef.current as HTMLElement, options);
-                // Converter canvas para Base64
-                const dataUrl = canvas.toDataURL('image/png');
-                
-                // Remover o prefixo "data:image/png;base64,"
-                chartImageBase64 = dataUrl.split(',')[1];
-            } catch (err) {
-                console.error("Falha ao capturar o gráfico:", err);
-                setExportAlert({ 
-                    message: "Falha ao capturar a imagem do gráfico. O PDF será gerado sem o gráfico.", 
-                    type: "warning" 
-                });
-                chartImageBase64 = null;
-            }
+            // Retorna a string Base64 (sem o prefixo)
+            return dataUrl.split(',')[1];
+
+        } catch (err) {
+            console.error("Falha ao capturar o gráfico:", err);
+            setExportAlert({
+                message: "Falha ao capturar a imagem do gráfico. A exportação pode falhar ou vir sem o gráfico.",
+                type: "warning"
+            });
+            return null;
         }
+    };
+
+
+    const handleExportPdf = async () => {
+        setIsExporting(true);
+        setExportAlert(null);
+        setIsExportMenuOpen(false);
+
+        const chartImageBase64 = await captureChartImage();
 
         // Chamar o serviço de exportação
         try {
@@ -108,21 +118,57 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     includeRegisterUnits: true
                 }
             });
-            
-            setExportAlert({ 
-                message: "Seu PDF foi baixado com sucesso!", 
-                type: "success" 
+
+            setExportAlert({
+                message: "Seu PDF foi baixado com sucesso!",
+                type: "success"
             });
         } catch (err) {
-            console.error("Erro na exportação:", err);
-            setExportAlert({ 
-                message: "Falha ao gerar o PDF. Verifique sua conexão e tente novamente.", 
-                type: "error" 
+            console.error("Erro na exportação PDF:", err);
+            setExportAlert({
+                message: "Falha ao gerar o PDF. Verifique sua conexão e tente novamente.",
+                type: "error"
             });
         } finally {
             setIsExporting(false);
         }
     };
+
+
+    // // Handler para LaTeX ---
+    // const handleExportLatex = async () => {
+    //     setIsExporting(true);
+    //     setExportAlert(null);
+    //     setIsExportMenuOpen(false);
+
+    //     const chartImageBase64 = await captureChartImage();
+
+    //     // Chamar o serviço de exportação
+    //     try {
+    //         await exportAnalysisToLatex(analysisId, {
+    //             chartImageBase64: chartImageBase64 || undefined,
+    //             options: {
+    //                 includeCharts: true,
+    //                 includeTables: true,
+    //                 includeRegisterUnits: true
+    //             }
+    //         });
+
+    //         setExportAlert({
+    //             message: "Seu arquivo .tex foi baixado com sucesso!",
+    //             type: "success"
+    //         });
+    //     } catch (err) {
+    //         console.error("Erro na exportação LaTeX:", err);
+    //         setExportAlert({
+    //             message: "Falha ao gerar o .tex. Verifique sua conexão e tente novamente.",
+    //             type: "error"
+    //         });
+    //     } finally {
+    //         setIsExporting(false);
+    //     }
+    // };
+
 
     const processedData = useMemo(() => {
         const data: ProcessedData[] = [];
@@ -237,6 +283,9 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                             <button onClick={handleExportPdf}>
                                 <PictureAsPdfIcon /> Exportar como PDF
                             </button>
+                            {/* <button onClick={handleExportLatex} disabled={isExporting}>
+                                <ArticleIcon /> Exportar como LaTeX (.tex)
+                            </button> */}
                         </div>
                     )}
                 </div>
@@ -253,63 +302,63 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
-                     <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
-                    <ResponsiveContainer width="100%" minHeight={690}>
-                        <BarChart
-                            data={chartData}
-                            margin={{ 
-                                top: 20, 
-                                right: 30, 
-                                left: 60,
-                                bottom: 150 
-                            }}
-                        barGap={2} 
-                        >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-                            <XAxis
-                                dataKey="category"
-                                angle={-45}
-                                textAnchor="end"
-                                height={150}
-                                interval={0}
-                                stroke="#4A4644"
-                                style={{ fontSize: '0.85rem' }}
-                                padding={{ left: 10, right: 10 }}
-                            />
-                            <YAxis
-                                allowDecimals={false}
-                                label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
-                                stroke="#4A4644"
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    background: '#FBFBF8',
-                                    border: '1px solid #EFEBE6',
-                                    borderRadius: '8px',
-                                    padding: '1rem'
+                    <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
+                        <ResponsiveContainer width="100%" minHeight={690}>
+                            <BarChart
+                                data={chartData}
+                                margin={{
+                                    top: 20,
+                                    right: 30,
+                                    left: 60,
+                                    bottom: 150
                                 }}
-                            />
-                            <Legend
-                                wrapperStyle={{ paddingBottom: '70px' }}                    
-                                layout="horizontal"
-                                verticalAlign="top"
-                            />
-                            {allIndexNames.map((indexName, i) => (
-                                <Bar
-                                    key={indexName}
-                                    dataKey={indexName}
-                                    fill={CHART_COLORS[i % CHART_COLORS.length]}
-                                    name={indexName}
-                                    barSize={20}
+                                barGap={2}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
+                                <XAxis
+                                    dataKey="category"
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={150}
+                                    interval={0}
+                                    stroke="#4A4644"
+                                    style={{ fontSize: '0.85rem' }}
+                                    padding={{ left: 10, right: 10 }}
                                 />
-                            ))}
-                        </BarChart>
-                    </ResponsiveContainer>
+                                <YAxis
+                                    allowDecimals={false}
+                                    label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
+                                    stroke="#4A4644"
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: '#FBFBF8',
+                                        border: '1px solid #EFEBE6',
+                                        borderRadius: '8px',
+                                        padding: '1rem'
+                                    }}
+                                />
+                                <Legend
+                                    wrapperStyle={{ paddingBottom: '70px' }}
+                                    layout="horizontal"
+                                    verticalAlign="top"
+                                />
+                                {allIndexNames.map((indexName, i) => (
+                                    <Bar
+                                        key={indexName}
+                                        dataKey={indexName}
+                                        fill={CHART_COLORS[i % CHART_COLORS.length]}
+                                        name={indexName}
+                                        barSize={20}
+                                    />
+                                ))}
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
-            </div>
             )}
 
-             {/* Visualização de Tabela */}
+            {/* Visualização de Tabela */}
             {viewMode === 'table' && (
                 <div className={styles.tableWrapper}>
                     <table className={styles.tableFixed}>
@@ -429,7 +478,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     </div>
                 ))}
             </div>
-            
+
             <CategoryDetailsModal
                 isOpen={!!selectedCategory}
                 onClose={() => setSelectedCategory(null)}

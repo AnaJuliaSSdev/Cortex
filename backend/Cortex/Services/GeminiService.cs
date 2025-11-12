@@ -49,7 +49,7 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
         }
     }
 
-    public async Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192)
+    public async Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.0f, int maxOutputTokens = 8192)
     {
         var predictionServiceClient = new PredictionServiceClientBuilder().Build();
 

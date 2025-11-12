@@ -131,6 +131,64 @@ public class ExportController : ControllerBase
         }
     }
 
+    // [HttpPost("latex/{analysisId}")]
+    // public async Task<IActionResult> ExportToLatex(
+    //     int analysisId,
+    //     [FromBody] ExportRequestDto requestDto)
+    // {
+    //     try
+    //     {
+    //         var userId = GetCurrentUserId();
+
+    //         // Criar serviço de exportação LaTeX
+    //         var exportService = _exportFactory.CreateExportService(ExportType.LaTeX);
+
+    //         // Converter DTO para request (lógica idêntica)
+    //         var exportRequest = new ExportRequest
+    //         {
+    //             AnalysisId = analysisId,
+    //             ChartImage = !string.IsNullOrWhiteSpace(requestDto.ChartImageBase64)
+    //             ? Convert.FromBase64String(
+    //                 requestDto.ChartImageBase64.Contains(",")
+    //                     ? requestDto.ChartImageBase64.Split(',')[1]
+    //                     : requestDto.ChartImageBase64
+    //               )
+    //             : null,
+    //             Options = requestDto.Options ?? new ExportOptions()
+    //         };
+
+    //         // Validar dados (lógica idêntica)
+    //         var validation = await exportService.ValidateDataAsync(analysisId);
+    //         if (!validation.IsValid)
+    //         {
+    //             return BadRequest(new
+    //             {
+    //                 message = "Dados inválidos para exportação",
+    //                 errors = validation.Errors
+    //             });
+    //         }
+
+    //         var result = await exportService.ExportAsync(exportRequest);
+
+    //         if (!result.Success)
+    //         {
+    //             return BadRequest(new { message = result.ErrorMessage });
+    //         }
+
+    //         return File(
+    //             result.FileContent!,
+    //             result.MimeType!,
+    //             result.FileName!
+    //         );
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Erro ao exportar análise {AnalysisId} para LaTeX", analysisId);
+    //         return StatusCode(500, new { message = "Erro interno ao gerar exportação" });
+    //     }
+    // }
+
+
     private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

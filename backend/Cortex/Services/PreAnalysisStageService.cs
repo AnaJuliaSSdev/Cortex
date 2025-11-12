@@ -129,6 +129,7 @@ namespace Cortex.Services
             Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
             qual trecho embasou a escolha do índice. 
 
+            Caso você receba documentos em TXT, quando/se for referenciá-los, mantenha a página sempre como 1. 
             Retorne APENAS um objeto JSON válido, sem markdown, comentários ou texto adicional:
             O JSON DEVE SEGUIR EXATAMENTE ESSA ESTRUTURA:
             {{
@@ -140,7 +141,7 @@ namespace Cortex.Services
                   "references": [
                     {{
                       "document": "nome_arquivo",
-                      "page": "2",
+                      "page": "2", // Sempre 1 para documentos TXT
                       "quoted_content": "O trecho exato do texto que justifica este índice"
                     }}
                   ]
@@ -313,6 +314,7 @@ namespace Cortex.Services
                 resultBaseClass.ReferenceDocuments = resultBaseClass.ReferenceDocuments.ToList();
                 resultBaseClass.IsSuccess = true;
                 resultBaseClass.PreAnalysisResult = savedStage;
+                resultBaseClass.AnalysisTitle = analysis.Title;
                 resultBaseClass.AnalysisQuestion = analysis.Question;
                 _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
             }
