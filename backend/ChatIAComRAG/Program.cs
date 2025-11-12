@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text; // Adicionado para o StringBuilder
 
 namespace ChatIAComRAG;
 
@@ -16,50 +17,78 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        // Configurar serviços
-        var services = ConfigureServices();
+        // 1. Verificar se o modo debug foi solicitado
+        // Ex: dotnet run "caminho/do/pdf.pdf" showInfo
+        bool isDebugMode = args.Any(arg => arg.Equals("showInfo", StringComparison.OrdinalIgnoreCase));
+
+        // 2. Tentar encontrar o caminho do PDF nos argumentos
+        // Ele ignora o argumento "showInfo" e pega o primeiro argumento restante
+        string? pdfPath = args.FirstOrDefault(arg => !arg.Equals("showInfo", StringComparison.OrdinalIgnoreCase));
+
+        // Configurar serviços (passando o modo de debug)
+        var services = ConfigureServices(isDebugMode);
         var serviceProvider = services.BuildServiceProvider();
 
+        // Header da Aplicação
+        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("=".PadRight(60, '='));
-        Console.WriteLine("  SISTEMA DE RAG - Chat com PDF usando Gemini");
+        Console.WriteLine("      SISTEMA DE RAG - Chat com PDF usando Gemini");
         Console.WriteLine("=".PadRight(60, '='));
         Console.WriteLine();
+        Console.ResetColor();
 
+        // Obter serviços
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         var pdfProcessor = serviceProvider.GetRequiredService<SimplePdfProcessingService>();
         var ragService = serviceProvider.GetRequiredService<IRagService>();
 
-        // Passo 1: Upload do PDF
-        Console.Write("Digite o caminho completo do arquivo PDF: ");
-        var pdfPath = Console.ReadLine();
-
-        if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
-        {
-            Console.WriteLine("Arquivo não encontrado!");
-            return;
-        }
-
-        Console.Write("Digite um título para o documento: ");
-        var title = Console.ReadLine() ?? "Documento sem título";
-
-        Console.WriteLine();
-        Console.WriteLine("Processando PDF (pode levar alguns minutos)...");
-        Console.WriteLine();
-
         try
         {
+            // Se nenhum caminho foi passado via argumento, pedir ao usuário
+            if (string.IsNullOrWhiteSpace(pdfPath))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write("Digite o caminho completo do arquivo PDF: ");
+                Console.ResetColor();
+                pdfPath = Console.ReadLine();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Arquivo recebido por argumento: {pdfPath}");
+                Console.ResetColor();
+            }
+
+            // Validar o caminho do arquivo
+            if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Arquivo não encontrado!");
+                Console.ResetColor();
+                return;
+            }
+
+            var title = Path.GetFileNameWithoutExtension(pdfPath);
+
+            Console.WriteLine();
+            Console.WriteLine($"Processando '{title}' (pode levar alguns minutos)...");
+            Console.WriteLine();
+
+            // Processar o PDF
             var document = await pdfProcessor.ProcessPdfAsync(pdfPath, title);
 
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("PDF processado com sucesso");
-            Console.WriteLine($"   - ID do documento: {document.Id}");
-            Console.WriteLine($"   - Total de caracteres: {document.Content?.Length ?? 0}");
+            Console.ResetColor();
             Console.WriteLine();
 
-            // Passo 2: Chat
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("=".PadRight(60, '='));
-            Console.WriteLine("  Você já pode fazer perguntas sobre o documento!");
-            Console.WriteLine("  Digite 'sair' para encerrar");
+            Console.WriteLine("   Você já pode fazer perguntas sobre o documento!");
+            Console.WriteLine("   Digite 'sair' para encerrar");
             Console.WriteLine("=".PadRight(60, '='));
             Console.WriteLine();
+            Console.ResetColor();
 
             var chatHistory = new List<(string question, string answer)>();
 
@@ -79,20 +108,31 @@ class Program
                     break;
                 }
 
-                // Adicionar histórico ao contexto (opcional)
-                var contextualQuestion = question;
+                // Montar histórico
+                var promptBuilder = new StringBuilder();
                 if (chatHistory.Any())
                 {
-                    var lastInteraction = chatHistory.Last();
-                    contextualQuestion = $"Contexto da última pergunta:\nPergunta: {lastInteraction.question}\nResposta: {lastInteraction.answer}\n\nNova pergunta: {question}";
+                    promptBuilder.AppendLine("Histórico da conversa anterior:");
+                    // Pega as últimas 2 interações
+                    foreach (var (q, a) in chatHistory.TakeLast(2))
+                    {
+                        promptBuilder.AppendLine($"Você: {q}");
+                        promptBuilder.AppendLine($"Assistente: {a}\n");
+                    }
+                    promptBuilder.AppendLine("---");
                 }
+                promptBuilder.AppendLine($"Pergunta atual: {question}");
 
-                Console.WriteLine();
+                var contextualQuestion = promptBuilder.ToString();
+
+                // Limpar a linha e mostrar status
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("⏳ Buscando resposta...");
-                Console.WriteLine();
+                Console.ResetColor();
 
                 var answer = await ragService.AskQuestionAsync(contextualQuestion, document.Id);
 
+                // Mostrar a resposta
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Assistente:");
                 Console.ResetColor();
@@ -118,11 +158,16 @@ class Program
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"❌ Erro: {ex.Message}");
+            logger.LogCritical(ex, "Ocorreu um erro fatal na aplicação.");
             Console.ResetColor();
         }
     }
 
-    static IServiceCollection ConfigureServices()
+    /// <summary>
+    /// Configura os serviços de DI
+    /// </summary>
+    /// <param name="isDebugMode">Flag para ligar ou desligar os logs</param>
+    static IServiceCollection ConfigureServices(bool isDebugMode)
     {
         var services = new ServiceCollection();
 
@@ -135,14 +180,21 @@ class Program
 
         services.AddSingleton<IConfiguration>(configuration);
 
-        // Logging
         services.AddLogging(builder =>
         {
+            builder.ClearProviders();
+
+            LogLevel minLevel = isDebugMode ? LogLevel.Information : LogLevel.None;
+            builder.SetMinimumLevel(minLevel);
+
             builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
+
+            if (isDebugMode)
+            {
+                builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+            }
         });
 
-        // ⚠️ IMPORTANTE: EnableDynamicJson ANTES do DbContext
         Npgsql.NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
 
         // DbContext

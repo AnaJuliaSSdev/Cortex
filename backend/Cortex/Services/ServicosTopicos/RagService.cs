@@ -32,7 +32,7 @@ public class RagService : IRagService
         var relevantChunks = await _chunkRepository.SearchSimilarByDocumentIdAsync(
             documentId,
             questionEmbedding,
-            limit: 5
+            limit: 10
         );
 
         if (!relevantChunks.Any())
@@ -47,11 +47,13 @@ public class RagService : IRagService
 
         var prompt = $@"Você é um assistente que responde perguntas baseado APENAS no contexto fornecido abaixo.
 
-        CONTEXTO DO DOCUMENTO:
+        ====================== INICIO DO CONTEXTO DO DOCUMENTO ====================================
         {context}
+        ===================== FIM DO CONTEXTO DO DOCUMENTO ==========================================
 
-        PERGUNTA DO USUÁRIO:
+        =======================  INICIO HISTÓRICO DE PERGUNTAS ANTERIORES ====================================
         {question}
+        ========================  FIM DOHISTÓRICO DE PERGUNTAS ANTERIORES =====================================
 
         INSTRUÇÕES:
         - Responda APENAS com base no contexto fornecido
