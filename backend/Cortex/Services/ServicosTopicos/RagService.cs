@@ -1,6 +1,7 @@
 ﻿using Cortex.Models;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Cortex.Services.ServicosTopicos;
 
@@ -32,7 +33,7 @@ public class RagService : IRagService
         var relevantChunks = await _chunkRepository.SearchSimilarByDocumentIdAsync(
             documentId,
             questionEmbedding,
-            limit: 10
+            limit: 11
         );
 
         if (!relevantChunks.Any())
@@ -43,7 +44,27 @@ public class RagService : IRagService
 
         _logger.LogInformation("Encontrados {Count} chunks relevantes.", relevantChunks.Count);
 
-        var context = string.Join("\n\n---\n\n", relevantChunks.Select(c => c.Content));
+        try
+        {
+            var topChunksContent = relevantChunks
+                .Take(3) 
+                .Select((chunk, index) =>
+                {
+                    return $"--- CONTEÚDO CHUNK {index + 1} (Início) ---\n" +
+                           $"{chunk.Content}\n" +
+                           $"--- CONTEÚDO CHUNK {index + 1} (Fim) ---";
+                });
+
+            var loggableChunks = string.Join($"\n{Environment.NewLine}", topChunksContent);
+
+            _logger.LogInformation("Conteúdo completo dos chunks mais relevantes:\n{TopChunks}", loggableChunks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Erro ao formatar chunks para log.");
+        }
+
+        var context = string.Join("\n\n==================\n\n", relevantChunks.Select(c => c.Content));
 
         var prompt = $@"Você é um assistente que responde perguntas baseado APENAS no contexto fornecido abaixo.
 
@@ -51,9 +72,9 @@ public class RagService : IRagService
         {context}
         ===================== FIM DO CONTEXTO DO DOCUMENTO ==========================================
 
-        =======================  INICIO HISTÓRICO DE PERGUNTAS ANTERIORES ====================================
+        =======================  INICIO HISTÓRICO DE PERGUNTAS ====================================
         {question}
-        ========================  FIM DOHISTÓRICO DE PERGUNTAS ANTERIORES =====================================
+        ========================  FIM DO HISTÓRICO DE PERGUNTAS =====================================
 
         INSTRUÇÕES:
         - Responda APENAS com base no contexto fornecido
