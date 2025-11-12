@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import html2canvas from 'html2canvas';
 import styles from './css/ExplorationResults.module.css'
 import type { Category, ExplorationOfMaterialStage } from '../interfaces/dto/AnalysisResult';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
@@ -8,11 +9,19 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import CategoryDetailsModal from './CategoryDetailsModal';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
+import { exportAnalysisToLatex, exportAnalysisToPdf } from '../services/exportService';
+import type { AlertType } from './Alert';
+import Alert from './Alert';
+import DownloadingIcon from '@mui/icons-material/Downloading';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArticleIcon from '@mui/icons-material/Article';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
+    analysisId: string;
 }
 
 type ViewMode = 'chart' | 'table' | 'cards';
@@ -29,18 +38,137 @@ interface ProcessedData {
 }
 
 export default function ExplorationResults({ explorationStage, analysisDocuments,
-    referenceDocuments }: ExplorationResultsProps) {
+    referenceDocuments, analysisId }: ExplorationResultsProps) {
 
     const [viewMode, setViewMode] = useState<ViewMode>('chart');
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
-    // Função auxiliar para encontrar a categoria completa
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportAlert, setExportAlert] = useState<{ message: string; type: AlertType } | null>(null);
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+    const chartRef = useRef<HTMLDivElement>(null);
+
     const handleCategoryClick = (categoryName: string) => {
         const fullCategory = explorationStage.categories.find(c => c.name === categoryName);
         if (fullCategory) {
             setSelectedCategory(fullCategory);
         }
     };
+
+
+    /**
+     * Força a view para 'chart', espera a renderização e captura
+     * a imagem do gráfico, retornando-a como Base64.
+     */
+    const captureChartImage = async (): Promise<string | null> => {
+        // Força a visualização do gráfico
+        setViewMode('chart');
+        await new Promise(resolve => setTimeout(resolve, 100)); // Espera o React renderizar
+
+        if (!chartRef.current) {
+            console.error("Referência do gráfico não encontrada.");
+            return null;
+        }
+
+        const options = {
+            backgroundColor: '#ffffff',
+            scale: window.devicePixelRatio || 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            width: chartRef.current.scrollWidth,
+            height: chartRef.current.scrollHeight
+        } as any;
+
+        try {
+            // Aguarda o gráfico (Recharts) desenhar as animações
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const canvas = await html2canvas(chartRef.current as HTMLElement, options);
+            const dataUrl = canvas.toDataURL('image/png');
+
+            // Retorna a string Base64 (sem o prefixo)
+            return dataUrl.split(',')[1];
+
+        } catch (err) {
+            console.error("Falha ao capturar o gráfico:", err);
+            setExportAlert({
+                message: "Falha ao capturar a imagem do gráfico. A exportação pode falhar ou vir sem o gráfico.",
+                type: "warning"
+            });
+            return null;
+        }
+    };
+
+
+    const handleExportPdf = async () => {
+        setIsExporting(true);
+        setExportAlert(null);
+        setIsExportMenuOpen(false);
+
+        const chartImageBase64 = await captureChartImage();
+
+        // Chamar o serviço de exportação
+        try {
+            await exportAnalysisToPdf(analysisId, {
+                chartImageBase64: chartImageBase64 || undefined,
+                options: {
+                    includeCharts: true,
+                    includeTables: true,
+                    includeRegisterUnits: true
+                }
+            });
+
+            setExportAlert({
+                message: "Seu PDF foi baixado com sucesso!",
+                type: "success"
+            });
+        } catch (err) {
+            console.error("Erro na exportação PDF:", err);
+            setExportAlert({
+                message: "Falha ao gerar o PDF. Verifique sua conexão e tente novamente.",
+                type: "error"
+            });
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+
+    // // Handler para LaTeX ---
+    // const handleExportLatex = async () => {
+    //     setIsExporting(true);
+    //     setExportAlert(null);
+    //     setIsExportMenuOpen(false);
+
+    //     const chartImageBase64 = await captureChartImage();
+
+    //     // Chamar o serviço de exportação
+    //     try {
+    //         await exportAnalysisToLatex(analysisId, {
+    //             chartImageBase64: chartImageBase64 || undefined,
+    //             options: {
+    //                 includeCharts: true,
+    //                 includeTables: true,
+    //                 includeRegisterUnits: true
+    //             }
+    //         });
+
+    //         setExportAlert({
+    //             message: "Seu arquivo .tex foi baixado com sucesso!",
+    //             type: "success"
+    //         });
+    //     } catch (err) {
+    //         console.error("Erro na exportação LaTeX:", err);
+    //         setExportAlert({
+    //             message: "Falha ao gerar o .tex. Verifique sua conexão e tente novamente.",
+    //             type: "error"
+    //         });
+    //     } finally {
+    //         setIsExporting(false);
+    //     }
+    // };
+
 
     const processedData = useMemo(() => {
         const data: ProcessedData[] = [];
@@ -74,7 +202,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         return { categories: data, allIndices: Array.from(allIndicesMap.entries()) };
     }, [explorationStage]);
 
-    // Dados para o gráfico de barras agrupadas
     const chartData = useMemo(() => {
         return processedData.categories.map(cat => {
             const entry: any = { category: cat.categoryName };
@@ -93,7 +220,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         return Array.from(names);
     }, [processedData]);
 
-    // Mapa de índices com suas descrições
     const indexDescriptions = useMemo(() => {
         const map = new Map<string, string>();
         explorationStage.categories.forEach(cat => {
@@ -125,132 +251,168 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                         onClick={() => setViewMode('chart')}
                         className={`${styles.viewButton} ${viewMode === 'chart' ? styles.activeButton : ''}`}
                     >
-                        <AutoGraphIcon/> Gráfico    
+                        <AutoGraphIcon /> Gráfico
                     </button>
                     <button
                         onClick={() => setViewMode('table')}
                         className={`${styles.viewButton} ${viewMode === 'table' ? styles.activeButton : ''}`}
                     >
-                        <SpaceDashboardIcon/> Tabela
+                        <SpaceDashboardIcon /> Tabela
                     </button>
                     <button
                         onClick={() => setViewMode('cards')}
                         className={`${styles.viewButton} ${viewMode === 'cards' ? styles.activeButton : ''}`}
                     >
-                        <DescriptionIcon/> Cards
+                        <DescriptionIcon /> Cards
                     </button>
                 </div>
+
+                <div className={styles.exportContainer}>
+                    <button
+                        className={styles.exportButton}
+                        onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                        disabled={isExporting}
+                    >
+                        <DownloadingIcon />
+                        {isExporting ? 'Exportando...' : 'Exportar Relatório'}
+                        <ArrowDropDownIcon />
+                    </button>
+
+                    {isExportMenuOpen && (
+                        <div className={styles.exportMenu}>
+                            <button onClick={handleExportPdf}>
+                                <PictureAsPdfIcon /> Exportar como PDF
+                            </button>
+                            {/* <button onClick={handleExportLatex} disabled={isExporting}>
+                                <ArticleIcon /> Exportar como LaTeX (.tex)
+                            </button> */}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {exportAlert && (
+                <Alert
+                    message={exportAlert.message}
+                    type={exportAlert.type}
+                    onClose={() => setExportAlert(null)}
+                />
+            )}
 
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
                 <div className={styles.chartContainer}>
-                    <ResponsiveContainer width="100%" minHeight={600}>
-                        <BarChart
-                            data={chartData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 150 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
-                             <XAxis
-                                dataKey="category"
-                                angle={-45}
-                                textAnchor="end"
-                                height={150}
-                                interval={0}
-                                stroke="#4A4644"
-                                style={{ fontSize: '0.85rem' }}
-                            />
-                           <YAxis
-                                allowDecimals={false}
-                                label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
-                                stroke="#4A4644"
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    background: '#FBFBF8',
-                                    border: '1px solid #EFEBE6',
-                                    borderRadius: '8px',
-                                    padding: '1rem'
+                    <div ref={chartRef} style={{ backgroundColor: '#fff', padding: '1rem' }}>
+                        <ResponsiveContainer width="100%" minHeight={690}>
+                            <BarChart
+                                data={chartData}
+                                margin={{
+                                    top: 20,
+                                    right: 30,
+                                    left: 60,
+                                    bottom: 150
                                 }}
-                            />
-                            <Legend
-                                wrapperStyle={{ paddingBottom: '20px' }}
-                                layout="horizontal"
-                                verticalAlign="top"
-                            />
-                            {allIndexNames.map((indexName, i) => (
-                                <Bar
-                                    key={indexName}
-                                    dataKey={indexName}
-                                    fill={CHART_COLORS[i % CHART_COLORS.length]}
-                                    name={indexName}
-                                    barSize={20}
+                                barGap={2}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#EFEBE6" />
+                                <XAxis
+                                    dataKey="category"
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={150}
+                                    interval={0}
+                                    stroke="#4A4644"
+                                    style={{ fontSize: '0.85rem' }}
+                                    padding={{ left: 10, right: 10 }}
                                 />
-                            ))}
-                        </BarChart>
-                    </ResponsiveContainer>
+                                <YAxis
+                                    allowDecimals={false}
+                                    label={{ value: 'Frequência', angle: -90, position: 'insideLeft' }}
+                                    stroke="#4A4644"
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: '#FBFBF8',
+                                        border: '1px solid #EFEBE6',
+                                        borderRadius: '8px',
+                                        padding: '1rem'
+                                    }}
+                                />
+                                <Legend
+                                    wrapperStyle={{ paddingBottom: '70px' }}
+                                    layout="horizontal"
+                                    verticalAlign="top"
+                                />
+                                {allIndexNames.map((indexName, i) => (
+                                    <Bar
+                                        key={indexName}
+                                        dataKey={indexName}
+                                        fill={CHART_COLORS[i % CHART_COLORS.length]}
+                                        name={indexName}
+                                        barSize={20}
+                                    />
+                                ))}
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             )}
 
-            {/* Visualização de Tabela (Refatorada) */}
+            {/* Visualização de Tabela */}
             {viewMode === 'table' && (
-                <div className={styles.tableContainer}>
-                    {/* O CSS do scrollbar agora está no .module.css
-                        e será aplicado a este contêiner */}
-                    <div className={styles.tableScrollContainer}>
-                        <table className={styles.table}>
-                            <thead className={styles.tableHead}>
-                                <tr>
-                                    <th className={`${styles.tableHeader} ${styles.categoryHeader}`}>
-                                        Categoria
+                <div className={styles.tableWrapper}>
+                    <table className={styles.tableFixed}>
+                        <thead>
+                            <tr>
+                                <th className={styles.thCategory} rowSpan={2}>
+                                    Categoria
+                                </th>
+                                <th className={styles.thUnits} rowSpan={2}>
+                                    Unidades
+                                </th>
+                                <th className={styles.thIndicesGroup} colSpan={allIndexNames.length}>
+                                    Índices Encontrados
+                                </th>
+                            </tr>
+                            <tr className={styles.indexNamesRow}>
+                                {allIndexNames.map(indexName => (
+                                    <th
+                                        key={indexName}
+                                        className={styles.thIndexName}
+                                        title={indexName}
+                                    >
+                                        <div className={styles.indexNameText}>
+                                            {indexName.length > 40 ? indexName.substring(0, 35) + '...' : indexName}
+                                        </div>
                                     </th>
-                                    <th className={`${styles.tableHeader} ${styles.unitHeader}`}>
-                                        Unidades
-                                    </th>
-                                    <th colSpan={allIndexNames.length} className={`${styles.tableHeader} ${styles.indicesHeader}`}>
-                                        Índices Encontrados
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th className={styles.stickyColumn}></th>
-                                    <th className={styles.stickyColumn}></th>
-                                    {allIndexNames.map(indexName => (
-                                        <th
-                                            key={indexName}
-                                            className={styles.indexNameHeader}
-                                            title={indexName}
-                                        >
-                                            {indexName.length > 25 ? indexName.substring(0, 22) + '...' : indexName}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className={styles.tableBody}>
-                                {processedData.categories.map((cat, idx) => (
-                                    <tr key={idx} className={styles.tableRow}>
-                                        <td className={`${styles.tableCell} ${styles.categoryCell}`}>
-                                            {cat.categoryName}
-                                        </td>
-                                        <td className={`${styles.tableCell} ${styles.unitCell}`}>
-                                            {cat.totalUnits}
-                                        </td>
-                                        {allIndexNames.map(indexName => {
-                                            const indexData = cat.indices.find(i => i.name === indexName);
-                                            const count = indexData?.count || 0;
-                                            return (
-                                                <td
-                                                    key={indexName}
-                                                    className={`${styles.tableCell} ${count > 0 ? styles.indexCellHasCount : styles.indexCellNoCount}`}
-                                                >
-                                                    {count > 0 ? count : '—'}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {processedData.categories.map((cat, idx) => (
+                                <tr key={idx} className={styles.dataRow}>
+                                    <td className={styles.tdCategory}>
+                                        {cat.categoryName}
+                                    </td>
+                                    <td className={styles.tdUnits}>
+                                        {cat.totalUnits}
+                                    </td>
+                                    {allIndexNames.map(indexName => {
+                                        const indexData = cat.indices.find(i => i.name === indexName);
+                                        const count = indexData?.count || 0;
+                                        return (
+                                            <td
+                                                key={indexName}
+                                                className={count > 0 ? styles.tdIndexValue : styles.tdIndexEmpty}
+                                            >
+                                                {count > 0 ? count : '—'}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -259,15 +421,15 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                 <div className={styles.cardsScrollContainer}>
                     <div className={styles.cardsGrid}>
                         {processedData.categories.map((cat, idx) => (
-                            <div 
-                            onClick={() => handleCategoryClick(cat.categoryName)}
-                            key={idx} 
-                            className={styles.card}>
+                            <div
+                                onClick={() => handleCategoryClick(cat.categoryName)}
+                                key={idx}
+                                className={styles.card}>
                                 <h3 className={styles.cardTitle}>
                                     {cat.categoryName}
                                 </h3>
                                 <div className={styles.cardMeta}>
-                                    <TextSnippetIcon/> {cat.totalUnits} unidades de registro
+                                    <TextSnippetIcon /> {cat.totalUnits} unidades de registro
                                 </div>
                                 <div className={styles.cardIndexList}>
                                     {cat.indices.map((index, i) => {
@@ -302,7 +464,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                 </div>
             )}
 
-            {/* Resumo estatístico compacto */}
+            {/* Resumo estatístico */}
             <div className={styles.summaryFooter}>
                 {[
                     { value: processedData.categories.length, label: 'Categorias', color: '#B35848' },
@@ -316,6 +478,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     </div>
                 ))}
             </div>
+
             <CategoryDetailsModal
                 isOpen={!!selectedCategory}
                 onClose={() => setSelectedCategory(null)}

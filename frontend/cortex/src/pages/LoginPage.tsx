@@ -77,10 +77,6 @@ export default function LoginPage() {
                         )}
 						<FormButton text="Entrar"></FormButton>
 
-						<div className="forgot-password">
-							<a href="/">Esqueceu a senha?</a>
-						</div>
-
 						<div className="register-link">
 							<a href="/register">Cadastre-se</a>
 						</div>

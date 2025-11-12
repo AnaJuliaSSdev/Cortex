@@ -77,14 +77,14 @@ namespace Cortex.Services
                                                         Description = "Número da página como string"
                                                     }
                                                 },
-                                                { "line", new OpenApiSchema
+                                                { "quoted_content", new OpenApiSchema
                                                     {
                                                         Type = Type.String,
-                                                        Description = "Número da linha como string"
+                                                        Description = "O trecho exato do texto que justifica este índice"
                                                     }
                                                 }
                                             },
-                                            Required = { "document", "page", "line" }
+                                            Required = { "document", "page", "quoted_content" }
                                         }
                                     }
                                 }
@@ -129,6 +129,7 @@ namespace Cortex.Services
             Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
             qual trecho embasou a escolha do índice. 
 
+            Caso você receba documentos em TXT, quando/se for referenciá-los, mantenha a página sempre como 1. 
             Retorne APENAS um objeto JSON válido, sem markdown, comentários ou texto adicional:
             O JSON DEVE SEGUIR EXATAMENTE ESSA ESTRUTURA:
             {{
@@ -140,8 +141,8 @@ namespace Cortex.Services
                   "references": [
                     {{
                       "document": "nome_arquivo",
-                      "page": "2",
-                      "line": "8"
+                      "page": "2", // Sempre 1 para documentos TXT
+                      "quoted_content": "O trecho exato do texto que justifica este índice"
                     }}
                   ]
                 }}
@@ -283,14 +284,16 @@ namespace Cortex.Services
             try
             {
                 string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass);
-                IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+                IEnumerable<Cortex.Models.Document> allDocumentsEnumerable = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+                List<Cortex.Models.Document> allDocuments = [.. allDocumentsEnumerable];
+
                 List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
                 //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                string jsonResponse = GetMockedGeminiResponse();
+                //string jsonResponse = GetMockedGeminiResponse();
                 //deixei comentado por enquanto pra não gastar recurso
-                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
+                string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
                 _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -307,10 +310,12 @@ namespace Cortex.Services
                  );
 
                 await _preAnalysisPersistenceService.SaveIndexesAsync(indexes);
-
-                resultBaseClass.PromptResult = jsonResponse;
+                resultBaseClass.AnalysisDocuments = resultBaseClass.AnalysisDocuments.ToList();
+                resultBaseClass.ReferenceDocuments = resultBaseClass.ReferenceDocuments.ToList();
                 resultBaseClass.IsSuccess = true;
                 resultBaseClass.PreAnalysisResult = savedStage;
+                resultBaseClass.AnalysisTitle = analysis.Title;
+                resultBaseClass.AnalysisQuestion = analysis.Question;
                 _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
             }
             catch (InvalidOperationException ex)
@@ -348,121 +353,109 @@ namespace Cortex.Services
                 {
                   "indices": [
                     {
-                      "name": "Saber Pedagógico e Didático",
-                      "description": "Refere-se ao conhecimento sobre o processo de ensino-aprendizagem, incluindo didática, planejamento e a intencionalidade pedagógica. Este saber, advindo tanto da formação acadêmica quanto da prática supervisionada, diferencia a abordagem da professora de uma mera reprodução técnica, focando no 'porquê' e 'para quê' dos movimentos.",
-                      "indicator": "Presença de termos e expressões como 'didática', 'metodologia', 'pedagogia', 'formação de professores', 'explicar pra que que é aquilo', 'preparar aula', 'organização da aula', 'relação professor-aluno', 'dar sentido'.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "5",
-                          "line": "10"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "4",
-                          "line": "10"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Experiências Formativas como Contraponto",
-                      "description": "Menções a experiências passadas da professora ou de seus alunos, especialmente as negativas (como humilhação, dor, rigidez excessiva), que servem como base, por oposição, para a construção de sua própria metodologia de trabalho, buscando evitar a repetição de traumas e promover uma prática mais positiva.",
-                      "indicator": "Relatos de experiências anteriores com o balé descritas com palavras como 'trauma', 'humilhante', 'sacrifício', 'sofrimento', 'rígido', 'maltrata o corpo', em contraste com a prática atual da professora.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "4",
-                          "line": "21"
-                        },
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "12",
-                          "line": "1"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Metodologia Centrada no Cuidado e Respeito ao Corpo",
-                      "description": "Este índice aponta para uma abordagem pedagógica que prioriza o bem-estar do aluno, o respeito aos limites individuais, a prevenção de lesões e a construção de uma consciência corporal saudável, em oposição a uma visão do balé como prática de sacrifício.",
-                      "indicator": "Presença de expressões como 'respeitar o tempo', 'limite do corpo', 'cuidado com o corpo', 'não precisa ser sacrificante', 'conhecimento que protege o corpo', 'consciência corporal'.",
+                      "name": "Desconstrução da Visão Tradicional do Balé",
+                      "description": "Este índice refere-se às menções que contrapõem a metodologia da professora a uma visão tradicional, rígida e sacrificial do Balé. A escolha se justifica por ser uma vivência que transformou a percepção das alunas sobre a dança, influenciando diretamente a prática pedagógica da professora, que se afastava do estereótipo do 'Balé que maltrata o corpo'.",
+                      "indicator": "Presença de expressões que negam o caráter de sacrifício, dor ou rigidez excessiva do Balé, ou que relatam uma mudança de percepção de 'chato' e 'sofrido' para 'prazeroso' e 'agradável'. Busca por termos como 'desconstruí a ideia', 'não precisa ser sacrificante', 'coisa chata', 'maltrata o corpo, não!'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "1",
-                          "line": "30"
+                          "quoted_content": "uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "10",
-                          "line": "16"
+                          "page": "2",
+                          "quoted_content": "depois (risos) que eu fiz Balé com a Mônica eu vi que não precisa ser sacrificante, não precisa ser isso... porque eu não vou dançar Balé, não é pra isso, não é esse o objetivo, né, então não precisa ser assim dolorido"
                         }
                       ]
                     },
                     {
-                      "name": "Desconstrução de Estereótipos do Balé",
-                      "description": "Refere-se ao esforço consciente da professora em desafiar e transformar visões estereotipadas do balé como uma prática excessivamente rígida, dolorosa ou 'chata'. A metodologia busca ativamente apresentar uma 'outra visão' da dança, associando-a ao prazer e à leveza.",
-                      "indicator": "Relatos que contrastam a experiência na aula da professora com ideias pré-concebidas de 'sacrifício', 'coisa chata', 'rígido', 'maltrata o corpo'. Uso de expressões como 'desconstruí a ideia que eu tinha', 'outra visão do Balé'.",
+                      "name": "Afetividade na Relação Pedagógica",
+                      "description": "Este índice aponta para a importância da afetividade, amizade e de uma relação mais horizontal entre professora e alunas como um elemento central da metodologia. A escolha é pertinente pois a qualidade do vínculo afetivo é citada como um saber que influencia diretamente o ambiente de aprendizagem e a adesão das alunas, sendo um pilar da prática pedagógica.",
+                      "indicator": "Presença de termos e expressões que descrevem a relação com a professora e o ambiente da aula como 'afetividade', 'amizade', 'gostosa', 'se divertia', 'tranquilo', 'relação híbrida'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "1",
-                          "line": "43"
+                          "quoted_content": "tirando a afetividade do grupo assim que tinha entre nós, eram aulas que contribuíam muito pra eu descobrir outras coisas possibilidades do meu corpo que eu não conhecia assim."
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "35",
-                          "line": "18"
+                          "page": "4",
+                          "quoted_content": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal... assim, se não tiver isso, bah, se perde 50%."
                         }
                       ]
                     },
                     {
-                      "name": "Ambiente de Aprendizagem Afetivo e Lúdico",
-                      "description": "Este índice caracteriza a criação de um clima de aula positivo, baseado em relações afetivas, bom humor, brincadeiras e elementos do imaginário. O erro é tratado como parte do processo e com leveza, constituindo uma estratégia pedagógica para engajar os alunos e facilitar a aprendizagem.",
-                      "indicator": "Menções a 'amizade', 'se divertia', 'brincadeiras', 'teatrinho', 'lúdico', 'rir dos erros', 'era um divertimento', 'ambiente de intimidade'.",
+                      "name": "Consciência Corporal e Fundamentação Teórica",
+                      "description": "Refere-se à prática da professora de explicar a funcionalidade anatômica e cinesiológica dos movimentos, promovendo uma consciência corporal para além da mera reprodução de formas. Este saber, vivenciado e transmitido, é um diferencial metodológico que, segundo os relatos, protege o corpo e dá sentido à prática.",
+                      "indicator": "Identificação de relatos onde a professora explica o 'porquê' dos movimentos, utilizando noções de anatomia, fisiologia ou cinesiologia. Busca por termos como 'explicar pra que que é aquilo', 'consciência corporal', 'noção cinesiológica', 'anatômica', 'sentido'.",
+                      "references": [
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "4",
+                          "quoted_content": "Ah eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio e... sempre tu dizia [...] então sempre tinha esta explicação."
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "7",
+                          "quoted_content": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá, fisiológica que o Balé dá, e tudo de proteção da articulação e de musculatura tudo"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Ludicidade e Tratamento Positivo do Erro",
+                      "description": "Este índice captura as menções ao uso de brincadeiras, jogos e a uma abordagem positiva do erro, tratando-o como parte do processo de aprendizagem e até como 'divertimento'. Esta experiência lúdica é um saber pedagógico que influencia a metodologia ao criar um ambiente leve, que diminui a ansiedade e estimula a participação.",
+                      "indicator": "Presença de descrições de atividades lúdicas ou de uma atitude não-punitiva perante o erro. Busca por palavras como 'brincadeira', 'lúdico', 'divertimento', 'rir dos erros', 'teatrinho', 'não me sentia pressionada'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "2",
-                          "line": "18"
+                          "quoted_content": "como eu ria muito dos meus erros e eu adoro os meus erros (risos)... e eu acho que era isso assim."
+                        },
+                        {
+                          "document": "EntrevistasExemplo.pdf",
+                          "page": "9",
+                          "quoted_content": "o erro era tratado com naturalidade, porque ele faz parte né"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
                           "page": "32",
-                          "line": "23"
+                          "quoted_content": "Aí no meio a gente fazia umas brincadeiras, umas coisas, tipo pular pelo tubarão do chão, que era pra treinar oooo... esqueci o nome do salto. Eeeee... a gente também fazia no final um teatrinho que a gente tinha que fazer passos de balé e essas coisas."
                         }
                       ]
                     },
                     {
-                      "name": "Corpo Próprio como Fonte de Saber",
-                      "description": "Aponta para a importância da experiência corporal da própria professora como um saber fundamental em sua pedagogia. Suas vivências, dificuldades e superações no próprio corpo são transformadas em empatia e ferramentas para ensinar e facilitar a aprendizagem dos outros.",
-                      "indicator": "Declarações que conectam a capacidade de ensinar da professora ao fato dela ter vivenciado as técnicas e dificuldades em seu próprio corpo. Expressões como 'sabe ensinar no corpo dos outros porque já passou por aquilo', 'as dificuldades te fizeram buscar isso'.",
+                      "name": "Flexibilidade Metodológica e Adaptação ao Aluno",
+                      "description": "Aponta para a capacidade da professora de adaptar sua metodologia às necessidades, tempos e capacidades individuais de cada aluno, respeitando seus limites. Esta experiência de ensino personalizado, que foge de uma abordagem única para todos, é um saber que constitui uma parte crucial de sua metodologia de trabalho.",
+                      "indicator": "Identificação de trechos que descrevem o respeito ao tempo de cada aluno, a adaptação de exercícios ou a criação de uma metodologia 'universal' e aberta. Busca por expressões como 'respeitavas o tempo de desenvolvimento de cada um', 'trabalhar o Balé de forma universal', 'adaptar àquelas pessoas'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "11",
-                          "line": "22"
+                          "page": "8",
+                          "quoted_content": "pra Vanessa tu dava um tipo de orientação, porque ela já tinha a uma outra capacidade, e pra mim tu ia dentro daquilo ali, pra eu compreender aquilo ali. Então ã, tu respeitavas o, o tempo de desenvolvimento de cada um."
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "12",
-                          "line": "11"
+                          "page": "3",
+                          "quoted_content": "Então seria uma metodologia de trabalhar o Balé de forma universal assim, né. Enxergando qualquer possibilidade ali, ta aberta de repente por aluno também né?"
                         }
                       ]
                     },
                     {
-                      "name": "Estímulo à Prática Reflexiva e Criativa",
-                      "description": "Refere-se ao uso de estratégias e ferramentas pedagógicas que incentivam os alunos a irem além da reprodução técnica, promovendo a reflexão sobre o próprio aprendizado, a autonomia e a expressão criativa.",
-                      "indicator": "Menções a atividades como 'diários de processo', 'memorial no final da aula', 'liberdade de expressão', 'estimula a criatividade', 'criações', 'teatrinho', e momentos de tomada de decisão pelos alunos.",
+                      "name": "Influência da Formação Acadêmica",
+                      "description": "Este índice identifica as referências diretas à formação acadêmica da professora (Pedagogia, Educação Física) como uma influência em sua metodologia. Este saber teórico-prático é percebido pelas entrevistadas como a origem de sua 'didática', da capacidade de ensinar de forma diferente e de sua abordagem pedagógica mais ampla.",
+                      "indicator": "Menção explícita ou implícita à formação acadêmica da professora como fonte de sua metodologia. Busca por termos como 'pedagoga', 'professora de Educação Física', 'formação acadêmica', 'didática', 'Educação Somática'.",
                       "references": [
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "7",
-                          "line": "28"
+                          "page": "13",
+                          "quoted_content": "eu acho que, não sei se por tu ser pedagoga, assim, né, então por exemplo, 'vamos fazer' um [...] a gente brincava com aquilo, ia lá e era complicado, e era uma coisa meio de brincar um pouco"
                         },
                         {
                           "document": "EntrevistasExemplo.pdf",
-                          "page": "33",
-                          "line": "12"
+                          "page": "24",
+                          "quoted_content": "e também a tua formação pedagógica ajudava sabe, por que, tinha uma visão diferente, de ensinar dança, tu trazia muito de teu pedagógico, então eu acredito que essa relação com a teoria ela não era assim, agora é teoria, as coisas iam fluindo..."
                         }
                       ]
                     }

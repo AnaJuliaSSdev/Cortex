@@ -242,15 +242,12 @@ namespace Cortex.Migrations
                     b.Property<int>("IndexId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Line")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Page")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("QuotedContent")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SourceDocumentUri")
@@ -300,11 +297,6 @@ namespace Cortex.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("Line")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Page")
                         .IsRequired()

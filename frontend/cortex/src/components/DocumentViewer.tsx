@@ -4,7 +4,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
-import api from '../services/api'; // Precisamos do 'api' para o download
+import api from '../services/api';
 import styles from './css/DocumentViewer.module.css';
 import type { IndexReference } from '../interfaces/IndexReference';
 
@@ -15,22 +15,38 @@ interface DocumentViewerProps {
     analysisDocuments: UploadedDocument[];
     referenceDocuments: UploadedDocument[];
     selectedReference: IndexReference | null;
+    activeTab: 'analysis' | 'reference';
+    onTabChange: (tab: 'analysis' | 'reference') => void;
 }
 
-export default function DocumentViewer({ 
-    analysisDocuments, 
+export default function DocumentViewer({
+    analysisDocuments,
     referenceDocuments,
-    selectedReference 
+    selectedReference,
+    activeTab,
+    onTabChange
 }: DocumentViewerProps) {
-    
-    type ViewTab = 'analysis' | 'reference';
-    const [activeTab, setActiveTab] = useState<ViewTab>('analysis');
+
     const [selectedDocument, setSelectedDocument] = useState<UploadedDocument | null>(null);
-    const [fileUrl, setFileUrl] = useState<string | null>(null); // Para PDF (blob URL)
-    const [fileContent, setFileContent] = useState<string | null>(null); // Para TXT
+    const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [fileContent, setFileContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState(1);
+    const [highlightText, setHighlightText] = useState<string | null>(null);
+
+    // Função para limpar o highlight ao selecionar doc manualmente
+    const handleSelectDocument = (doc: UploadedDocument) => {
+        setSelectedDocument(doc);
+        setPageNumber(1);
+        setHighlightText(null);
+    };
+
+    useEffect(() => {
+        setSelectedDocument(null);
+        setPageNumber(1);
+        setHighlightText(null);
+    }, [activeTab]);
 
     // Efeito para carregar o documento do backend quando selecionado
     useEffect(() => {
@@ -43,25 +59,22 @@ export default function DocumentViewer({
         const fetchDocument = async () => {
             setIsLoading(true);
             try {
-                // Usando o endpoint de download que você criou
                 const response = await api.get(`/documents/download/${selectedDocument.id}`, {
-                    responseType: 'blob', // Importante: o backend retorna um arquivo
+                    responseType: 'blob',
                 });
-                
+
                 const blob: Blob = response.data;
 
                 if (blob.type === 'application/pdf') {
-                    // Cria uma URL temporária para o blob
                     const url = URL.createObjectURL(blob);
                     setFileUrl(url);
                     setFileContent(null);
                 } else if (blob.type === 'text/plain') {
-                    // Lê o blob como texto
                     const text = await blob.text();
                     setFileContent(text);
                     setFileUrl(null);
                 } else {
-                    console.error("Tipo de arquivo não suportado ou desconhecido:", blob.type);
+                    console.error("Tipo de arquivo não suportado:", blob.type);
                 }
 
             } catch (error) {
@@ -72,8 +85,7 @@ export default function DocumentViewer({
         };
 
         fetchDocument();
-        
-        // Limpa a URL do blob quando o componente é desmontado
+
         return () => {
             if (fileUrl) {
                 URL.revokeObjectURL(fileUrl);
@@ -83,153 +95,250 @@ export default function DocumentViewer({
 
     // Efeito para pular para a página quando uma referência é clicada
     useEffect(() => {
-        if (selectedReference) {
-            const doc = [...analysisDocuments, ...referenceDocuments].find(
-                // Compara o GCS path do documento com o URI da referência
-                d => d.gcsFilePath === selectedReference.sourceDocumentUri
-            );
-            
-            if (!doc) return;
+        if (!selectedReference) {
+            return;
+        }
 
-            // Determina para qual aba o documento pertence
-            const isAnalysisDoc = analysisDocuments.some(d => d.id === doc.id);
-            const targetTab = isAnalysisDoc ? 'analysis' : 'reference';
-            
-            // Força a troca da aba, se necessário
-            if (activeTab !== targetTab) {
-                setActiveTab(targetTab);
-            }
+        console.log('📌 Referência selecionada:', {
+            text: selectedReference.quotedContent,
+            page: selectedReference.page,
+            uri: selectedReference.sourceDocumentUri
+        });
 
-            // Se a referência for do documento já selecionado
-            if (selectedDocument?.id !== doc.id) {
-                // Se o documento for diferente, define-o como selecionado
-                // O 'onDocumentLoadSuccess' cuidará de pular a página
-                setSelectedDocument(doc);
-            } else {
-                const page = parseInt(selectedReference.page, 10);
-                if (!isNaN(page) && page > 0 && page <= numPages) {
-                    setPageNumber(page);
-                }
+        const doc = [...analysisDocuments, ...referenceDocuments].find(
+            d => d.gcsFilePath === selectedReference.sourceDocumentUri
+        );
+
+        if (!doc) {
+            return;
+        }
+
+        // Normalizar e limpar o texto para highlight
+        const textToHighlight = selectedReference.quotedContent?.trim() || null;
+        setHighlightText(textToHighlight);
+
+        // Se o documento for diferente, seleciona ele
+        if (selectedDocument?.id !== doc.id) {
+            setSelectedDocument(doc);
+        } else {
+            // Se for o mesmo documento, apenas pula para a página
+            const page = parseInt(selectedReference.page, 10);
+            if (!isNaN(page) && page > 0 && page <= numPages) {
+                setPageNumber(page);
             }
         }
     }, [selectedReference, numPages, analysisDocuments, referenceDocuments, selectedDocument]);
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
-        // Se a referência já estiver selecionada, pule para a página
         const page = selectedReference ? parseInt(selectedReference.page, 10) : 1;
         setPageNumber(isNaN(page) ? 1 : page);
     };
 
-    // Esta função controla a troca de abas e limpa o visualizador.
-    const handleChangeTab = (tab: ViewTab) => {
-        setActiveTab(tab);
-        setSelectedDocument(null); // Limpa o documento selecionado
-        setFileUrl(null);           // Limpa o visualizador de PDF
-        setFileContent(null);       // Limpa o visualizador de TXT
-        setNumPages(0);
-        setPageNumber(1);
-    };
-
     const docsToDisplay = activeTab === 'analysis' ? analysisDocuments : referenceDocuments;
 
-    /** Navega para a página anterior, se não estiver na primeira */
     const goToPrevPage = () => {
         setPageNumber(prevPageNumber => Math.max(prevPageNumber - 1, 1));
+        setHighlightText(null);
     };
 
-    /** Navega para a próxima página, se não estiver na última */
     const goToNextPage = () => {
         setPageNumber(prevPageNumber => Math.min(prevPageNumber + 1, numPages));
+        setHighlightText(null);
     };
+
+//     const onPageRenderSuccess = () => {
+//         if (!highlightText) 
+//             return;
+//         setTimeout(() => {
+//             const pdfContainer = document.querySelector('.react-pdf__Page');
+            
+//             if (!pdfContainer) 
+//                 return;
+
+//             const textLayer = pdfContainer.querySelector('.react-pdf__Page__textContent');
+
+//             if (!textLayer) {
+//                 const allSpans = pdfContainer.querySelectorAll('span');
+                
+//                 if (allSpans.length === 0) 
+//                     return;
+                
+//                 highlightInSpans(allSpans);
+//                 return;
+//             }
+
+//             const spans = textLayer.querySelectorAll('span');
+
+//             if (spans.length === 0) {
+//                 return;
+//             }
+
+//             highlightInSpans(spans);
+//         }, 500);
+//     };
+
+//    const highlightInSpans = (spans: NodeListOf<Element> | Element[]) => {
+//         Array.from(spans).forEach(span => {
+//             const s = span as HTMLElement;
+//             s.style.backgroundColor = 'transparent';
+//             s.style.color = 'inherit';
+//             s.style.textDecoration = 'none';
+//         });
+
+//         if (!highlightText) return; 
+
+//         const normalizeText = (text: string): string => {
+//             return text
+//                 .normalize('NFD') 
+//                 .replace(/[\u0300-\u036f]/g, '') 
+//                 .toLowerCase()
+//                 .trim();
+//         };
+//         const needle = normalizeText(highlightText).substring(0, 20);
+        
+//         if (needle.length === 0) return;
+
+//         for (const span of Array.from(spans)) {
+//             const spanText = span.textContent;
+            
+//             if (spanText) {
+//                 const haystack = normalizeText(spanText);
+
+//                 if (haystack.includes(needle)) {           
+//                     const el = span as HTMLElement;
+//                     el.style.backgroundColor = '#fef4f2';
+//                     el.style.color = '#B35848';
+//                     el.style.fontWeight = 'bold';
+//                     el.style.textDecoration = 'underline';
+//                     el.style.textDecorationColor = '#B35848';
+
+//                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//                     return; 
+//                 }
+//             }
+//         }
+//     };
 
     return (
         <div className={styles.viewerContainer}>
             {/* Abas de Documentos */}
             <div className={styles.tabs}>
-                <button 
+                <button
                     className={activeTab === 'analysis' ? styles.activeTab : ''}
-                    onClick={() => handleChangeTab('analysis')}
+                    onClick={() => onTabChange('analysis')}
                 >
                     Análise ({analysisDocuments.length})
                 </button>
-                <button 
+                <button
                     className={activeTab === 'reference' ? styles.activeTab : ''}
-                    onClick={() => handleChangeTab('reference')}
+                    onClick={() => onTabChange('reference')}
                 >
                     Referência ({referenceDocuments.length})
                 </button>
             </div>
 
-            {/* Lista de Documentos da Aba */}
-             <ul className={styles.docList}>
-                 {docsToDisplay.length === 0 ? (
+            {/* Lista de Documentos */}
+            <ul className={styles.docList}>
+                {docsToDisplay.length === 0 ? (
                     <li className={styles.docItemEmpty}>
-                        Nenhum documento de referência foi adicionado.
+                        Nenhum documento disponível.
                     </li>
                 ) : (
                     docsToDisplay.map(doc => (
-                     <li 
-                         key={doc.id} 
-                         className={`${styles.docItem} ${selectedDocument?.id === doc.id ? styles.docActive : ''}`}
-                         onClick={() => setSelectedDocument(doc)}
-                     >
-                         {doc.fileName}
-                     </li>
-                 ))
+                        <li
+                            key={doc.id}
+                            className={`${styles.docItem} ${selectedDocument?.id === doc.id ? styles.docActive : ''}`}
+                            onClick={() => handleSelectDocument(doc)}
+                        >
+                            {doc.fileName}
+                        </li>
+                    ))
                 )}
             </ul>
 
-            {/* O Visualizador em si */}
+            {/* Área de Conteúdo */}
             <div className={styles.contentArea}>
                 {isLoading && <p>Carregando documento...</p>}
                 {!selectedDocument && !isLoading && <p>Selecione um documento para visualizar.</p>}
-                
+
                 {/* Visualizador de PDF */}
                 {fileUrl && (
                     <div className={styles.pdfViewer}>
                         <Document
                             file={fileUrl}
                             onLoadSuccess={onDocumentLoadSuccess}
+                            loading={<div>Carregando PDF...</div>}
                         >
-                            <Page pageNumber={pageNumber} />
+                            <Page 
+                                pageNumber={pageNumber} 
+                                renderTextLayer={false} 
+                                renderAnnotationLayer={false}
+                                loading={<div>Carregando página...</div>}
+                            />
                         </Document>
-                        
+
                         {/* Controles de Paginação */}
                         <div className={styles.paginationControls}>
-                            <button 
+                            <button
                                 className={styles.paginationButton}
                                 onClick={goToPrevPage}
                                 disabled={pageNumber <= 1}
-                                title="Página Anterior"
                             >
                                 ‹ Anterior
                             </button>
-                            
+
                             <p className={styles.pageInfo}>
                                 Página {pageNumber} de {numPages}
                             </p>
-                            
-                            <button 
+
+                            <button
                                 className={styles.paginationButton}
                                 onClick={goToNextPage}
                                 disabled={pageNumber >= numPages}
-                                title="Próxima Página"
                             >
                                 Próxima ›
                             </button>
                         </div>
                     </div>
                 )}
-                {/* --- FIM DA MUDANÇA 2 --- */}
-                
-                {/* Visualizador de TXT (Não muda) */}
+
+                {/* Visualizador de TXT */}
                 {fileContent && (
                     <pre className={styles.txtViewer}>
-                        {fileContent}
+                        {getHighlightedTxtContent(fileContent, highlightText)}
                     </pre>
                 )}
             </div>
         </div>
+    );
+}
+
+// Helper para destacar conteúdo TXT
+function getHighlightedTxtContent(content: string, highlight: string | null): React.ReactNode {
+    if (!highlight || !content) {
+        return content;
+    }
+
+    // Normalizar para busca case-insensitive
+    const normalizedContent = content.toLowerCase();
+    const normalizedHighlight = highlight.toLowerCase();
+    const index = normalizedContent.indexOf(normalizedHighlight);
+
+    if (index === -1) {
+        return content;
+    }
+
+    // Pegar o texto original (com maiúsculas/minúsculas corretas)
+    const before = content.substring(0, index);
+    const highlighted = content.substring(index, index + highlight.length);
+    const after = content.substring(index + highlight.length);
+
+    return (
+        <>
+            {before}
+            <mark className={styles.highlight}>{highlighted}</mark>
+            {after}
+        </>
     );
 }

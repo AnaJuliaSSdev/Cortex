@@ -72,7 +72,9 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
             documentInfos.Add(new DocumentInfo
             {
                 GcsUri = doc.GcsFilePath,
-                MimeType = doc.FileType.ToMimeType() // Assumindo que seu enum FileType tem este método helper
+                MimeType = doc.FileType.ToMimeType(), // Assumindo que seu enum FileType tem este método helper
+                FileName = doc.FileName, 
+                Content = doc.Content
             });
         }
 

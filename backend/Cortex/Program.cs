@@ -155,6 +155,9 @@ builder.Services.AddScoped<IRegisterUnitRepository, RegisterUnitRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
+//export
+builder.Services.AddExportServices();
+
 // Logging
 builder.Services.AddLogging();
 

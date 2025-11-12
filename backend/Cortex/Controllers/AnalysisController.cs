@@ -96,8 +96,7 @@ public class AnalysisController(IAnalysisService analysisService, IAnalysisOrche
     public async Task<ActionResult> CotinueAnalysis(int id)
     {
         var analysis = await _analysisRepository.GetByIdAsync(id);
-        AnalysisExecutionResult response = await _analysisOrchestrator.ContinueAnalysisAsync(analysis);
-        Console.WriteLine(response);
+        AnalysisExecutionResult response = await _analysisOrchestrator.ContinueAnalysisAsync(analysis);;
         return Ok(response);
     }
 

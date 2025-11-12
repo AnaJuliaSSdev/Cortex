@@ -20,9 +20,6 @@ public class RegisterUnit
     [MaxLength(20)] // Suficiente para números de página
     public string Page { get; set; }
 
-    [MaxLength(20)] // Suficiente para números de linha
-    public string Line { get; set; }
-
     [MaxLength(1000)] // Para justificativas
     public string Justification { get; set; }
 

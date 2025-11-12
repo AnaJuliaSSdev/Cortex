@@ -8,7 +8,6 @@ import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
  */
 export const getFileNameFromUri = (uri: string, documents: UploadedDocument[]): string => {
     if (!uri) return "Documento desconhecido";
-    
     const doc = documents.find(d => d.gcsFilePath === uri);
     return doc ? doc.fileName : "Documento não encontrado";
 };

@@ -3,8 +3,7 @@
 /* ======================================= */
 
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
+
     padding: 2rem;
     font-family: var(--font-principal, 'Roboto'), sans-serif;
     background-color: var(--background-light, #FBFBF8);
@@ -13,10 +12,10 @@
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; 
     margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+    flex-wrap: wrap; 
+    gap: 1.5rem; 
 }
 
 .title {
@@ -60,178 +59,380 @@
     font-weight: bold;
 }
 
+
+.headerControls {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1; 
+}
+
+.viewControls {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--background-medium, #EFEBE6);
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+
+.exportContainer {
+    position: relative; /* Para o menu dropdown */
+}
+
+.exportButton {
+    /* Usa o estilo do seu botão primário */
+    padding: 0.75rem 1.5rem;
+    background: var(--primary, #B35848);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: var(--font-destaque, 'Montserrat'), sans-serif;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exportButton:hover {
+    background-color: #a04e40;
+}
+
+.exportButton:disabled {
+    background-color: #f3d9d5;
+    cursor: not-allowed;
+}
+
+/* Menu Dropdown */
+.exportMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid var(--background-medium, #EFEBE6);
+    z-index: 50;
+    width: 200px;
+    overflow: hidden;
+}
+
+.exportMenu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-principal, 'Roboto'), sans-serif;
+    color: var(--text-dark, #312F2F);
+    font-size: 0.9rem;
+    display: flex;         
+    align-items: center; 
+    gap: 8px;
+}
+
+.exportMenu button:hover {
+    background-color: var(--background-light, #FBFBF8);
+}
+
+.exportMenu button:disabled {
+    color: var(--text-light, #8E8883);
+    cursor: not-allowed;
+    background-color: #fafafa;
+}
+
 /* ======================================= */
 /* Visualização de Gráfico                 */
 /* ======================================= */
 .chartContainer {
-    background: white;
+    background-color: #FFFFFF;
     padding: 2rem;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* ======================================= */
-/* Visualização de Tabela (CORREÇÕES)      */
+/* Visualização de Tabela
 /* ======================================= */
-.tableContainer {
+
+/* ======================================= */
+/* TABELA - COMPLETAMENTE REFEITA        */
+/* ======================================= */
+
+/* Container principal da tabela */
+
+/* ======================================= */
+/* TABELA - COMPLETAMENTE REFEITA        */
+/* ======================================= */
+
+/* Container principal da tabela */
+.tableWrapper {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden; /* Importante para o border-radius */
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    max-height: 70vh;
+    overflow-x: auto;
+    overflow-y: auto;
 }
 
-/* 1. CORREÇÃO DO SCROLLBAR */
-.tableScrollContainer {
-    overflow: auto; /* Permite scroll horizontal E vertical */
-    max-height: 60vh; /* Limita a altura, ativando o scroll vertical */
-    position: relative; /* Importante para o z-index funcionar */
-}
-
-/* Estilização do Scrollbar (Funciona em CSS, não inline) */
-.tableScrollContainer::-webkit-scrollbar {
+/* Estilização do scrollbar */
+.tableWrapper::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
-.tableScrollContainer::-webkit-scrollbar-track {
+
+.tableWrapper::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
-.tableScrollContainer::-webkit-scrollbar-thumb {
-    background: var(--primary, #B35848);
+
+.tableWrapper::-webkit-scrollbar-thumb {
+    background: #B35848;
     border-radius: 10px;
 }
-.tableScrollContainer::-webkit-scrollbar-thumb:hover {
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
     background: #9a4a3a;
 }
 
-.table {
+/* Tabela */
+.tableFixed {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.9rem;
+    position: relative;
 }
 
-.tableHead {
+/* ===== CABEÇALHO ===== */
+.tableFixed thead {
     position: sticky;
     top: 0;
-    z-index: 3; /* Cabeçalho acima do body */
-    background: #fafafa;
+    z-index: 10;
+    background: white;
 }
 
-.tableHeader {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 2px solid #e0e0e0;
-    font-weight: bold;
-    color: var(--text-dark, #312F2F);
-    white-space: nowrap;
+/* Primeira linha do cabeçalho */
+.tableFixed thead tr:first-child {
+    background: #f8f9fa;
 }
 
-/* 2. CORREÇÃO DO LAYOUT "ESTOURANDO" (STICKY) */
-.categoryHeader {
+/* Coluna "Categoria" - fixa à esquerda */
+.thCategory {
     position: sticky;
     left: 0;
-    z-index: 12; /* Maior que tudo */
-    background: #fafafa;
-    min-width: 200px;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-.unitHeader {
-    position: sticky;
-    left: 200px; /* Largura da coluna de categoria */
-    z-index: 12; /* Maior que tudo */
-    text-align: center;
-    min-width: 80px;
-    background: #fafafa;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-/* 3. CORREÇÃO DE ESTÉTICA (VERMELHO) */
-.indicesHeader {
-    text-align: center;
-    border-bottom: 2px solid var(--text-dark, #312F2F); /* Corrigido */
-    color: var(--text-dark, #312F2F); /* Corrigido */
-    background: #f8f8f8;
+    z-index: 25;
+    background: var(--background-medium);
+    color: var(--text-dark);
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    border-right: 2px solid #ddd;
+    min-width: 220px;
+    max-width: 220px;
     font-size: 0.95rem;
-    z-index: 1;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.indexNameHeader {
+/* Coluna "Unidades" - fixa após Categoria */
+.thUnits {
+    position: sticky;
+    left: 220px;
+    z-index: 25;
+    background: var(--background-medium);
+    color: var(--text-dark);
+    padding: 1rem 1rem;
+    text-align: center;
+    font-weight: 600;
+    border-right: 2px solid #ddd;
+    min-width: 100px;
+    max-width: 100px;
+    font-size: 0.95rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Cabeçalho do grupo "Índices Encontrados" */
+.thIndicesGroup {
+    background: #B35848;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    border-bottom: 2px solid #9a4a3a;
+}
+
+/* Segunda linha - nomes dos índices */
+.indexNamesRow {
+    background: white !important;
+}
+
+.thIndexName {
+    background: #EFEBE6;
+    color: #312F2F;
     padding: 0.75rem 0.5rem;
     text-align: center;
-    border-bottom: 2px solid #e0e0e0;
     font-weight: 600;
-    color: var(--text-medium, #4A4644);
+    border-bottom: 2px solid #ddd;
+    border-right: 1px solid #ddd;
     min-width: 120px;
     font-size: 0.85rem;
+    vertical-align: middle;
+    position: relative;
+    z-index: 5;
+}
+
+.thIndexName:last-child {
+    border-right: none;
+}
+
+.indexNameText {
+    display: block;
     line-height: 1.3;
+    word-wrap: break-word;
+}
+
+/* ===== CORPO DA TABELA ===== */
+.tableFixed tbody {
+    background: white;
+}
+
+.dataRow {
+    transition: background-color 0.2s;
+}
+
+.dataRow:nth-child(even) {
     background: #fafafa;
+}
+
+.dataRow:hover {
+    background: #f0f4f8;
+}
+
+/* Célula Categoria - fixa à esquerda */
+.tdCategory {
+    position: sticky;
+    left: 0;
+    z-index: 15;
+    background: white;
+    padding: 1rem 1.25rem;
+    font-weight: 500;
+    color: #312F2F;
+    border-right: 2px solid #ddd;
+    border-bottom: 1px solid #e8e8e8;
+    min-width: 220px;
+    max-width: 220px;
+    font-size: 0.9rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.08);
+}
+
+.dataRow:nth-child(even) .tdCategory {
+    background: #fafafa;
+}
+
+.dataRow:hover .tdCategory {
+    background: #e8f4f8 !important;
+}
+
+/* Célula Unidades - fixa após Categoria */
+.tdUnits {
+    position: sticky;
+    left: 220px;
+    z-index: 15;
+    background: white;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: #5a8d87;
+    border-right: 2px solid #ddd;
+    border-bottom: 1px solid #e8e8e8;
+    min-width: 100px;
+    max-width: 100px;
+    font-size: 1rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.08);
+}
+
+.dataRow:nth-child(even) .tdUnits {
+    background: #fafafa;
+}
+
+.dataRow:hover .tdUnits {
+    background: #e8f4f8 !important;
+}
+
+/* Células de valores dos índices */
+.tdIndexValue {
+    padding: 1rem;
+    text-align: center;
+    font-weight: bold;
+    color: #B35848;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #e8e8e8;
+    min-width: 120px;
+    background: white;
+    position: relative;
     z-index: 1;
 }
 
-.tableRow {
-    background: white;
-    transition: background 0.2s;
-}
-.tableRow:nth-child(even) {
+.dataRow:nth-child(even) .tdIndexValue {
     background: #fafafa;
 }
-.tableRow:hover {
-    background: #f0f0f0;
+
+.dataRow:hover .tdIndexValue {
+    background: #e8f4f8;
 }
 
-.tableCell {
-    padding: 0.75rem;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.categoryCell {
-   font-weight: 500;
-    position: sticky;
-    left: 0;
-    background: inherit;
-    font-size: 0.9rem;
-    z-index: 5; /* Acima das células normais */
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-.unitCell {
-     position: sticky;
-    left: 200px; /* Largura da coluna de categoria */
-    text-align: center;
-    color: var(--text-light, #8E8883);
-    font-weight: 600;
-    background: inherit;
-    z-index: 5; /* Acima das células normais */
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-/* 3. CORREÇÃO DE ESTÉTICA (VERMELHO) */
-.indexCellHasCount {
-      padding: 0.75rem;
-    border-bottom: 1px solid #e0e0e0;
-    text-align: center;
-    font-weight: bold;
-    color: var(--text-dark, #312F2F);
-    font-size: 1.1rem;
-    position: relative;
-    z-index: 1; /* Abaixo das colunas fixas */
-}
-
-.indexCellNoCount {
-    padding: 0.75rem;
-    border-bottom: 1px solid #e0e0e0;
+.tdIndexEmpty {
+    padding: 1rem;
     text-align: center;
     font-weight: normal;
     color: #d0d0d0;
     font-size: 0.9rem;
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #e8e8e8;
+    min-width: 120px;
+    background: white;
     position: relative;
-    z-index: 1; /* Abaixo das colunas fixas */
+    z-index: 1;
 }
 
+.dataRow:nth-child(even) .tdIndexEmpty {
+    background: #fafafa;
+}
 
+.dataRow:hover .tdIndexEmpty {
+    background: #e8f4f8;
+}
+
+.tdIndexValue:last-child,
+.tdIndexEmpty:last-child {
+    border-right: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .thCategory,
+    .tdCategory {
+        min-width: 150px;
+        max-width: 150px;
+    }
+
+    .thUnits,
+    .tdUnits {
+        left: 150px;
+        min-width: 80px;
+        max-width: 80px;
+    }
+}
 /* ======================================= */
 /* Visualização de Cards                   */
 /* ======================================= */

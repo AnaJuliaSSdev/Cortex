@@ -12,9 +12,6 @@ public class GeminiRegisterUnit
 
     [JsonPropertyName("page")]
     public string Page { get; set; }
-
-    [JsonPropertyName("line")]
-    public string Line { get; set; }
     
     //lista de ids dos indices
     [JsonPropertyName("found_indices")]

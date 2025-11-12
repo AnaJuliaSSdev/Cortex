@@ -6,7 +6,12 @@
 }
 
 .mainContent {
-  flex: 1; /* Ocupa todo o espaço restante */
+  flex: 1; 
   padding: 2rem;
-  overflow-y: auto; /* Permite que apenas o conteúdo principal role */
+
+  /* --- ADICIONE ESTAS LINHAS --- */
+  width: 100%; /* Garante que o layout seja responsivo em telas pequenas */
+  max-width: 150vh; /* Define a largura máxima. Ajuste se achar muito largo. */
+  margin-left: auto; /* Centra o contêiner */
+  margin-right: auto; /* Centra o contêiner */
 }

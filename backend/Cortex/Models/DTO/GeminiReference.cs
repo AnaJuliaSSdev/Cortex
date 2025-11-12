@@ -10,6 +10,6 @@ public class GeminiReference
     [JsonPropertyName("page")]
     public string Page { get; set; } // JSON retorna como string
 
-    [JsonPropertyName("line")]
-    public string Line { get; set; } // JSON retorna como string
+    [JsonPropertyName("quoted_content")]
+    public string QuotedContent { get; set; } // JSON retorna como string
 }

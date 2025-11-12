@@ -1,16 +1,24 @@
 ﻿using Cortex.Models.DTO;
+using Cortex.Models.Enums;
 
 namespace Cortex.Services.Interfaces;
 
 public interface IExportService
 {
     /// <summary>
-    /// Orquestra o processo de exportação de uma análise.
+    /// Tipo de exportação suportado (PDF, LaTeX, Word, Excel, etc.)
     /// </summary>
-    /// <param name="analysisId">ID da análise a ser exportada.</param>
-    /// <param name="userId">ID do usuário (para autorização).</param>
-    /// <param name="format">O formato de exportação (ex: "pdf", "tex").</param>
-    /// <param name="requestDto">DTO contendo a imagem do gráfico em Base64.</param>
-    /// <returns>Um DTO de resultado contendo os bytes do arquivo e metadados.</returns>
-    Task<ExportResult> GenerateExportAsync(int analysisId, int userId, string format, ExportRequestDto requestDto);
+    ExportType SupportedType { get; }
+
+    /// <summary>
+    /// Exporta os dados da análise para o formato específico
+    /// </summary>
+    /// <param name="request">Dados da requisição de exportação</param>
+    /// <returns>Resultado contendo o arquivo exportado</returns>
+    Task<ExportResult> ExportAsync(ExportRequest request);
+
+    /// <summary>
+    /// Valida se os dados da análise estão completos para exportação
+    /// </summary>
+    Task<ValidationResult> ValidateDataAsync(int analysisId);
 }

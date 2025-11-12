@@ -150,14 +150,14 @@ export default function AnalysisPage() {
         try {
             // Passo 1: Enviar e salvar a pergunta central
             await postAnalysisQuestion(id, question);
-            console.log('Pergunta salva com sucesso!');
 
             // Passo 2: Iniciar a análise (agora que a pergunta e os docs estão lá)
-            console.log('Iniciando a análise...');
             const result = await startAnalysis(id);
 
             if (result.isSuccess) {
                 setAnalysisResult(result);
+                setAnalysisDocuments(result.analysisDocuments || []);
+                setReferenceDocuments(result.referenceDocuments || []);
             } else {
                 // Se o backend retornar isSuccess = false
                 setAlertInfo({ message: result.errorMessage || 'Ocorreu um erro desconhecido ao processar a análise.', type: "error" });
@@ -179,12 +179,12 @@ export default function AnalysisPage() {
             const result = await continueAnalysis(id);
             if (result.isSuccess) {
                 setAnalysisResult(result); // Atualiza o estado com o NOVO resultado
+                setAnalysisDocuments(result.analysisDocuments || []);
+                setReferenceDocuments(result.referenceDocuments || []);
             } else {
-                console.log("deu erro tinha q lançar excecao")
                 setAlertInfo({ message: result.errorMessage || 'Falha ao continuar a análise.', type: "error" });
             }
         } catch (error) {
-            console.log("deu erro tinha q lançar excecao")
             const friendlyMessage = handleApiError(error, analysisActionErrorMap);
             setAlertInfo({ message: friendlyMessage, type: "error" });
         } finally {
@@ -272,10 +272,12 @@ export default function AnalysisPage() {
         return (
             <>
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
+                <p>{analysisResult.analysisQuestion}</p>
                 <ExplorationResults
                     explorationStage={analysisResult.explorationOfMaterialStage}
                     analysisDocuments={analysisDocuments}
                     referenceDocuments={referenceDocuments}
+                    analysisId={id}
                 />
             </>
         );

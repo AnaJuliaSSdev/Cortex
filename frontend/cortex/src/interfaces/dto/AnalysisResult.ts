@@ -8,7 +8,6 @@ export interface RegisterUnit {
     text: string;
     sourceDocumentUri: string;
     page: string;
-    line: string;
     justification: string;
     categoryId: number;
     foundIndices: Index[]; // A lista de Índices que esta unidade contém

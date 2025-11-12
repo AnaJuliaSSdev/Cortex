@@ -11,5 +11,4 @@ public interface IDocumentRepository
     Task<IEnumerable<Document>> GetByAnalysisIdAsync(int analysisId);
     Task<long> SumTotalSizeDocumentsByAnalysisIdAsync(int analysisId, DocumentPurpose documentPurpose);
     Task DeleteAsync(Document document);
-
 }

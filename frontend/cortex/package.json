@@ -17,6 +17,8 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "axios": "^1.11.0",
+    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
     "jwt-decode": "^4.0.0",
     "pdfjs-dist": "^5.4.296",
     "react": "^19.1.1",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/html2canvas": "^0.5.35",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",

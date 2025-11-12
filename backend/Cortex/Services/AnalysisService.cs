@@ -89,7 +89,8 @@ public class AnalysisService(IAnalysisRepository analysisRepository, IUnitOfWork
             throw new EntityNotFoundException("Analysis");
 
         analysis.Question = startAnalysisDto.Question;
-         await _analysisRepository.UpdateAsync(analysis);
+        await _analysisRepository.UpdateAsync(analysis);
+        await _unitOfWork.CommitTransactionAsync();
 
         return true;
     }
@@ -117,7 +118,7 @@ public class AnalysisService(IAnalysisRepository analysisRepository, IUnitOfWork
         if (analysis.Question != null)
             detailsAnalysis.AnalysisQuestion = analysis.Question;
 
-
+        detailsAnalysis.AnalysisQuestion = analysis.Question;
         detailsAnalysis.AnalysisTitle = analysis.Title;
         detailsAnalysis.IsSuccess = true;
         detailsAnalysis.ReferenceDocuments = analysis.Documents.ToList().FindAll(x => x.Purpose == DocumentPurpose.Reference);

@@ -49,7 +49,7 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
         }
     }
 
-    public async Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.4f, int maxOutputTokens = 8192)
+    public async Task<string> GenerateContentWithDocuments(OpenApiSchema responseSchema, List<DocumentInfo> documents, string prompt, float temperature = 0.0f, int maxOutputTokens = 8192)
     {
         var predictionServiceClient = new PredictionServiceClientBuilder().Build();
 
@@ -58,17 +58,25 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
         allParts.Add(new Part { Text = prompt });
         foreach (var doc in documents)
         {
-            allParts.Add(new Part
+            if (doc.MimeType == "application/pdf")
             {
-                FileData = new FileData
+                allParts.Add(new Part
                 {
-                    FileUri = doc.GcsUri,
-                    MimeType = doc.MimeType
-                }
-            });
+                    FileData = new FileData { FileUri = doc.GcsUri, MimeType = doc.MimeType }
+                });
+            }
+            else if (doc.MimeType == "text/plain")
+            {
+                allParts.Add(new Part
+                {
+                    Text = $"\n\n--- INÍCIO DO DOCUMENTO: {doc.FileName} ---\n" +
+                           doc.Content +
+                           $"\n--- FIM DO DOCUMENTO: {doc.FileName} ---\n\n"
+                });
+            }
         }
 
-       
+
 
         var generationConfig = new GenerationConfig
         {

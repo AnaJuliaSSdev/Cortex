@@ -70,7 +70,7 @@ public class ChunkRepository : IChunkRepository
             .ToListAsync();
     }
 
-    public async Task<List<Chunk>> SearchSimilarByDocumentIdAsync(int documentId, float[] queryEmbedding, int limit = 5)
+    public async Task<List<Chunk>> SearchSimilarByDocumentIdAsync(int documentId, float[] queryEmbedding, int limit = 10)
     {
         var queryVector = new Vector(queryEmbedding);
 

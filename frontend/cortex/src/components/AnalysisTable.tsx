@@ -73,7 +73,7 @@ export default function AnalysisTable({ analyses, onDeleteClick }: AnalysisTable
                         className={styles.tableRow}
                         onClick={() => handleRowClick(analysis.id)}
                     >
-                        <div className={styles.colTitle}>{analysis.title} {analysis.id}</div>
+                        <div className={styles.colTitle}>{analysis.title}</div>
                         <div className={styles.colStatus}>
                             <StatusBadge status={analysis.status} />
                         </div>

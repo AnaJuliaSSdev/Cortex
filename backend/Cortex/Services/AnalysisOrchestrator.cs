@@ -63,8 +63,6 @@ public class AnalysisOrchestrator(IAnalysisRepository analysisRepository,
             if (nextStage is null)
                 analysis.Status = AnalysisStatus.Completed;
 
-            throw new Exception("Um teste");
-
             await _analysisRepository.UpdateAsync(analysis);
             await _unitOfWork.CommitTransactionAsync();
 

@@ -62,7 +62,6 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, IIn
                         Text = geminiUnit.Text,
                         SourceDocumentUri = FindGcsUriFromFileName(allDocuments, geminiUnit.Document), // Usa método auxiliar
                         Page = geminiUnit.Page,
-                        Line = geminiUnit.Line,
                         Justification = geminiUnit.Justification,
                         Category = newCategory // Associa ao pai (EF Core usará isso para FK)
                         // FoundIndices será populado abaixo
