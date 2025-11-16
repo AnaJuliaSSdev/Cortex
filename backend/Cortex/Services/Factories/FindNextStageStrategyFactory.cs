@@ -12,7 +12,6 @@ public static class FindNextStageStrategyFactory
             null => new PreAnalysisStage(),
             PreAnalysisStageService => new ExplorationOfMaterialStage(),
             ExplorationOfMaterialStageService => null,
-            //InferenceConclusionStage => null, 
             _ => throw new NotSupportedException($"Unrecognized stage type: {currentStage.GetType().Name}")
         };
     }

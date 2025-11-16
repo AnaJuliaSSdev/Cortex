@@ -119,7 +119,6 @@ builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
 //Stages
 builder.Services.AddScoped<PreAnalysisStageService>();
 builder.Services.AddScoped<ExplorationOfMaterialStageService>();
-builder.Services.AddScoped<InferenceConclusionStageService>();
 builder.Services.AddScoped<StageStrategyFactory>();
 builder.Services.AddScoped<IStageRepository, StageRepository>();
 

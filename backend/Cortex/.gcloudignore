@@ -1,0 +1,14 @@
+# Excluir artefatos de build do .NET
+**/bin/
+**/obj/
+
+# Excluir pastas do editor
+.vs/
+.vscode/
+
+# Excluir arquivos de usu�rio
+*.user
+*.suo
+
+# O Dockerfile PRECISA ser enviado, ent�o garantimos que ele N�O seja ignorado.
+!Dockerfile

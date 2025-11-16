@@ -10,12 +10,11 @@ using System.ComponentModel.DataAnnotations;
 namespace Cortex.Services;
 
 public class DocumentService(IDocumentRepository repository, ILogger<DocumentService> logger,
-    IFileStorageService fileStorageService, IDocumentProcessingEmbeddingsService documentProcessingEmbeddingsService) : IDocumentService
+    IFileStorageService fileStorageService) : IDocumentService
 {
     private readonly IDocumentRepository _repository = repository;
     private readonly IFileStorageService _fileStorageService = fileStorageService;
     private readonly ILogger _logger = logger;
-    private readonly IDocumentProcessingEmbeddingsService _documentProcessingEmbeddingsService = documentProcessingEmbeddingsService;
     const long MAX_TOTAL_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
     public async Task<Cortex.Models.Document> UploadAsync(CreateDocumentDto dto, int analysisId)
@@ -37,9 +36,6 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
         document.FileSize = dto.File.Length;
 
         await _repository.AddAsync(document);
-        //por enquanto sem gerar embeddings, analisando se vai ser necessário usar
-        //DESCOMENTAR LINHA PARA TRABALHO DO PINTO
-        //await _documentProcessingEmbeddingsService.ProcessAsync(document, analysisId);
 
         return document;
     }

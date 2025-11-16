@@ -1,5 +1,4 @@
-﻿using Cortex.Models;
-using Cortex.Repositories.Interfaces;
+﻿using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 
 namespace Cortex.Services.ServicosTopicos;
