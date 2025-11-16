@@ -9,13 +9,12 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import CategoryDetailsModal from './CategoryDetailsModal';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
-import { exportAnalysisToLatex, exportAnalysisToPdf } from '../services/exportService';
+import { exportAnalysisToPdf } from '../services/exportService';
 import type { AlertType } from './Alert';
 import Alert from './Alert';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ArticleIcon from '@mui/icons-material/Article';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
