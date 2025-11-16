@@ -67,7 +67,7 @@ builder.Services.AddCors(options =>
                     "http://localhost:3000",
                     "http://localhost:5173",
                     "http://localhost:5174",
-                    "https://cortex-frontend-xyz.vercel.app"
+                    "https://cortex-virid-nine.vercel.app"
                 )
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -78,7 +78,7 @@ builder.Services.AddCors(options =>
     {
         options.AddPolicy("Production", policy =>
         {
-            policy.WithOrigins("https://cortex-frontend-xyz.vercel.app")
+            policy.WithOrigins("https://cortex-virid-nine.vercel.app")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
