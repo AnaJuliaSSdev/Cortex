@@ -78,7 +78,7 @@ builder.Services.AddCors(options =>
     {
         options.AddPolicy("Production", policy =>
         {
-            policy.WithOrigins("https://seudominio.com")
+            policy.WithOrigins("https://cortex-frontend-xyz.vercel.app")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
