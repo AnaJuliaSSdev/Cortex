@@ -125,7 +125,7 @@ namespace Cortex.Services
             Sua resposta DEVE ser obrigatoriamente um único bloco de código JSON, sem formatação Markdown, comentários ou texto introdutório. 
             Inclua informações precisas e referenciáveis. 
             O JSON deve ser um objeto contendo uma única chave "indices", que é uma lista de objetos.          
-            Além disso, cada indicador pode ter uma lista de referências de onde ele foi extraído.
+            Além disso, cada indicador deve ter uma lista de referências de onde ele foi extraído.
             Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
             qual trecho embasou a escolha do índice. 
 

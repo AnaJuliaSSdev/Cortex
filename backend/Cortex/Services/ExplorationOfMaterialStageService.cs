@@ -553,24 +553,16 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     153
     154 ANÁLISE DE CONTEÚDO
     A / Intenções do "coração"
-    1. Amor romântico
-    2. Casamento estabelecido
-    3. Idealismo
-    B / Intenções na "cabeça"
     1. Solução de problemas concretos
     2. Progresso pessoal
     3. Dinheiro e bens materiais
-    4.
-    5.
-    6.
-    7.
-    8.
-    Afeição e segurança emocional 4, Segurança econômica e social
-    Poder e dominaçãoPatriotismo
-    Aventura
-    Justiça
-    Independência
-    5.
+    4. Afeição e segurança emocional
+    5. Segurança econômica e social
+    6. Poder e dominação 
+    7. Patriotismo
+    8. Aventura
+    9. Justiça
+    10. Independência
     Exemplo 2:
     Este estudo analisa as finalidades e possibilidades de êxito oferecidas
     às crianças nos programas televisivos, relacionando-as com os meios pre-
