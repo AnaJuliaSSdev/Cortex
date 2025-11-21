@@ -8,8 +8,8 @@ public interface IFileStorageService
     /// Salva um arquivo no GCS e no disco local.
     /// </summary>
     /// <returns>Um objeto FileStorageResult contendo os dois caminhos.</returns>
-    Task<FileStorageResult> SaveFileAsync(IFormFile file, int analysisId, string documentExtension);
-    Task<byte[]> GetFileAsync(string filePath);
+    Task<string> SaveFileAsync(Stream fileStream, string fileName, string contentType, int analysisId);
+    Task<(byte[] FileBytes, string ContentType)> GetFileAsync(string gcsUri);
 
     /// <summary>
     /// Exclui todos os arquivos associados a uma análise, tanto no 

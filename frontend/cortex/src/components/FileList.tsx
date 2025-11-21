@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './css/FileList.module.css';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 import CloseIcon from '@mui/icons-material/Close';
+import { formatDisplayFileName } from '../utils/documentUtils';
 
 interface FileListProps {
   files: UploadedDocument[];
@@ -28,7 +29,7 @@ const FileList: React.FC<FileListProps> = ({ files, onDeleteClick }) => {
       {files.map((file) => (
         <li key={file.id} className={styles.fileItem}>
           <div className={styles.fileInfo}>
-            <span className={styles.fileName}>{file.fileName + " "}</span> 
+            <span className={styles.fileName}> {formatDisplayFileName(file.fileName, file.fileType) + " "}</span> 
             <span className={styles.fileSize}>{formatBytes(file.fileSize)}</span>
           </div>
           

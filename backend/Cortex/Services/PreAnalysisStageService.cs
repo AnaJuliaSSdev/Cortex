@@ -3,8 +3,6 @@ using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Interfaces;
 using Google.Cloud.AIPlatform.V1;
-using Newtonsoft.Json;
-using System.Text.Json;
 using Type = Google.Cloud.AIPlatform.V1.Type;
 
 namespace Cortex.Services
@@ -129,7 +127,6 @@ namespace Cortex.Services
             Por exemplo: Se a análise tem a ver com identificar sentimentos (pode ser ou pode não ser), deve ser indicado
             qual trecho embasou a escolha do índice. 
 
-            Caso você receba documentos em TXT, quando/se for referenciá-los, mantenha a página sempre como 1. 
             Retorne APENAS um objeto JSON válido, sem markdown, comentários ou texto adicional:
             O JSON DEVE SEGUIR EXATAMENTE ESSA ESTRUTURA:
             {{
@@ -141,7 +138,7 @@ namespace Cortex.Services
                   "references": [
                     {{
                       "document": "nome_arquivo",
-                      "page": "2", // Sempre 1 para documentos TXT
+                      "page": "2",
                       "quoted_content": "O trecho exato do texto que justifica este índice"
                     }}
                   ]
@@ -291,9 +288,9 @@ namespace Cortex.Services
 
                 _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
                 //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                //string jsonResponse = GetMockedGeminiResponse();
+                string jsonResponse = GetMockedGeminiResponse();
                 //deixei comentado por enquanto pra não gastar recurso
-                string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
+                //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
                 _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -353,109 +350,164 @@ namespace Cortex.Services
                 {
                   "indices": [
                     {
-                      "name": "Desconstrução da Visão Tradicional do Balé",
-                      "description": "Este índice refere-se às menções que contrapõem a metodologia da professora a uma visão tradicional, rígida e sacrificial do Balé. A escolha se justifica por ser uma vivência que transformou a percepção das alunas sobre a dança, influenciando diretamente a prática pedagógica da professora, que se afastava do estereótipo do 'Balé que maltrata o corpo'.",
-                      "indicator": "Presença de expressões que negam o caráter de sacrifício, dor ou rigidez excessiva do Balé, ou que relatam uma mudança de percepção de 'chato' e 'sofrido' para 'prazeroso' e 'agradável'. Busca por termos como 'desconstruí a ideia', 'não precisa ser sacrificante', 'coisa chata', 'maltrata o corpo, não!'.",
+                      "name": "Apropriação de Elementos Estruturais do Texto (ENEM)",
+                      "description": "Refere-se à percepção dos estudantes sobre o aprendizado e a aplicação de componentes específicos da redação modelo ENEM, como a proposta de intervenção e o uso de repertório sociocultural. A plataforma RevisãoOnline é citada como um meio para compreender e incorporar esses elementos, que são frequentemente novos ou pouco trabalhados no ensino formal anterior.",
+                      "indicator": "Menção explícita ao aprendizado ou dificuldade com \"proposta de intervenção\", \"repertório\", \"citações\", \"estrutura do texto\", \"tese\", \"argumentos\" e como o RevisãoOnline auxiliou nesse processo.",
                       "references": [
                         {
-                          "document": "EntrevistasExemplo.pdf",
+                          "document": "i02 -.txt",
                           "page": "1",
-                          "quoted_content": "uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!"
+                          "quoted_content": "Não, eu aprendi no RevisãoOnline. O que a Sheila passou em aula foi a estrutura básica, as teses, como elaborar elas e só. Então, tudo que eu sei de redação hoje em dia, eu sei por causa do revisão, ou foi assistindo vídeo aula que estão disponíveis ou pesquisando algo que eu não sabia direito."
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "2",
-                          "quoted_content": "depois (risos) que eu fiz Balé com a Mônica eu vi que não precisa ser sacrificante, não precisa ser isso... porque eu não vou dançar Balé, não é pra isso, não é esse o objetivo, né, então não precisa ser assim dolorido"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Afetividade na Relação Pedagógica",
-                      "description": "Este índice aponta para a importância da afetividade, amizade e de uma relação mais horizontal entre professora e alunas como um elemento central da metodologia. A escolha é pertinente pois a qualidade do vínculo afetivo é citada como um saber que influencia diretamente o ambiente de aprendizagem e a adesão das alunas, sendo um pilar da prática pedagógica.",
-                      "indicator": "Presença de termos e expressões que descrevem a relação com a professora e o ambiente da aula como 'afetividade', 'amizade', 'gostosa', 'se divertia', 'tranquilo', 'relação híbrida'.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
+                          "document": "i03 -.txt",
                           "page": "1",
-                          "quoted_content": "tirando a afetividade do grupo assim que tinha entre nós, eram aulas que contribuíam muito pra eu descobrir outras coisas possibilidades do meu corpo que eu não conhecia assim."
+                          "quoted_content": "a parte da proposta de intervenção que eu não sabia não fazia E o repertório legitimado também que eu não colocava não não sabia que precisava eu comecei a pensar comecei a estruturar foram as principais coisas a parte da proposta de intervenção que tem que marcar o quê como todas as coisinhas eu tenho uma memória meio visual assim e parece toda vez que eu escrevo a conclusão vem aquela foto das caixinhas da minha cabeça"
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "4",
-                          "quoted_content": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal... assim, se não tiver isso, bah, se perde 50%."
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Consciência Corporal e Fundamentação Teórica",
-                      "description": "Refere-se à prática da professora de explicar a funcionalidade anatômica e cinesiológica dos movimentos, promovendo uma consciência corporal para além da mera reprodução de formas. Este saber, vivenciado e transmitido, é um diferencial metodológico que, segundo os relatos, protege o corpo e dá sentido à prática.",
-                      "indicator": "Identificação de relatos onde a professora explica o 'porquê' dos movimentos, utilizando noções de anatomia, fisiologia ou cinesiologia. Busca por termos como 'explicar pra que que é aquilo', 'consciência corporal', 'noção cinesiológica', 'anatômica', 'sentido'.",
-                      "references": [
-                        {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "4",
-                          "quoted_content": "Ah eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio e... sempre tu dizia [...] então sempre tinha esta explicação."
+                          "document": "i16 -.txt",
+                          "page": "1",
+                          "quoted_content": "E ela é estruturada, tem que ser feito tal coisa, \"tipo: quem é que vai fazer isso?\". Aí tu tem que botar um agente e tal. \"O que que vai ter que fazer?\", \"Para qual objetivo?\"... Foi bem com o RevisãoOnline, eu não sabia antes."
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
+                          "document": "i36 - Revisão Online - Matheus.pdf",
                           "page": "7",
-                          "quoted_content": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá, fisiológica que o Balé dá, e tudo de proteção da articulação e de musculatura tudo"
+                          "quoted_content": "Proposta de intervenção, eu acho que de certa forma é uma maneira interessante de te ajudar a concluir, por causa que as conclusões. Pelo que eu vi a revisão online ele tem cinco critérios pra proposta de intervenção, que é quem, o quê, como, o efeito e o detalhamento."
                         }
                       ]
                     },
                     {
-                      "name": "Ludicidade e Tratamento Positivo do Erro",
-                      "description": "Este índice captura as menções ao uso de brincadeiras, jogos e a uma abordagem positiva do erro, tratando-o como parte do processo de aprendizagem e até como 'divertimento'. Esta experiência lúdica é um saber pedagógico que influencia a metodologia ao criar um ambiente leve, que diminui a ansiedade e estimula a participação.",
-                      "indicator": "Presença de descrições de atividades lúdicas ou de uma atitude não-punitiva perante o erro. Busca por palavras como 'brincadeira', 'lúdico', 'divertimento', 'rir dos erros', 'teatrinho', 'não me sentia pressionada'.",
+                      "name": "Desenvolvimento da Consciência Metalinguística",
+                      "description": "Este índice representa o momento em que os estudantes demonstram uma reflexão sobre a própria linguagem e a dos outros, identificando e nomeando fenômenos linguísticos. O RevisãoOnline, com seus critérios e marcações automáticas (como \"queísmo\"), age como um catalisador para essa tomada de consciência, levando-os a monitorar e aprimorar o uso de conectivos, repetições e a formalidade da escrita.",
+                      "indicator": "Menção à descoberta ou ao ato de \"cuidar\", \"perceber\", \"prestar atenção\" em repetições de palavras, \"queísmo\", \"ondismo\", uso de conectivos, conjunções, e a formalidade do texto como resultado do uso da plataforma.",
                       "references": [
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "2",
-                          "quoted_content": "como eu ria muito dos meus erros e eu adoro os meus erros (risos)... e eu acho que era isso assim."
+                          "document": "i01 - .pdf",
+                          "page": "1",
+                          "quoted_content": "Acho que aconteceu com palavras difíceis, as vezes eu olhava e dizia essa palavra é um erro, mas ele não apontava ai eu jogava no google e via que era uma palavra de verdade que existia, tinha significado."
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "9",
-                          "quoted_content": "o erro era tratado com naturalidade, porque ele faz parte né"
+                          "document": "i03 -.txt",
+                          "page": "1",
+                          "quoted_content": "o queismo, eu não sabia que existia primeiramente e aí revisando os textos quando chegava na parte do queísmo e ele mostrava todos os ques do texto ficava chocada de tanto que que o pessoal bota que eu boto também E aí isso é uma coisa que depois disso eu comecei a reparar e prestar atenção"
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "32",
-                          "quoted_content": "Aí no meio a gente fazia umas brincadeiras, umas coisas, tipo pular pelo tubarão do chão, que era pra treinar oooo... esqueci o nome do salto. Eeeee... a gente também fazia no final um teatrinho que a gente tinha que fazer passos de balé e essas coisas."
+                          "document": "i12 -Entrevista Laura (120822).pdf",
+                          "page": "7",
+                          "quoted_content": "Ah! Voltando a parte do queísmo, por que é algo que eu percebi que eu utilizava bastante e as vez utilizo também, por que é algo que a gente fala no dia-a-dia, é isso que acontece nas redações, muitas vez ocorrem erros por causa do jeito que a gente fala no dia-a-dia, então foi algo que eu li e percebi: 'Caramba! Eu tenho que arrumar alguma forma de cuidar isso..."
+                        },
+                        {
+                          "document": "i30 - Entrevista Guilherme.txt",
+                          "page": "1",
+                          "quoted_content": "bem legal a primeira vez que o que eu escutei sobre o queismo foi no próprio revisão online que daí só uns dois meses depois a gente viu isso em aula e isso ficou bastante na minha cabeça por causa que eu nunca tinha visto que até muita coisa que eu escrevi eu usava muito que e isso Ficou muito na minha cabeça de todos os tópicos o queismo ele ficou grudado o queismo e o ondismo"
                         }
                       ]
                     },
                     {
-                      "name": "Flexibilidade Metodológica e Adaptação ao Aluno",
-                      "description": "Aponta para a capacidade da professora de adaptar sua metodologia às necessidades, tempos e capacidades individuais de cada aluno, respeitando seus limites. Esta experiência de ensino personalizado, que foge de uma abordagem única para todos, é um saber que constitui uma parte crucial de sua metodologia de trabalho.",
-                      "indicator": "Identificação de trechos que descrevem o respeito ao tempo de cada aluno, a adaptação de exercícios ou a criação de uma metodologia 'universal' e aberta. Busca por expressões como 'respeitavas o tempo de desenvolvimento de cada um', 'trabalhar o Balé de forma universal', 'adaptar àquelas pessoas'.",
+                      "name": "Aprendizagem por meio da Revisão por Pares",
+                      "description": "Este índice capta a percepção dos estudantes de que o ato de revisar o texto de um colega é uma poderosa ferramenta de aprendizagem para a sua própria escrita. Ao analisar e aplicar os critérios do RevisãoOnline nos textos alheios, eles internalizam as regras, identificam erros comuns e desenvolvem um olhar mais crítico que é, subsequentemente, aplicado em suas próprias produções.",
+                      "indicator": "Declarações explícitas de que \"revisar os outros\", \"corrigir outros textos\" ou \"ver os erros dos outros\" ajudou a melhorar a própria escrita, a não cometer os mesmos erros ou a entender melhor os critérios.",
                       "references": [
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "8",
-                          "quoted_content": "pra Vanessa tu dava um tipo de orientação, porque ela já tinha a uma outra capacidade, e pra mim tu ia dentro daquilo ali, pra eu compreender aquilo ali. Então ã, tu respeitavas o, o tempo de desenvolvimento de cada um."
+                          "document": "i06 -Camila.txt",
+                          "page": "1",
+                          "quoted_content": "tu analisar a escrita de outra pessoa entende os teus erros muito melhor então tua escrita já vem muito melhor Então eu acho que começar a incentivando a revisão é muito melhor"
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
+                          "document": "i18-Junior.txt",
+                          "page": "1",
+                          "quoted_content": "a gente escrevia e revisava alguns textos né acho que a gente escreveu um e depois de duas ou três correções a gente corrigiu o nosso texto a gente corrigia outros também e depois que a gente corrigir esses outros era muito mais fácil escrever o nosso né"
+                        },
+                        {
+                          "document": "i38 - Bianca.pdf",
                           "page": "3",
-                          "quoted_content": "Então seria uma metodologia de trabalhar o Balé de forma universal assim, né. Enxergando qualquer possibilidade ali, ta aberta de repente por aluno também né?"
+                          "quoted_content": "Me ajudou em muita coisa assim, perceber os erros de outras pessoas pra conseguir, como posso dizer? Pra não fazer o mesmo erro que os das outras pessoas."
+                        },
+                        {
+                          "document": "i30 - Entrevista Guilherme.txt",
+                          "page": "1",
+                          "quoted_content": "Ah! Foi ótimo para o meu ego... de cara, logo, eu já vi, todas as redações eram redundância. Eu acho que todos os que eu avaliei sempre tinham a mesma coisa, redundância."
                         }
                       ]
                     },
                     {
-                      "name": "Influência da Formação Acadêmica",
-                      "description": "Este índice identifica as referências diretas à formação acadêmica da professora (Pedagogia, Educação Física) como uma influência em sua metodologia. Este saber teórico-prático é percebido pelas entrevistadas como a origem de sua 'didática', da capacidade de ensinar de forma diferente e de sua abordagem pedagógica mais ampla.",
-                      "indicator": "Menção explícita ou implícita à formação acadêmica da professora como fonte de sua metodologia. Busca por termos como 'pedagoga', 'professora de Educação Física', 'formação acadêmica', 'didática', 'Educação Somática'.",
+                      "name": "Percepção sobre a Funcionalidade de Anonimato",
+                      "description": "Refere-se à avaliação dos estudantes sobre o anonimato no processo de revisão por pares. O índice revela uma forte valorização dessa característica, vista como essencial para garantir a imparcialidade, reduzir o receio do julgamento, evitar constrangimentos entre colegas e, consequentemente, promover um ambiente mais seguro para a escrita e a revisão.",
+                      "indicator": "Menções diretas à importância ou preferência pelo \"anonimato\", ou justificativas de que saber a identidade do autor/revisor poderia \"influenciar no julgamento\", \"deixar com vergonha\", ou criar \"preconceito\".",
                       "references": [
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "13",
-                          "quoted_content": "eu acho que, não sei se por tu ser pedagoga, assim, né, então por exemplo, 'vamos fazer' um [...] a gente brincava com aquilo, ia lá e era complicado, e era uma coisa meio de brincar um pouco"
+                          "document": "i03 -.txt",
+                          "page": "1",
+                          "quoted_content": "eu acho que anonimato é melhor porque se fosse se fosse pessoal ainda mais tu mais novo né Você tá no primeiro segundo ano não sei se pode ficar triste com colegas... tem várias várias probleminhas podem surgir se tiver o nome da pessoa Acho que fica melhor assim"
                         },
                         {
-                          "document": "EntrevistasExemplo.pdf",
-                          "page": "24",
-                          "quoted_content": "e também a tua formação pedagógica ajudava sabe, por que, tinha uma visão diferente, de ensinar dança, tu trazia muito de teu pedagógico, então eu acredito que essa relação com a teoria ela não era assim, agora é teoria, as coisas iam fluindo..."
+                          "document": "i06 -Camila.txt",
+                          "page": "1",
+                          "quoted_content": "entre colegas também é bem importante a ter imparcialidade eu acredito e no caso Anonimato né quanto o anonimato para trazer a imparcialidade."
+                        },
+                        {
+                          "document": "i08 -GIovana.txt",
+                          "page": "1",
+                          "quoted_content": "Eu acho isso importante, pois de certa formar se tu souber de quem é a redação pode influenciar no teu julgamento quanto aquela análise ali."
+                        },
+                        {
+                          "document": "i12 -Entrevista Laura (120822).pdf",
+                          "page": "9",
+                          "quoted_content": "Eu acho que até é melhor não saber quem avaliou e não saber quem você tá avaliando, por que pode... isso evita que tenham avaliações de má fé."
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Utilidade das Ferramentas de Revisão (Automática e Manual)",
+                      "description": "Este índice aborda a percepção dos estudantes sobre a utilidade prática das diferentes ferramentas de marcação e comentário do RevisãoOnline. Inclui a avaliação sobre as sugestões automáticas, que servem como um \"norte\" inicial, e as ferramentas manuais (marcações inline, comentários), que permitem detalhar erros e sugerir melhorias, sendo cruciais para um feedback construtivo.",
+                      "indicator": "Menções sobre como as \"marcações locais\", \"comentários\", \"sugestões automáticas\" ou a capacidade de \"marcar erros\" ajudaram a identificar problemas, a entender os erros, ou a dar um feedback mais preciso.",
+                      "references": [
+                        {
+                          "document": "i09 - Entrevista 11_08_22(Isadora_captions).txt",
+                          "page": "1",
+                          "quoted_content": "É muito bom enxergar visualmente a repetição de palavras, que é um erro... que é o maior erro, a principal coisa que a gente mais comete, então é bom pra ti ter uma noção de quantas vezes tu repete aquela palavra."
+                        },
+                        {
+                          "document": "i12 -Entrevista Laura (120822).pdf",
+                          "page": "2",
+                          "quoted_content": "Hã! Eu achei eles bem necessários, eu gostei bastante, porque permite que você mostre pra pessoa onde exatamente ela tem que melhorar."
+                        },
+                        {
+                          "document": "i06 -Camila.txt",
+                          "page": "1",
+                          "quoted_content": "eu gosto dele porque ele te dá um Norte Sempre tu recebe um texto cru assim... mas daí tu aperta assim vem aquela marca aquelas marcações sugeridas daí tu tá agora entendi que onde eu teria começado é um Norte interessante"
+                        },
+                        {
+                          "document": "i03 -.txt",
+                          "page": "1",
+                          "quoted_content": "eu notei que está bem diferente de como era ano passado para mim tem vários outros tipos de erro assim que tu pode colocar e eu achei que ficou bem mais completa agora que dá para especializar bem mais e eu gostei bastante porque ajuda a definir exatamente e quando a pessoa receber a redação ela consegue entender o que que foi mesmo que ela errou"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Críticas e Sugestões de Usabilidade da Plataforma",
+                      "description": "Este índice agrupa as percepções dos estudantes sobre as dificuldades, confusões e sugestões de melhoria relacionadas à interface e funcionamento do RevisãoOnline. São \"vestígios\" que indicam pontos de atrito na experiência do usuário, como funcionalidades escondidas, bugs, ou fluxos de navegação pouco intuitivos, que impactam indiretamente o processo de aprendizagem.",
+                      "indicator": "Menção a problemas de usabilidade, como \"site trava\", \"botão de voltar apaga tudo\", \"comentário escondido\", \"confuso\", ou sugestões diretas de melhoria, como \"ter um mini tour\", \"melhorar a marcação\" ou \"mudar a disposição dos critérios\".",
+                      "references": [
+                        {
+                          "document": "i02 -.txt",
+                          "page": "1",
+                          "quoted_content": "Creio que só mudaria o botão de comentário, pois ele é muito escondido, deixá-lo fixo na página."
+                        },
+                        {
+                          "document": "i30 - Entrevista Guilherme.txt",
+                          "page": "1",
+                          "quoted_content": "Então já eu também eu queria muito falar sobre essa opção de voltar que eu acho que foi a coisa mais frustrante do revisãoonline para mim quando tu volta tu não ele apaga as informações que tu botou"
+                        },
+                        {
+                          "document": "i36 - Revisão Online - Matheus.pdf",
+                          "page": "10",
+                          "quoted_content": "Talvez o que eu mais me confundi eu diria foi nos botões, mas eu acho que é porque eles eram novos, tipo era a primeira vez que eu tava usando essa versão, né? Então tinha ali o de esconder, o de editar, de marcar e eu tava tentando descobrir como eu deletava porque eu tinha feito uma correção meio errada e daí eu não tava achando"
+                        },
+                        {
+                          "document": "i25 - Gabriela.txt",
+                          "page": "1",
+                          "quoted_content": "quando marcava assim por cima não dava para marcar por cima né eu marcava uma palavra daí depois eu queria marcar o parágrafo eu não consegui Daí tive uma dificuldade de marcar"
                         }
                       ]
                     }

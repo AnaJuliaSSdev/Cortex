@@ -26,7 +26,7 @@ public class Document
     [Required]
     public DocumentType FileType { get; set; }
 
-    public string FilePath { get; set; }
+    public string? FilePath { get; set; }
 
     public string GcsFilePath { get; set; }
 

@@ -1,4 +1,6 @@
-﻿namespace Cortex.Models.DTO
+﻿using Cortex.Models.Enums;
+
+namespace Cortex.Models.DTO
 {
     public class ViewDocumentDTO
     {
@@ -10,5 +12,6 @@
         public DateTime CreatedAt { get; set; }
         public int AnalysisId { get; set; }
         public List<ChunkDto> Chunks { get; set; } = [];
+        public DocumentType FileType { get; set; }
     }
 }

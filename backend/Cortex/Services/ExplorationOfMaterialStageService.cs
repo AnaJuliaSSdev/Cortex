@@ -647,9 +647,9 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
 
             _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
             //peguei a ultima resposta e mockei pra n ficar gastando crédito
-            //string jsonResponse = GetMockedGeminiResponse();
+            string jsonResponse = GetMockedGeminiResponse();
             //deixei comentado por enquanto pra não gastar recurso
-            string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
+            //string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
 
             _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
@@ -712,448 +712,402 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     {
         _logger.LogWarning("ATENÇÃO: Usando resposta MOCKADA do Gemini.");
         return """
+            ```json
             {
               "categories": [
                 {
-                  "name": "Fundamentos Pedagógicos Humanizados",
-                  "definition": "Agrupa as unidades de registro que descrevem uma abordagem pedagógica centrada na humanização do ensino, valorizando a relação afetiva, o tratamento positivo do erro e a criação de um ambiente de aprendizagem acolhedor e motivador.",
+                  "name": "Apropriação da Estrutura e Normas do Gênero Dissertativo-Argumentativo (ENEM)",
+                  "definition": "Esta categoria agrupa unidades onde os estudantes relatam o aprendizado e a aplicação dos componentes estruturais e convenções específicas da redação modelo ENEM, como a proposta de intervenção, o uso de repertório sociocultural e a construção da tese, identificando o RevisãoOnline como um recurso fundamental para essa apropriação.",
                   "register_units": [
                     {
-                      "text": "De afetividade, ponto! Não tem outra (risos)... acho que deve ser isto em qualquer ambiente de aprendizagem, é o principal...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "justification": "A unidade de registro expressa a centralidade da afetividade no processo de aprendizagem, alinhando-se diretamente ao índice de Relação Afetiva e Humanizada.",
+                      "text": "Então, tudo que eu sei de redação hoje em dia, eu sei por causa do revisão, ou foi assistindo vídeo aula que estão disponíveis ou pesquisando algo que eu não sabia direito. Hoje mesmo eu pesquisei sobre repertório, para saber o que era um bom repertório, já que eu não sabia o que era.",
+                      "document": "i02 -.txt",
+                      "page": "1",
+                      "justification": "O estudante atribui diretamente ao RevisãoOnline o seu conhecimento sobre redação, incluindo a busca por entendimento sobre o que é um bom repertório.",
                       "found_indices": [
-                        "272"
+                        "572"
                       ],
-                      "indicator": "40"
+                      "indicator": "238"
                     },
                     {
-                      "text": "(risos) de amizade!!! (risos) né? É o que era mais legal das aulas é que a gente se divertia.",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "também foi uma coisa que veio bastante do revisão online eu lembro da Albilia ensinando lá no primeiro ano só que foi fazendo a minha primeira revisão chegando na parte da proposta de intervenção que eu percebi que as minhas redações nunca tinham uma proposta de intervenção com todas as coisas",
+                      "document": "i03 -.txt",
+                      "page": "1",
+                      "justification": "A estudante relata que percebeu a ausência e a estrutura da proposta de intervenção em seus próprios textos ao utilizar a plataforma.",
+                      "found_indices": [
+                        "572"
+                      ],
+                      "indicator": "238"
+                    },
+                    {
+                      "text": "Pelo que eu vi a revisão online ele tem cinco critérios pra proposta de intervenção, que é quem, o quê, como, o efeito e o detalhamento. Eu acho que isso é uma coisa muito interessante, porque justamente isso te ajuda a organizar bastante a tua própria idéia",
+                      "document": "i36 - Revisão Online - Matheus.pdf",
+                      "page": "7",
+                      "justification": "O estudante identifica e valoriza os cinco critérios da proposta de intervenção presentes na plataforma como um auxílio para organizar suas ideias.",
+                      "found_indices": [
+                        "572"
+                      ],
+                      "indicator": "238"
+                    },
+                    {
+                      "text": "eu gosto de da forma que está estruturado agora ali no revisão online porque de certa forma também foi como os professores do cursinho cobravam que eles cobravam que a gente tivesse na minha proposta de intervenção eu vou ter que ter essa esses itens então é um checklist até na hora de tu estou escrevendo eu preciso colocar isso",
+                      "document": "i37 - Ana Laura.txt",
+                      "page": "1",
+                      "justification": "A estudante internalizou a estrutura da proposta de intervenção como um 'checklist' para sua escrita, um aprendizado reforçado pela plataforma.",
+                      "found_indices": [
+                        "572"
+                      ],
+                      "indicator": "238"
+                    },
+                    {
+                      "text": "No meu ensino fundamental, na minha antiga escola eu não tive nenhuma base de redação, eu nem sabia que, por exemplo, não podia pegar coisas do texto de apoio, que tanto na primeira redação que eu fiz aqui no IF, eu peguei informações do texto de apoio, daí, quando fui fazer uma revisão, no RevisãoOnline, eu descobri que não pode.",
+                      "document": "i38 - Bianca.pdf",
+                      "page": "1",
+                      "justification": "A estudante aprendeu uma regra fundamental do gênero (não usar texto de apoio) através do processo de revisão na plataforma.",
+                      "found_indices": [
+                        "572"
+                      ],
+                      "indicator": "238"
+                    },
+                    {
+                      "text": "uma coisa que eu que eu que eu evolui ali com a Fabiana é essa proposta de intervenção né eu não tinha esse antes eu não tinha esse entendimento né com os textos esses do que a gente fez do revisão online eu já meio que montava uma tese já pensando na proposta de intervenção",
+                      "document": "i18-Junior.txt",
+                      "page": "1",
+                      "justification": "O estudante relata uma evolução na sua escrita, passando a articular a tese já com a proposta de intervenção em mente, a partir do uso da plataforma.",
+                      "found_indices": [
+                        "572"
+                      ],
+                      "indicator": "238"
+                    },
+                    {
+                      "text": "citações é uma argumentação forte, por que dentro da tua própria argumentação quem tu é? ... por isso eu acho muito importante a citação legitimada por que tu dá força pro argumento.",
+                      "document": "i01 - .pdf",
                       "page": "2",
-                      "justification": "O trecho destaca a amizade e a diversão como elementos centrais da aula, caracterizando um ambiente de Relação Afetiva e Humanizada.",
+                      "justification": "O estudante demonstra ter compreendido a função argumentativa das citações (repertório) para fortalecer o texto.",
                       "found_indices": [
-                        "272"
+                        "572"
                       ],
-                      "indicator": "40"
+                      "indicator": "238"
                     },
                     {
-                      "text": "eu descreveria como uma metodologia mais contemporânea, mais humana né, não, sei lá, nada a ver com a varetinha que se acredita que aprende, mas mais humana, mais, mais próxima.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "23",
-                      "justification": "A entrevistada define a metodologia como 'humana' e 'próxima', em contraste com métodos tradicionais, o que corresponde ao índice de Relação Afetiva e Humanizada.",
+                      "text": "Foi bem com o RevisãoOnline, eu não sabia antes.",
+                      "document": "i16 -.txt",
+                      "page": "1",
+                      "justification": "O estudante afirma explicitamente que aprendeu sobre a proposta de intervenção, algo que desconhecia antes, através da plataforma.",
                       "found_indices": [
-                        "272"
+                        "572"
                       ],
-                      "indicator": "40"
-                    },
-                    {
-                      "text": "mas o ambiente era bom, era tranquilo...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "24",
-                      "justification": "A descrição do ambiente como 'bom' e 'tranquilo' é um claro indicador de uma Relação Afetiva e Humanizada.",
-                      "found_indices": [
-                        "272"
-                      ],
-                      "indicator": "40"
-                    },
-                    {
-                      "text": "é muito...tranquila, muito tranquila... não tinha aquela rigidez formal que às vezes distaciada que alguns professores gostam de impor",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "10",
-                      "justification": "A ausência de rigidez formal e a tranquilidade do ambiente são características que se enquadram na definição do índice de Relação Afetiva e Humanizada.",
-                      "found_indices": [
-                        "272"
-                      ],
-                      "indicator": "40"
-                    },
-                    {
-                      "text": "a gente sempre foi muito, muito amigas... muito, muito amigas. Desde os cinco anos de idade até sempre. A gente sempre foi muito junta e unida, a nossa turma sempre foi assim.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "33",
-                      "justification": "O relato de uma relação de amizade forte e duradoura entre professora e alunas exemplifica o pilar da Relação Afetiva e Humanizada.",
-                      "found_indices": [
-                        "272"
-                      ],
-                      "indicator": "40"
-                    },
-                    {
-                      "text": "como eu ria muito dos meus erros e eu adoro os meus erros (risos)... e eu acho que era isso assim.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "justification": "A unidade de registro demonstra uma atitude positiva e de humor em relação aos próprios erros, alinhada ao índice de Tratamento Pedagógico do Erro.",
-                      "found_indices": [
-                        "273"
-                      ],
-                      "indicator": "41"
-                    },
-                    {
-                      "text": "(risos) era um divertimento né? (risos) não tem outra explicação.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "justification": "A descrição do erro como 'divertimento' captura a essência do índice de Tratamento Pedagógico do Erro, que vê o erro como algo leve e natural.",
-                      "found_indices": [
-                        "273"
-                      ],
-                      "indicator": "41"
-                    },
-                    {
-                      "text": "em questão dos erros assim eu não me sentia pressionada pela professora",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "justification": "A ausência de pressão ao errar é um indicador direto de um Tratamento Pedagógico do Erro que não é punitivo.",
-                      "found_indices": [
-                        "273"
-                      ],
-                      "indicator": "41"
-                    },
-                    {
-                      "text": "eu não me lembro do erro me traumatizar, não não, não me traumatizava, não me causava angústia, era uma coisa que eu errava e tentava ter consciência para não fazer de novo, mas ele não me traumatizava.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "24",
-                      "justification": "Este trecho descreve a ausência de trauma ou angústia associada ao erro, o que caracteriza um Tratamento Pedagógico do Erro positivo e construtivo.",
-                      "found_indices": [
-                        "273"          ],
-                      "indicator": "41"
-                    },
-                    {
-                      "text": "o erro era tratado com naturalidade, porque ele faz parte né",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "justification": "A afirmação de que o erro era 'tratado com naturalidade' e 'faz parte' corresponde exatamente à descrição do índice de Tratamento Pedagógico do Erro.",
-                      "found_indices": [
-                        "273"
-                      ],
-                      "indicator": "41"
-                    },
-                    {
-                      "text": "ninguém ali ia morrer, se atirar pela janela porque não levantou a perna na cabeça, sabe?",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "9",
-                      "justification": "A expressão hiperbólica e bem-humorada ilustra a leveza com que o erro era tratado, diminuindo a ansiedade e a pressão, conforme o índice 273.",
-                      "found_indices": [
-                        "273"
-                      ],
-                      "indicator": "41"
+                      "indicator": "238"
                     }
                   ],
-                  "frequency": 12
+                  "frequency": 8
                 },
                 {
-                  "name": "Ressignificação da Técnica do Balé Clássico",
-                  "definition": "Reúne as manifestações que apontam para uma desconstrução da visão tradicional do Balé, enfatizando a descoberta do corpo, a consciência somática e a integração entre teoria e prática, em oposição a uma abordagem puramente sacrificial ou reprodutiva.",
+                  "name": "Desenvolvimento da Consciência sobre a Materialidade do Texto",
+                  "definition": "Esta categoria inclui relatos onde os estudantes demonstram uma elevada consciência e reflexão sobre a própria linguagem e a dos outros. Eles passam a identificar, nomear e monitorar fenômenos linguísticos como repetição de palavras, uso de conectivos (queísmo), e o nível de formalidade, com as ferramentas da plataforma atuando como catalisadoras para este desenvolvimento metalinguístico.",
                   "register_units": [
                     {
-                      "text": "eram aulas que contribuíam muito pra eu descobrir outras coisas possibilidades do meu corpo que eu não conhecia assim.",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "o queismo, eu não sabia que existia primeiramente e aí revisando os textos quando chegava na parte do queismo e ele mostrava todos os ques do texto ficava chocada de tanto que que o pessoal bota que eu boto também E aí isso é uma coisa que depois disso eu comecei a reparar e prestar atenção",
+                      "document": "i03 -.txt",
                       "page": "1",
-                      "justification": "O trecho aponta para a 'descoberta' de possibilidades do corpo, alinhando-se ao índice da Pedagogia da Descoberta e do Prazer.",
+                      "justification": "Relato de 'descoberta' do fenômeno do 'queísmo' através da ferramenta, levando a estudante a 'reparar e prestar atenção' em seu uso.",
                       "found_indices": [
-                        "270"
+                        "573"
                       ],
-                      "indicator": "38"
+                      "indicator": "239"
                     },
                     {
-                      "text": "uma ideia muito fechada do Balé de ver, de sacrifício, e de... assim como eu posso dizer, uma...aquela coisa que Balé maltrata o corpo, não! E Eu não me sentia assim!!",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "comecei a cuidar mais a concordância verbal, que foi o que percebi que estava errando graças ao revisão. Estou dando foco no que tenho mais dificuldade. Foi muito importante",
+                      "document": "i08 -GIovana.txt",
                       "page": "1",
-                      "justification": "A unidade de registro contrasta a experiência da aula com a visão tradicional do Balé como 'sacrifício', o que é central para o índice 270.",
+                      "justification": "A estudante relata ter começado a 'cuidar' da concordância verbal após perceber seus erros com o auxílio da plataforma.",
                       "found_indices": [
-                        "270"
+                        "573"
                       ],
-                      "indicator": "38"
+                      "indicator": "239"
                     },
                     {
-                      "text": "Ah eu acho que eu desconstruí a ideia que eu tinha do Balé, principalmente! A ideia que eu tinha da coisa chata, da coisa sacrificante",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "É muito bom enxergar visualmente a repetição de palavras, que é um erro... que é o maior erro, a principal coisa que a gente mais comete, então é bom pra ti ter uma noção de quantas vezes tu repete aquela palavra.",
+                      "document": "i09 - Entrevista 11_08_22(Isadora_captions).txt",
                       "page": "1",
-                      "justification": "A desconstrução da ideia do Balé como 'coisa chata' e 'sacrificante' é um indicador explícito da Pedagogia da Descoberta e do Prazer.",
+                      "justification": "A estudante valoriza a visualização da repetição de palavras fornecida pela plataforma como forma de tomar consciência sobre este erro comum.",
                       "found_indices": [
-                        "270"
+                        "573"
                       ],
-                      "indicator": "38"
+                      "indicator": "239"
                     },
                     {
-                      "text": "depois (risos) que eu fiz Balé com a Mônica eu vi que não precisa ser sacrificante, não precisa ser isso...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "justification": "A afirmação 'não precisa ser sacrificante' é um termo-chave do indicador 38, ressignificando a prática do Balé.",
-                      "found_indices": [
-                        "270"
-                      ],
-                      "indicator": "38"
-                    },
-                    {
-                      "text": "e ai eu tinha prazer... aí depois de um mês, dois meses, eu já sabia o que ia acontecer, já ficava mais tranquila... e aí tu faz aquilo com prazer",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "2",
-                      "justification": "A presença da palavra 'prazer' para descrever a experiência da aula é um indicador direto do índice 270.",
-                      "found_indices": [
-                        "270"
-                      ],
-                      "indicator": "38"
-                    },
-                    {
-                      "text": "eu percebi que o balé não precisa ser uma coisa tão séria quanto ele parece ser. O balé pode ser uma coisa feliz, ele não po... ele não precisa ser uma coisa monótona",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35",
-                      "justification": "Este trecho contrapõe a seriedade e monotonia com a felicidade, desconstruindo a visão rígida do Balé e alinhando-se à Pedagogia do Prazer.",
-                      "found_indices": [
-                        "270"
-                      ],
-                      "indicator": "38"
-                    },
-                    {
-                      "text": "o que me faltava é o que o Balé dá: é a consciência corporal que o Balé dá, ã, a noção cinesiológica que o Balé dá, anatômica que o Balé dá",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "Voltando a parte do queísmo, por que é algo que eu percebi que eu utilizava bastante e as vez utilizo também, por que é algo que a gente fala no dia-a-dia, é isso que acontece nas redações, muitas vez ocorrem erros por causa do jeito que a gente fala no dia-a-dia, então foi algo que eu li e percebi: 'Caramba! Eu tenho que arrumar alguma forma de cuidar isso",
+                      "document": "i12 -Entrevista Laura (120822).pdf",
                       "page": "7",
-                      "justification": "A unidade de registro lista explicitamente os termos 'consciência corporal', 'cinesiológica' e 'anatômica' como aprendizados, correspondendo ao índice de Consciência Corporal e Somática.",
+                      "justification": "A estudante demonstra consciência sobre o 'queísmo' como um vício de oralidade que precisa ser 'cuidado' na escrita, uma percepção ativada pela plataforma.",
                       "found_indices": [
-                        "271"
+                        "573"
                       ],
-                      "indicator": "39"
+                      "indicator": "239"
                     },
                     {
-                      "text": "o Balé, ele é todo explicadinho, ãaa relacionado né, À Anatomia, Fisiologia, Cinesiologia, tudo né, certinho.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "7",
-                      "justification": "A menção à relação do Balé com 'Anatomia' e 'Cinesiologia' evidencia o foco no entendimento do corpo, característico do índice 271.",
+                      "text": "bem legal a primeira vez que o que eu escutei sobre o queismo foi no próprio revisão online que daí só uns dois meses depois a gente viu isso em aula e isso ficou bastante na minha cabeça por causa que eu nunca tinha visto que até muita coisa que eu escrevi eu usava muito que e isso Ficou muito na minha cabeça de todos os tópicos o queismo ele ficou grudado o queismo e o ondismo",
+                      "document": "i30 - Entrevista Guilherme.txt",
+                      "page": "1",
+                      "justification": "O estudante relata que o primeiro contato e a consequente conscientização sobre 'queísmo' e 'ondismo' ocorreram através do RevisãoOnline.",
                       "found_indices": [
-                        "271"
+                        "573"
                       ],
-                      "indicator": "39"
+                      "indicator": "239"
                     },
                     {
-                      "text": "o Balé o que faz? É te proteger, ele te protege",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "7",
-                      "justification": "A ideia de que a técnica do Balé serve para 'proteger o corpo' é um pilar do índice de Consciência Corporal e Somática.",
+                      "text": "o aprendizado do queísmo do ondismo também né a gente usa muito essas essas palavras né e achei interessante isso né a maneira que é que é feito ali o software por Passos",
+                      "document": "i18-Junior.txt",
+                      "page": "1",
+                      "justification": "O estudante menciona o aprendizado sobre 'queísmo' e 'ondismo' como um resultado do uso da ferramenta, indicando uma nova consciência sobre o uso dessas palavras.",
                       "found_indices": [
-                        "271"
+                        "573",
+                        "576"
                       ],
-                      "indicator": "39"
+                      "indicator": "239"
                     },
                     {
-                      "text": "Eu aprendi a ter uma melhor consciência do meu corpo, a ter uma melhor aaaa... movimentação do meu corpo",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "10",
-                      "justification": "O relato de aprendizado da 'consciência do meu corpo' é uma manifestação direta do índice 271.",
-                      "found_indices": [
-                        "271"
-                      ],
-                      "indicator": "39"
-                    },
-                    {
-                      "text": "lembro que tu dava claro Balé, e tem umas coisas da... como é que chama aquilo? Educação Somática(...)",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "7",
-                      "justification": "A identificação de elementos da 'Educação Somática' nas aulas de Balé conecta a prática diretamente ao índice de Consciência Corporal e Somática.",
-                      "found_indices": [
-                        "271"
-                      ],
-                      "indicator": "39"
-                    },
-                    {
-                      "text": "eu me lembro de abordagem teórica no sentido de explicar pra que que é aquilo...né, ãaa, por exemplo, porque que a gente tem que contrair o glúteo para ter equilíbrio",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "justification": "A descrição da professora explicando o 'pra que que é aquilo' (o propósito do movimento) exemplifica a Integração Teoria-Prática.",
-                      "found_indices": [
-                        "275"
-                      ],
-                      "indicator": "43"
-                    },
-                    {
-                      "text": "tu explicava o movimento a gente ia fazer de uma forma bem simples, e a gente sabia pra que que era aquilo, pra que que poderia servir aquilo.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "4",
-                      "justification": "Este trecho mostra que a professora 'explicava o movimento' e seu propósito ('pra que que era aquilo'), o que define o índice de Integração Teoria-Prática.",
-                      "found_indices": [
-                        "275"
-                      ],
-                      "indicator": "43"
-                    },
-                    {
-                      "text": "tu sempre explicava como era, como se escreve né, pra saber, pra ensinar, acho que isso eu acabei levando...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "23",
-                      "justification": "A menção à explicação de 'como se escreve' o passo (nomenclatura) é um indicador da abordagem teórica vinculada à prática, conforme o índice 275.",
-                      "found_indices": [
-                        "275"
-                      ],
-                      "indicator": "43"
-                    },
-                    {
-                      "text": "ter este momento de trazer a teoria ajuda a tu compreender a importância de se fazer aquilo ali do jeito que tem que ser feito e não fazer de qualquer jeito",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "11",
-                      "justification": "A unidade de registro valoriza o 'trazer a teoria' para dar sentido e corrigir a execução do movimento, o que é a essência do índice de Integração Teoria-Prática.",
-                      "found_indices": [
-                        "275"
-                      ],
-                      "indicator": "43"
-                    }
-                  ],
-                  "frequency": 15
-                },
-                {
-                  "name": "Estratégias Metodológicas Flexíveis e Lúdicas",
-                  "definition": "Congrega os trechos que evidenciam o uso de estratégias metodológicas que se afastam da rigidez, incluindo a adaptação aos diferentes contextos e alunos, e o emprego da ludicidade como ferramenta central para o engajamento e a aprendizagem.",
-                  "register_units": [
-                    {
-                      "text": "E quando tu ia dando as aulas, tu já ia explicando pro pessoal ali como é que dava pra adaptar aquilo pra outros contextos",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "7",
-                      "justification": "O relato de que a professora explicava como 'adaptar aquilo pra outros contextos' corresponde diretamente ao índice de Adaptação e Flexibilidade Metodológica.",
-                      "found_indices": [
-                        "274"
-                      ],
-                      "indicator": "42"
-                    },
-                    {
-                      "text": "tu respeitavas o, o tempo de desenvolvimento de cada um. E isso é uma coisa boa também, porque dentro de uma turma tu pode ter alguém super avançado... e alguém que nunca fez nada",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "8",
-                      "justification": "A menção a 'respeitavas o tempo de cada um' e a consideração dos diferentes níveis na turma são indicadores claros de Adaptação e Flexibilidade Metodológica.",
-                      "found_indices": [
-                        "274"
-                      ],
-                      "indicator": "42"
-                    },
-                    {
-                      "text": "aprendizagem de repente de culturas novas né porque tu traz coisas assim de outras danças, de coisas que tavam passando na TV...",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "25",
-                      "justification": "A incorporação de elementos de 'outras danças' e da cultura contemporânea ('TV') demonstra uma abordagem aberta e flexível, alinhada ao índice 274.",
-                      "found_indices": [
-                        "274"
-                      ],
-                      "indicator": "42"
-                    },
-                    {
-                      "text": "sempre teve aquela ideia da gente brincar assim",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "Os \"que” também.",
+                      "document": "i38 - Bianca.pdf",
                       "page": "3",
-                      "justification": "A presença da ideia de 'brincar' como um elemento constante nas aulas é um indicador do índice de Ludicidade como Ferramenta Pedagógica.",
+                      "justification": "Menção sucinta, mas direta, à tomada de consciência sobre o excesso de 'ques' (queísmo) como um ponto de atenção.",
                       "found_indices": [
-                        "277"
+                        "573"
                       ],
-                      "indicator": "45"
+                      "indicator": "239"
                     },
                     {
-                      "text": "eu acho que tem que ter essa leveza que o Balé sabe traz assim historicamente, que não tem...",
-                      "document": "EntrevistasExemplo.pdf",
+                      "text": "Principalmente o do queísmo por causa que tem tendem a ter bastante \"que” em um texto. Então é legal você poder ter a marcação de tudo pra ver tipo o que que faz sentido e o que que tá ali só repetindo.",
+                      "document": "i36 - Revisão Online - Matheus.pdf",
                       "page": "3",
-                      "justification": "A valorização da 'leveza' na prática do Balé, em contraste com a rigidez, aponta para o uso de elementos lúdicos e uma abordagem menos solene.",
+                      "justification": "O estudante aponta a utilidade da ferramenta de marcação para visualizar e refletir sobre o 'queísmo' e a repetição de palavras.",
                       "found_indices": [
-                        "277"
+                        "573",
+                        "576"
                       ],
-                      "indicator": "45"
+                      "indicator": "239"
                     },
                     {
-                      "text": "a gente também fazia no final um teatrinho que a gente tinha que fazer passos de balé e essas coisas.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "32",
-                      "justification": "O uso de 'teatrinho' como atividade de aula é um exemplo explícito de Ludicidade como Ferramenta Pedagógica.",
+                      "text": "E também no RevisãoOnline eu acho muito importante essa questão das conjunções né, porque o Jonathan tem umas lá que tu acha nossa é bem esse tipo ela é Nossa Tu vai dizer ah a partir disso aí tu acha que é aquilo mas na verdade não tipo é outra coisa diferente, então acho que tem que ser tem que prestar atenção",
+                      "document": "i16 -.txt",
+                      "page": "1",
+                      "justification": "A estudante destaca a importância de 'prestar atenção' no uso correto das conjunções, um aprendizado que atribui à plataforma.",
                       "found_indices": [
-                        "277"
+                        "573"
                       ],
-                      "indicator": "45"
-                    },
-                    {
-                      "text": "Eu lembro uma que eu nunca mais vou esquecer que é do tubarão que tu desenhava no chão e era pra gente pular. Eu lembro de uma vez também que a gente fez, que tu fez um castelo e a gente tinha que ir passando pelos desafios do castelo pra gente poder chegar no chá das princesas.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "32",
-                      "justification": "A descrição de atividades imaginativas e narrativas, como 'tubarão' e 'castelo', são exemplos concretos do uso da ludicidade no ensino.",
-                      "found_indices": [
-                        "277"
-                      ],
-                      "indicator": "45"
-                    },
-                    {
-                      "text": "tu não vai encontra outro curso onde a professora brinca e conversa direito contigo.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "33",
-                      "justification": "A palavra 'brinca' é usada para caracterizar o modo de ensinar da professora, o que corresponde diretamente ao índice 277.",
-                      "found_indices": [
-                        "277",
-                        "272"
-                      ],
-                      "indicator": "45"
-                    },
-                    {
-                      "text": "Então eu acho que esse jeito teu de ensinar, esse jeito teu de brincar, me estimula a continuar dançando balé até hoje.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "35"
-                      "justification": "O 'jeito de brincar' é identificado como um fator de estímulo e permanência na dança, validando a ludicidade como uma ferramenta pedagógica eficaz.",
-                      "found_indices": [
-                        "277"
-                      ],
-                      "indicator": "45"
+                      "indicator": "239"
                     }
                   ],
                   "frequency": 9
                 },
                 {
-                  "name": "A Formação Docente pela Práxis Colaborativa",
-                  "definition": "Categoria que agrupa as vivências de formação da professora baseadas na prática compartilhada e na mentoria, indicando um modelo de 'aprender fazendo' e 'aprender com o outro' que se reflete em sua própria metodologia pedagógica.",
+                  "name": "A Revisão por Pares como Mecanismo de Aprendizagem",
+                  "definition": "Esta categoria reúne instâncias onde os estudantes reconhecem explicitamente o ato de revisar o texto de um colega como uma ferramenta poderosa de aprendizagem para a sua própria escrita. O processo de analisar textos alheios, aplicar critérios e identificar erros comuns leva à internalização de regras e ao desenvolvimento de uma perspectiva mais crítica.",
                   "register_units": [
                     {
-                      "text": "eu já comecei a dar aula de Balé de forma compartilhada... Desdo primeiro ano que eu comecei a dar aula lá em 1990, ãa, já foi com essa proposta de trabalhar junto com a Aline Peres",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "13",
-                      "justification": "O trecho descreve o início da carreira docente da professora como uma experiência 'compartilhada' e de 'trabalhar junto', alinhando-se ao índice de Formação pela Experiência e Colaboração.",
+                      "text": "eu já tinha revisado muito mais já tinha visto erros dos outros para cuidar para não cometer e ver se tu erros meus pensamentos eu escrevo assim mas não fica bom como eu achava que ficava",
+                      "document": "i06 -Camila.txt",
+                      "page": "1",
+                      "justification": "A estudante declara explicitamente que 'ver os erros dos outros' a ajudou a 'cuidar para não cometer' os mesmos erros e a reavaliar sua própria escrita.",
                       "found_indices": [
-                        "276"
+                        "574"
                       ],
-                      "indicator": "44"
+                      "indicator": "240"
                     },
                     {
-                      "text": "e ao mesmo tempo com uma supervisão, vamos dizer assim, da Tia Beth, que dava todo o suporte, né... da gente di di dá ideias e de... e da gente fazer aquela... tinha aquela rotina da gente montar a aula lá e os exercícios, de mostrar pra ela antes, pra ela dar alguma dica, algum ajuste",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "13",
-                      "justification": "A descrição do processo de 'supervisão' e mentoria por uma professora mais experiente é um indicador claro de Formação pela Experiência e Colaboração.",
+                      "text": "a gente corrigia outros também e depois que a gente corrigir esses outros era muito mais fácil escrever o nosso né",
+                      "document": "i18-Junior.txt",
+                      "page": "1",
+                      "justification": "O estudante afirma diretamente que após 'corrigir outros textos', a escrita do seu próprio texto se tornou 'muito mais fácil'.",
                       "found_indices": [
-                        "276"
+                        "574"
                       ],
-                      "indicator": "44"
+                      "indicator": "240"
                     },
                     {
-                      "text": "Eu acho Fun da men tal !! (fala pausada e enfática) Eu acho que a gente aprende com o outro, a gente ensina o outro.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "14",
-                      "justification": "Esta unidade de registro expressa a crença fundamental de que se 'aprende com o outro', que é a base do índice de Formação pela Experiência e Colaboração.",
+                      "text": "Me ajudou em muita coisa assim, perceber os erros de outras pessoas pra conseguir, como posso dizer? Pra não fazer o mesmo erro que os das outras pessoas.",
+                      "document": "i38 - Bianca.pdf",
+                      "page": "3",
+                      "justification": "A estudante reconhece que 'perceber os erros de outras pessoas' foi um mecanismo de aprendizagem para 'não fazer o mesmo erro'.",
                       "found_indices": [
-                        "276"
+                        "574"
                       ],
-                      "indicator": "44"
+                      "indicator": "240"
                     },
                     {
-                      "text": "além dessa, dessa conversa anterior a aula, ãa sim, a Tia Beth assistia as aulas da gente assim, assistia e se não assistia por inteiro entrava num pedaço, entrava dava uma olhada... tinha essa figura que supervisionava... tinha.",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "15",
-                      "justification": "O relato da existência de uma 'figura que supervisionava' as aulas reforça a ideia de uma formação docente baseada na prática supervisionada e na colaboração.",
+                      "text": "Muitas vezes falta conexão de ideias e queismo acho que é os 2 mais, assim que tu mais via em redações recorrentes.",
+                      "document": "i36 - Revisão Online - Matheus.pdf",
+                      "page": "8",
+                      "justification": "Ao identificar erros recorrentes nos textos dos outros ('conexão de ideias e queismo'), o estudante demonstra um aprendizado que pode ser aplicado em sua própria escrita.",
                       "found_indices": [
-                        "276"
+                        "574"
                       ],
-                      "indicator": "44"
+                      "indicator": "240"
                     },
                     {
-                      "text": "Eu boto uma pessoa dando aula e outra pessoa de auxiliar. De auxiliar, pra te ajudar. Se um dia tu não puderes vir, essa pessoa que ta te ajudando, eu entro na sala com ela... ela tem capacidade de dar aula e sabe onde anda o programa. (COLABORAÇÃO)",
-                      "document": "EntrevistasExemplo.pdf",
-                      "page": "44",
-                      "justification": "A descrição da dinâmica de 'professora e uma auxiliar' como um sistema de apoio e colaboração é um exemplo prático do índice de Formação pela Experiência e Colaboração.",
+                      "text": "as revisões que eram mais completas sempre gerar um aprendizado maior até para tentar realizando na verdade né quando a pessoa que realiza ter essa consciência de que ela aprende mais quer fazer uma revisão bem detalhada né",
+                      "document": "i06 -Camila.txt",
+                      "page": "1",
+                      "justification": "A estudante expressa a consciência de que o ato de realizar uma revisão detalhada para outra pessoa é, em si, um processo que gera mais aprendizado para quem revisa.",
                       "found_indices": [
-                        "276"
+                        "574"
                       ],
-                      "indicator": "44"
+                      "indicator": "240"
                     }
                   ],
                   "frequency": 5
+                },
+                {
+                  "name": "Percepção sobre o Ambiente e as Ferramentas de Revisão",
+                  "definition": "Esta categoria engloba as percepções dos estudantes sobre as funcionalidades e o ambiente da plataforma que facilitam ou dificultam a aprendizagem. Inclui a valorização do anonimato para um espaço seguro e imparcial, a utilidade das ferramentas de revisão (automáticas e manuais), e as críticas ou sugestões relacionadas à usabilidade do sistema.",
+                  "register_units": [
+                    {
+                      "text": "mas eu acho que anonimato é melhor porque se fosse se fosse pessoal ainda mais tu mais novo né Você tá no primeiro segundo ano não sei se pode ficar triste com colegas... também tem a questão de que quando ninguém sabe que é tu se sente mais confortável de fazer as coisas então uma pessoa sente melhor de escrever sem ter medo de errar",
+                      "document": "i03 -.txt",
+                      "page": "1",
+                      "justification": "A estudante valoriza o anonimato por criar um ambiente mais confortável e seguro para a escrita, reduzindo o 'medo de errar' e o receio de julgamento entre colegas.",
+                      "found_indices": [
+                        "575"
+                      ],
+                      "indicator": "241"
+                    },
+                    {
+                      "text": "eu sinceramente eu acho muito melhor porque te traz ser parcialidade sabe",
+                      "document": "i06 -Camila.txt",
+                      "page": "1",
+                      "justification": "A estudante considera o anonimato 'muito melhor' por garantir a imparcialidade no processo de revisão.",
+                      "found_indices": [
+                        "575"
+                      ],
+                      "indicator": "241"
+                    },
+                    {
+                      "text": "Eu acho isso importante, pois de certa formar se tu souber de quem é a redação pode influenciar no teu julgamento quanto aquela análise ali.",
+                      "document": "i08 -GIovana.txt",
+                      "page": "1",
+                      "justification": "A estudante justifica a importância do anonimato para evitar que o julgamento da revisão seja influenciado pelo conhecimento prévio do autor.",
+                      "found_indices": [
+                        "575"
+                      ],
+                      "indicator": "241"
+                    },
+                    {
+                      "text": "Eu acho que até é melhor não saber quem avaliou e não saber quem você tá avaliando, por que pode... isso evita que tenham avaliações de má fé.",
+                      "document": "i12 -Entrevista Laura (120822).pdf",
+                      "page": "9",
+                      "justification": "A estudante defende o anonimato como uma forma de evitar 'avaliações de má fé' e garantir a integridade do processo.",
+                      "found_indices": [
+                        "575"
+                      ],
+                      "indicator": "241"
+                    },
+                    {
+                      "text": "eu notei que está bem diferente de como era ano passado para mim tem vários outros tipos de erro assim que tu pode colocar e eu achei que ficou bem mais completa agora que dá para especializar bem mais e eu gostei bastante porque ajuda a definir exatamente",
+                      "document": "i03 -.txt",
+                      "page": "1",
+                      "justification": "A estudante percebe a utilidade da maior variedade de 'tipos de erro' (marcações) para fornecer um feedback mais preciso e compreensível.",
+                      "found_indices": [
+                        "576"
+                      ],
+                      "indicator": "242"
+                    },
+                    {
+                      "text": "eu gosto dele porque ele te dá um Norte Sempre tu recebe um texto cru assim... mas daí tu aperta assim vem aquela marca aquelas marcações sugeridas daí tu tá agora entendi que onde eu teria começado é um Norte interessante",
+                      "document": "i06 -Camila.txt",
+                      "page": "1",
+                      "justification": "A estudante descreve as 'marcações sugeridas' (revisão automática) como uma ferramenta útil que serve como um 'norte' para iniciar o processo de revisão.",
+                      "found_indices": [
+                        "576"
+                      ],
+                      "indicator": "242"
+                    },
+                    {
+                      "text": "E tu acha que aqueles critérios automáticos que o revisão colocou, tu acha que ele ajudou a detectar erros de ortografia, gramática ou algum tipo de erro alguma coisa? xxxx: Sim eles ajudaram bastante na hora de revisar.",
+                      "document": "i01 - .pdf",
+                      "page": "1",
+                      "justification": "O estudante afirma que os 'critérios automáticos' foram úteis para detectar erros diversos durante a revisão.",
+                      "found_indices": [
+                        "576"
+                      ],
+                      "indicator": "242"
+                    },
+                    {
+                      "text": "eu achei até muito bem explicadinhas critérios por exemplo, tese tem um # explicando isso Achei muito bacana porque não é todo mundo que sabe, então tu olhando ali vendo uma pequena descrição já sabe a gente vai lá então. achei isso bem fácil de compreender",
+                      "document": "i08 -GIovana.txt",
+                      "page": "1",
+                      "justification": "A estudante valoriza as explicações associadas aos critérios como uma ferramenta útil para compreender o que está sendo avaliado.",
+                      "found_indices": [
+                        "576"
+                      ],
+                      "indicator": "242"
+                    },
+                    {
+                      "text": "Eu achei eles bem necessários, eu gostei bastante, porque permite que você mostre pra pessoa onde exatamente ela tem que melhorar. E também o que me auxiliou bastante foi que embaixo de cada um tem um textinho explicando o que cada recurso é.",
+                      "document": "i12 -Entrevista Laura (120822).pdf",
+                      "page": "2",
+                      "justification": "A estudante considera as marcações locais e suas explicações como ferramentas 'bem necessárias' para indicar pontos de melhoria de forma exata.",
+                      "found_indices": [
+                        "576"
+                      ],
+                      "indicator": "242"
+                    },
+                    {
+                      "text": "Creio que só mudaria o botão de comentário, pois ele é muito escondido, deixá-lo fixo na página.",
+                      "document": "i02 -.txt",
+                      "page": "1",
+                      "justification": "Crítica de usabilidade sobre um elemento da interface ('botão de comentário') estar 'muito escondido', com uma sugestão de melhoria.",
+                      "found_indices": [
+                        "577"
+                      ],
+                      "indicator": "243"
+                    },
+                    {
+                      "text": "Na primeira vez que a nossa turma foi usar o meu não tava funcionando. Apareceu já uma revisão, não era pra tê nenhuma, apareceu uma revisão que eu nem consegui terminar e que o site trava... devia tá com erro e tudo mais...",
+                      "document": "i09 - Entrevista 11_08_22(Isadora_captions).txt",
+                      "page": "1",
+                      "justification": "Relato de problemas técnicos e de funcionamento da plataforma, como bugs e travamentos ('site trava').",
+                      "found_indices": [
+                        "577"
+                      ],
+                      "indicator": "243"
+                    },
+                    {
+                      "text": "eu queria muito falar sobre essa opção de voltar que eu acho que foi a coisa mais frustrante do revisãoonline para mim quando tu volta tu não ele apaga as informações que tu botou",
+                      "document": "i30 - Entrevista Guilherme.txt",
+                      "page": "1",
+                      "justification": "Crítica severa a um problema de usabilidade no fluxo de navegação, onde o botão 'voltar' apaga o trabalho feito.",
+                      "found_indices": [
+                        "577"
+                      ],
+                      "indicator": "243"
+                    },
+                    {
+                      "text": "quando marcava assim por cima não dava para marcar por cima né eu marcava uma palavra daí depois eu queria marcar o parágrafo eu não consegui Daí tive uma dificuldade de marcar",
+                      "document": "i25 - Gabriela.txt",
+                      "page": "1",
+                      "justification": "Relato de uma dificuldade de usabilidade com a ferramenta de marcação, que não permitia sobrepor anotações, gerando atrito na experiência.",
+                      "found_indices": [
+                        "577"
+                      ],
+                      "indicator": "243"
+                    },
+                    {
+                      "text": "teve duas coisas que eu tive duas categorias não é de elementos coesivos e outra é a categoria de conjunções e na realidade conjunções são elementos coesivos e daí eu fiquei tipo meio assim o que que eu assim achei Então desnecessário.",
+                      "document": "i37 - Ana Laura.txt",
+                      "page": "1",
+                      "justification": "Crítica sobre a organização dos critérios, apontando uma redundância ('conjunções são elementos coesivos') que tornou a classificação confusa e 'desnecessária'.",
+                      "found_indices": [
+                        "577"
+                      ],
+                      "indicator": "243"
+                    }
+                  ],
+                  "frequency": 14
                 }
               ]
             }
+            ```
             """;
     }
 }

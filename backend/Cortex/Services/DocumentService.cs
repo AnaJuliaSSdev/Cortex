@@ -22,7 +22,8 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
         ValidateFileMaxSize(dto, analysisId);
 
         IDocumentProcessingStrategy? strategy = DocumentProcessingStrategyFactory.GetStrategy(dto.File);
-        Models.Document? document = await strategy.ProcessAsync(dto.File);
+        ProcessedDocumentResult result = await strategy.ProcessAsync(dto.File);
+        Models.Document document = result.DocumentModel;
 
         document.Title = dto.Title;
         document.Source = dto.Source;
@@ -30,12 +31,20 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
         document.AnalysisId = analysisId;
         document.CreatedAt = DateTime.UtcNow;
 
-        FileStorageResult filePaths = await _fileStorageService.SaveFileAsync(dto.File, analysisId, strategy.DocumentExtension);
-        document.FilePath = filePaths.LocalPath; // caminho para o diretório 
-        document.GcsFilePath = filePaths.GcsPath; // caminho para o diretório do vertex
-        document.FileSize = dto.File.Length;
+        string gcsPath = await _fileStorageService.SaveFileAsync(
+                    result.FileStream,
+                    result.DocumentModel.FileName, // Usa o nome que veio da estratégia (já com .pdf se foi convertido)
+                    result.ContentType,
+                    analysisId
+                );
+
+        document.FileType = result.DocumentType;
+        document.GcsFilePath = gcsPath;
+        document.FilePath = null;
+        document.FileSize = result.FileStream.Length;
 
         await _repository.AddAsync(document);
+        result.FileStream.Dispose();
 
         return document;
     }
@@ -88,7 +97,7 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
         //Tamanho do novo arquivo
         long newFileSize = dto.File.Length;
 
-        // 3. Calcule o tamanho dos arquivos existentes para esta análise E este propósito
+        // Calcule o tamanho dos arquivos existentes para esta análise E este propósito
         var existingSize = await repository.SumTotalSizeDocumentsByAnalysisIdAsync(analysisId, dto.Purpose);
 
         if (existingSize + newFileSize > MAX_TOTAL_SIZE_BYTES)

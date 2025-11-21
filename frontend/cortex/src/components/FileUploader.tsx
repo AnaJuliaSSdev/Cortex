@@ -131,7 +131,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
                     //USO ATUAL DE ARMAZENAMENTO
                     <>
                         <p className={styles.uploaderDescription}>{description}</p>
-                        <p className={styles.fileTypes}>Arquivos suportados: .pdf, .txt (Máx {formatBytes(MAX_FILE_SIZE)})</p>
+                        <p className={styles.fileTypes}>Arquivos suportados: .pdf, .txt (Máx por documento {formatBytes(MAX_FILE_SIZE)})</p>
                         <p className={styles.storageInfo}>{storageInfo}</p>
                         <button type="button" className={styles.uploadButton}>
                             Selecionar Arquivos

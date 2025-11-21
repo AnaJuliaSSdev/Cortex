@@ -9,6 +9,7 @@ import styles from './css/DocumentViewer.module.css';
 import type { IndexReference } from '../interfaces/IndexReference';
 
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { DocumentType } from '../interfaces/enum/DocumentType';
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface DocumentViewerProps {
@@ -56,29 +57,27 @@ export default function DocumentViewer({
             return;
         }
 
-        const fetchDocument = async () => {
+       const fetchDocument = async () => {
             setIsLoading(true);
             try {
-                const response = await api.get(`/documents/download/${selectedDocument.id}`, {
-                    responseType: 'blob',
-                });
+                if (selectedDocument.fileType === DocumentType.Text) {
+                    const response = await api.get(`/documents/${selectedDocument.id}/content`);
+                    setFileContent(typeof response.data === 'string' ? response.data : JSON.stringify(response.data));
+                    setFileUrl(null);
+                } 
+                else {
+                    const response = await api.get(`/documents/download/${selectedDocument.id}`, {
+                        responseType: 'blob',
+                    });
 
-                const blob: Blob = response.data;
-
-                if (blob.type === 'application/pdf') {
+                    const blob: Blob = response.data;
                     const url = URL.createObjectURL(blob);
                     setFileUrl(url);
                     setFileContent(null);
-                } else if (blob.type === 'text/plain') {
-                    const text = await blob.text();
-                    setFileContent(text);
-                    setFileUrl(null);
-                } else {
-                    console.error("Tipo de arquivo não suportado:", blob.type);
                 }
 
             } catch (error) {
-                console.error("Erro ao baixar o documento:", error);
+                console.error("Erro ao carregar o documento:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -98,12 +97,6 @@ export default function DocumentViewer({
         if (!selectedReference) {
             return;
         }
-
-        console.log('📌 Referência selecionada:', {
-            text: selectedReference.quotedContent,
-            page: selectedReference.page,
-            uri: selectedReference.sourceDocumentUri
-        });
 
         const doc = [...analysisDocuments, ...referenceDocuments].find(
             d => d.gcsFilePath === selectedReference.sourceDocumentUri
@@ -146,79 +139,6 @@ export default function DocumentViewer({
         setPageNumber(prevPageNumber => Math.min(prevPageNumber + 1, numPages));
         setHighlightText(null);
     };
-
-//     const onPageRenderSuccess = () => {
-//         if (!highlightText) 
-//             return;
-//         setTimeout(() => {
-//             const pdfContainer = document.querySelector('.react-pdf__Page');
-            
-//             if (!pdfContainer) 
-//                 return;
-
-//             const textLayer = pdfContainer.querySelector('.react-pdf__Page__textContent');
-
-//             if (!textLayer) {
-//                 const allSpans = pdfContainer.querySelectorAll('span');
-                
-//                 if (allSpans.length === 0) 
-//                     return;
-                
-//                 highlightInSpans(allSpans);
-//                 return;
-//             }
-
-//             const spans = textLayer.querySelectorAll('span');
-
-//             if (spans.length === 0) {
-//                 return;
-//             }
-
-//             highlightInSpans(spans);
-//         }, 500);
-//     };
-
-//    const highlightInSpans = (spans: NodeListOf<Element> | Element[]) => {
-//         Array.from(spans).forEach(span => {
-//             const s = span as HTMLElement;
-//             s.style.backgroundColor = 'transparent';
-//             s.style.color = 'inherit';
-//             s.style.textDecoration = 'none';
-//         });
-
-//         if (!highlightText) return; 
-
-//         const normalizeText = (text: string): string => {
-//             return text
-//                 .normalize('NFD') 
-//                 .replace(/[\u0300-\u036f]/g, '') 
-//                 .toLowerCase()
-//                 .trim();
-//         };
-//         const needle = normalizeText(highlightText).substring(0, 20);
-        
-//         if (needle.length === 0) return;
-
-//         for (const span of Array.from(spans)) {
-//             const spanText = span.textContent;
-            
-//             if (spanText) {
-//                 const haystack = normalizeText(spanText);
-
-//                 if (haystack.includes(needle)) {           
-//                     const el = span as HTMLElement;
-//                     el.style.backgroundColor = '#fef4f2';
-//                     el.style.color = '#B35848';
-//                     el.style.fontWeight = 'bold';
-//                     el.style.textDecoration = 'underline';
-//                     el.style.textDecorationColor = '#B35848';
-
-//                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-//                     return; 
-//                 }
-//             }
-//         }
-//     };
 
     return (
         <div className={styles.viewerContainer}>
@@ -316,18 +236,14 @@ export default function DocumentViewer({
 
 // Helper para destacar conteúdo TXT
 function getHighlightedTxtContent(content: string, highlight: string | null): React.ReactNode {
-    if (!highlight || !content) {
-        return content;
-    }
+    if (!highlight || !content) return content;
 
     // Normalizar para busca case-insensitive
     const normalizedContent = content.toLowerCase();
     const normalizedHighlight = highlight.toLowerCase();
     const index = normalizedContent.indexOf(normalizedHighlight);
 
-    if (index === -1) {
-        return content;
-    }
+    if (index === -1) return content;
 
     // Pegar o texto original (com maiúsculas/minúsculas corretas)
     const before = content.substring(0, index);

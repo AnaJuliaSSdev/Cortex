@@ -1,5 +1,4 @@
 ﻿using Cortex.Exceptions;
-using Cortex.Helpers;
 using Cortex.Models;
 using Cortex.Models.DTO;
 using Cortex.Services.Interfaces;
@@ -40,8 +39,24 @@ public class DocumentsController(IDocumentService documentService, IFileStorageS
         Document? document = await _documentService.GetByIdAsync(id);
         if (document == null)
             throw new EntityNotFoundException(nameof(document));
-                
-        byte[] fileBytes = await _fileStorageService.GetFileAsync(document!.FilePath);
-        return File(fileBytes, document.FileType.ToMimeType(), document.FileName);
+
+        var (fileBytes, contentType) = await _fileStorageService.GetFileAsync(document.GcsFilePath);
+
+        return File(fileBytes, contentType, document.FileName);
+    }
+
+    /// <summary>
+    /// Retorna apenas o CONTEÚDO DE TEXTO do documento salvo no banco.
+    /// Usado para visualização rápida de arquivos originais TXT (mesmo que convertidos para PDF).
+    /// </summary>
+    [HttpGet("{id}/content")]
+    public async Task<IActionResult> GetContent(int id)
+    {
+        Document? document = await _documentService.GetByIdAsync(id);
+        if (document == null)
+            throw new EntityNotFoundException(nameof(document));
+
+        // Retorna o conteúdo como texto puro
+        return Content(document.Content ?? "", "text/plain");
     }
 }

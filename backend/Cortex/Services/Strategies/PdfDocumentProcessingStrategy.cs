@@ -1,4 +1,4 @@
-﻿using Cortex.Models;
+﻿using Cortex.Models.DTO;
 using Cortex.Models.Enums;
 using Cortex.Services.Interfaces;
 using iTextSharp.text.pdf;
@@ -11,41 +11,54 @@ public class PdfDocumentProcessingStrategy : IDocumentProcessingStrategy
 {
     public string DocumentExtension => ".pdf";
 
-    public async Task<Document> ProcessAsync(IFormFile file)
+    public async Task<ProcessedDocumentResult> ProcessAsync(IFormFile file)
     {
-        using MemoryStream ms = new();
+        MemoryStream ms = new();
         await file.CopyToAsync(ms);
         byte[] fileBytes = ms.ToArray();
 
-        using PdfReader pdfReader = new(fileBytes);
+        ms.Position = 0;
 
+        // Extrair texto
+        using PdfReader pdfReader = new(fileBytes); // Usa bytes para não travar stream
         int numberOfPages = pdfReader.NumberOfPages;
-
         StringBuilder sb = new();
 
         for (int i = 1; i <= numberOfPages; i++)
         {
-                string pageText = PdfTextExtractor.GetTextFromPage(pdfReader, i);
-
-                if (!string.IsNullOrWhiteSpace(pageText))
-                {
-                    sb.Append(pageText);
-                    sb.Append("\n\n");
-                }
+            string pageText = PdfTextExtractor.GetTextFromPage(pdfReader, i);
+            if (!string.IsNullOrWhiteSpace(pageText))
+            {
+                sb.Append(pageText);
+                sb.Append("\n\n");
+            }
         }
 
         string text = sb.ToString().Replace("\0", "").Trim();
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            throw new Exception("Não foi possível extrair texto do PDF. O arquivo pode ser: 1) PDF escaneado (imagem), 2) PDF protegido, ou 3) Usar codificação não suportada. Tente converter o PDF para texto antes de usar.");
+            text = "";
         }
 
-        return new Document
+        // Retornar resultado
+        // O stream de upload deve estar no início
+        ms.Position = 0;
+
+        var documentModel = new Models.Document
         {
             FileType = DocumentType.Pdf,
             Content = text,
             FileName = file.FileName
+        };
+
+        return new ProcessedDocumentResult
+        {
+            DocumentModel = documentModel,
+            FileStream = ms, // Retornamos o PDF original
+            ContentType = "application/pdf",
+            Extension = DocumentExtension, 
+            DocumentType = DocumentType.Pdf
         };
     }
 }

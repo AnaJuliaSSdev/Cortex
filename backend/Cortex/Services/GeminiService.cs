@@ -5,7 +5,6 @@ using Cortex.Services.Interfaces;
 using GeminiService.Api.Extensions;
 using GenerativeAI;
 using Microsoft.Extensions.Options;
-using Type = Google.Cloud.AIPlatform.V1.Type;
 
 namespace GeminiService.Api.Services.Implementations;
 
@@ -53,30 +52,20 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
     {
         var predictionServiceClient = new PredictionServiceClientBuilder().Build();
 
-        var allParts = new List<Part>();
+        var allParts = new List<Part>
+        {
+            new() { Text = prompt }
+        };
 
-        allParts.Add(new Part { Text = prompt });
+        // Adiciona os Documentos (agora todos via GCS URI)
         foreach (var doc in documents)
         {
-            if (doc.MimeType == "application/pdf")
+            // A conversão TXT -> PDF foi feita no DocumentService upload.
+            allParts.Add(new Part
             {
-                allParts.Add(new Part
-                {
-                    FileData = new FileData { FileUri = doc.GcsUri, MimeType = doc.MimeType }
-                });
-            }
-            else if (doc.MimeType == "text/plain")
-            {
-                allParts.Add(new Part
-                {
-                    Text = $"\n\n--- INÍCIO DO DOCUMENTO: {doc.FileName} ---\n" +
-                           doc.Content +
-                           $"\n--- FIM DO DOCUMENTO: {doc.FileName} ---\n\n"
-                });
-            }
+                FileData = new FileData { FileUri = doc.GcsUri, MimeType = "application/pdf" }
+            });
         }
-
-
 
         var generationConfig = new GenerationConfig
         {
@@ -103,7 +92,7 @@ public class GeminiService(ILogger<GeminiService> logger, IOptions<GeminiConfigu
         generateContentRequest.Contents[0].Parts.AddRange(allParts);
         GenerateContentResponse response = await predictionServiceClient.GenerateContentAsync(generateContentRequest);
 
-        if (response.Candidates.Any() && response.Candidates.First().Content.Parts.Any())
+        if (response.Candidates.Count != 0 && response.Candidates.First().Content.Parts.Count != 0)
         {
             return response.Candidates.First().Content.Parts.First().Text;
         }

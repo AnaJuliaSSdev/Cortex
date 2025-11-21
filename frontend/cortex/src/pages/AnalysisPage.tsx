@@ -15,6 +15,7 @@ import { ErrorState } from '../components/ErrorState';
 import Alert, { type AlertType } from '../components/Alert';
 import type { Index } from '../interfaces/Index';
 import ConfirmModal from '../components/ConfirmModal';
+import { formatDisplayFileName } from '../utils/documentUtils';
 
 
 // Dicionário de erros para AÇÕES (iniciar, continuar)
@@ -102,11 +103,13 @@ export default function AnalysisPage() {
 
     // Callbacks para os uploaders
     const handleAnalysisUpload = (doc: UploadedDocument) => {
-        setAnalysisDocuments((prevDocs) => [...prevDocs, doc]);
+        const docWithCorrectPurpose = { ...doc, purpose: DocumentPurpose.Analysis };
+        setAnalysisDocuments((prevDocs) => [...prevDocs, docWithCorrectPurpose]);
     };
 
     const handleReferenceUpload = (doc: UploadedDocument) => {
-        setReferenceDocuments((prevDocs) => [...prevDocs, doc]);
+        const docWithCorrectPurpose = { ...doc, purpose: DocumentPurpose.Reference };
+        setReferenceDocuments((prevDocs) => [...prevDocs, docWithCorrectPurpose]);
     };
 
     const handleConfirmDeleteDoc = async () => {

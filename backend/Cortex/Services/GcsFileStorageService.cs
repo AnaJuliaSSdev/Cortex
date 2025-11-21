@@ -1,6 +1,4 @@
-﻿using Cortex.Exceptions;
-using Google.Cloud.Storage.V1;
-using Cortex.Models.DTO;
+﻿using Google.Cloud.Storage.V1;
 using Cortex.Services.Interfaces;
 
 namespace Cortex.Services;
@@ -13,81 +11,58 @@ public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, Storag
     private readonly StorageClient _storageClient = storageClient;
     private readonly string _bucketName = configuration["GcsSettings:BucketName"]
             ?? throw new ArgumentNullException("GcsSettings:BucketName not found on appsettings.json");
-    private const int WINDOWS_CHARACTERS_LIMIT = 250;
     private const int MAX_FILE_LENGTH = 50;
 
-    public async Task<FileStorageResult> SaveFileAsync(IFormFile file, int analysisId, string documentExtension)
+    public async Task<string> SaveFileAsync(Stream fileStream, string fileName, string contentType, int analysisId)
     {
         var userDirectory = Path.Combine(this.BasePath, $"analysis-{analysisId}"); // cria o diretório do usuário
-        var fullDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), userDirectory); // combina com o diretório atual
 
-        Directory.CreateDirectory(fullDirectoryPath); //cria se n existir
+        // Extrai nome e extensão
+        string extension = Path.GetExtension(fileName);
+        string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
 
-        var sanitizedFileName = SanitizeFileName(Path.GetFileNameWithoutExtension(file.FileName)); // cuida do nome do arquivo
+        var sanitizedFileName = SanitizeFileName(nameWithoutExt);
 
-        //gera um nome único de arquivo
-        var uniqueFileName = $"{sanitizedFileName}_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}[..8]{documentExtension}";
-
-        var fullFilePath = Path.Combine(fullDirectoryPath, uniqueFileName); // cria o caminho completo
-
-        var gcsObjectName = $"{userDirectory}/{uniqueFileName}"; // Ex: "analysis-123/meu_doc_...pdf"
+        // Gera nome único
+        var uniqueFileName = $"{sanitizedFileName}_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}[..8]{extension}";
+        var gcsObjectName = $"{userDirectory}/{uniqueFileName}";
 
         if (gcsObjectName.Length > 1024) // Limite do GCS, cuida se é maior que a janela de caracteres deles
         {
-            uniqueFileName = $"doc_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N[..8]}{documentExtension}";
+            uniqueFileName = $"doc_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N[..8]}{extension}";
             gcsObjectName = $"{userDirectory}/{uniqueFileName}";
         }
 
-        //CUIDAR ORDEM PARA NÃO CRIAR O RESTO SE FALHAR
-
-        if (fullFilePath.Length > WINDOWS_CHARACTERS_LIMIT) // verifica se é maior que a janela de caracteres do google
-        {
-            uniqueFileName = $"doc_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}[..8]{documentExtension}";
-            fullFilePath = Path.Combine(fullDirectoryPath, uniqueFileName);
-        }
-
-        //copia o arquivo pro diretório
-        using (var fileStream = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write))
-        {
-            await file.CopyToAsync(fileStream);
-        }
+        // Upload para o GCS usando o Stream fornecido
+        if (fileStream.Position > 0 && fileStream.CanSeek)
+            fileStream.Position = 0;
 
         //copia o arquivo pro vertex
-        using (var stream = file.OpenReadStream())
-        {
-            await _storageClient.UploadObjectAsync(_bucketName, gcsObjectName, file.ContentType, stream);
-        }
+        await _storageClient.UploadObjectAsync(_bucketName, gcsObjectName, contentType, fileStream);
+
         var gcsUri = $"gs://{_bucketName}/{gcsObjectName}";
         _logger.LogInformation("Arquivo salvo no GCS: {GcsUri}", gcsUri);
 
-        var relativePath = Path.Combine(userDirectory, uniqueFileName);
-
-        _logger.LogInformation("File saved: {FilePath}", relativePath);
-
-        FileStorageResult paths = new()
-        {
-            GcsPath = gcsUri,
-            LocalPath = fullFilePath
-        };
-
-        return paths;
+        return gcsUri;
     }
 
-    public async Task<byte[]> GetFileAsync(string relativePath)
+    public async Task<(byte[] FileBytes, string ContentType)> GetFileAsync(string gcsUri)
     {
-        var normalizedPath = relativePath.Replace('/', Path.DirectorySeparatorChar);
-        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), normalizedPath);
+        if (string.IsNullOrEmpty(gcsUri) || !gcsUri.StartsWith($"gs://{_bucketName}/"))
+        {
+            throw new ArgumentException("GCS URI inválido.", nameof(gcsUri));
+        }
 
-        var normalizedFullPath = Path.GetFullPath(fullPath);
+        string objectName = gcsUri.Substring($"gs://{_bucketName}/".Length);
 
-        if (!File.Exists(normalizedFullPath))
-            throw new EntityNotFoundException($"File: {relativePath}");
+        using (var memoryStream = new MemoryStream())
+        {
+            // Baixa o objeto do GCS para a memória
+            var obj = await _storageClient.DownloadObjectAsync(_bucketName, objectName, memoryStream);
+            memoryStream.Position = 0; // Reseta o stream para o início
 
-        var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), this.BasePath));
-        if (!normalizedFullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
-            throw new UnauthorizedAccessException();
-
-        return await File.ReadAllBytesAsync(fullPath);
+            return (memoryStream.ToArray(), obj.ContentType);
+        }
     }
 
     private static string SanitizeFileName(string fileName)
@@ -106,22 +81,7 @@ public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, Storag
 
     public async Task DeleteAnalysisStorageAsync(int analysisId)
     {
-        //Excluir Pasta Local
-        var userDirectoryName = $"analysis-{analysisId}";
-        var userDirectoryPath = Path.Combine(this.BasePath, userDirectoryName);
-        var fullDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), userDirectoryPath);
-
-        if (Directory.Exists(fullDirectoryPath))
-        {
-            Directory.Delete(fullDirectoryPath, recursive: true);
-            _logger.LogInformation("Diretório local excluído: {DirectoryPath}", fullDirectoryPath);
-        }
-        else
-        {
-            _logger.LogWarning("Diretório local não encontrado para exclusão: {DirectoryPath}", fullDirectoryPath);
-        }
-
-        var gcsPathBase = Path.Combine(this.BasePath, userDirectoryName);
+        var gcsPathBase = Path.Combine(this.BasePath, $"analysis-{analysisId}");
         var gcsPrefix = $"{gcsPathBase}/";
 
         _logger.LogInformation("Iniciando exclusão de objetos GCS com prefixo: {Prefix} no bucket {Bucket}", gcsPrefix, _bucketName);
@@ -152,17 +112,6 @@ public class GcsFileStorageService(ILogger<GcsFileStorageService> logger, Storag
 
     public async Task DeleteSingleFileAsync(string fullLocalPath, string gcsUri)
     {
-        // Excluir Arquivo Local
-        if (File.Exists(fullLocalPath))
-        {
-            File.Delete(fullLocalPath);
-            _logger.LogInformation("Arquivo local excluído: {FilePath}", fullLocalPath);
-        }
-        else
-        {
-            _logger.LogWarning("Arquivo local não encontrado para exclusão: {FilePath}", fullLocalPath);
-        }
-
         //  Excluir Objeto do GCS
         if (string.IsNullOrEmpty(gcsUri) || !gcsUri.StartsWith("gs://"))
         {

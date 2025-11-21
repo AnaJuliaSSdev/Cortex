@@ -39,7 +39,7 @@ class Program
 
         // Obter serviços
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        var pdfProcessor = serviceProvider.GetRequiredService<SimplePdfProcessingService>();
+        //var pdfProcessor = serviceProvider.GetRequiredService<SimplePdfProcessingService>();
         var ragService = serviceProvider.GetRequiredService<IRagService>();
 
         try
@@ -75,7 +75,7 @@ class Program
             Console.WriteLine();
 
             // Processar o PDF
-            var document = await pdfProcessor.ProcessPdfAsync(pdfPath, title);
+            //var document = await pdfProcessor.ProcessPdfAsync(pdfPath, title);
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("PDF processado com sucesso");
@@ -130,19 +130,19 @@ class Program
                 Console.WriteLine("⏳ Buscando resposta...");
                 Console.ResetColor();
 
-                var answer = await ragService.AskQuestionAsync(contextualQuestion, document.Id);
+                //var answer = await ragService.AskQuestionAsync(contextualQuestion, document.Id);
 
                 // Mostrar a resposta
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Assistente:");
                 Console.ResetColor();
-                Console.WriteLine(answer);
+                //Console.WriteLine(answer);
                 Console.WriteLine();
                 Console.WriteLine("-".PadRight(60, '-'));
                 Console.WriteLine();
 
                 // Salvar no histórico
-                chatHistory.Add((question, answer));
+                //chatHistory.Add((question, answer));
             }
 
             // Mostrar estatísticas
@@ -220,7 +220,7 @@ class Program
         services.AddScoped<IEmbeddingService, EmbeddingService>();
         services.AddScoped<IGeminiService, GeminiService.Api.Services.Implementations.GeminiService>();
         services.AddScoped<IRagService, RagService>();
-        services.AddScoped<SimplePdfProcessingService>();
+        //services.AddScoped<SimplePdfProcessingService>();
 
         return services;
     }
