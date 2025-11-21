@@ -1,0 +1,41 @@
+/* MINI LOADER (Spinner) */
+.mini-loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.password-requirements {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.password-requirements.pending {
+  color: var(--text-light);
+}
+
+.password-requirements.valid {
+  color: var(--success-color);
+}
+
+.password-requirements.invalid {
+  color: var(--error-color);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -15,6 +15,7 @@ import axios from "axios";
 import type { AlertType } from "../components/Alert.tsx";
 import Alert from "../components/Alert.tsx";
 import { handleApiError, type ApiErrorMap } from "../utils/errorUtils.ts";
+import MiniLoader from "../components/MiniLoader.tsx";
 
 const registerErrorMap: ApiErrorMap = {
 	byStatusCode: {
@@ -33,11 +34,20 @@ export default function RegisterPage() {
 	const [alertInfo, setAlertInfo] = useState<{ message: string; type: AlertType } | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+	const isPasswordValid = password.length >= 6;
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!isPasswordValid) {
+            setError("A senha precisa ter no mínimo 6 caracteres.");
+            return;
+        }
 		setAlertInfo(null); // Limpa alertas anteriores
 		setError(null);
+		setIsLoading(true);
+		
+
 		const userDTO: UserRegisterDto = {
 			fullName: fullName,
 			email: email,
@@ -59,6 +69,8 @@ export default function RegisterPage() {
 			} else {
 				setError(registerErrorMap.default);
 			}
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -94,8 +106,10 @@ export default function RegisterPage() {
                             <div className="login-error-message">
                                 {error}
                             </div>
-                        )}
-						<FormButton text="Cadastrar"></FormButton>
+						)}
+						<FormButton disabled={isLoading} text="Cadastrar">
+							{isLoading ? <MiniLoader /> : "Cadastrar"}
+						</FormButton>
 
 						<div className="login-link">
 							<a href="/login">Login</a>

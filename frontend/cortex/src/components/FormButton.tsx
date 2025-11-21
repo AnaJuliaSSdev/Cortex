@@ -1,14 +1,19 @@
 import './css/FormButton.css';
 
-interface TextButton {
-    text : string
+interface FormButtonProps {
+    text: string;
+    disabled?: boolean;
+    children?: React.ReactNode;
 }
 
-export default function FormButton({text} : TextButton) {
-
-	return (
-		<button type="submit" className="login-button">
-			{text}
-		</button>
-	);
+export default function FormButton({ text, disabled, children }: FormButtonProps) {
+    return (
+        <button 
+            type="submit" 
+            className="login-button"
+            disabled={disabled} 
+        >
+            {children ? children : text}
+        </button>
+    );
 }

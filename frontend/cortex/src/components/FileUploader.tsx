@@ -3,7 +3,9 @@ import { useDropzone } from 'react-dropzone';
 import styles from './css/FileUploader.module.css'; // Vamos criar este arquivo de estilo
 import type { DocumentPurpose } from '../interfaces/enum/DocumentPurpose';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
-import {uploadDocument} from '../services/documentService';
+import { uploadDocument } from '../services/documentService';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
 
 // Definindo as props do componente
 interface FileUploaderProps {
@@ -44,6 +46,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showTooltip, setShowTooltip] = useState(false);
 
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
         setError(null);
@@ -57,8 +60,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
         // Verificação Rápida: Se o lote inteiro de uma vez estoura o limite
         if (newTotalSize + batchSize > maxTotalSize) {
-             setError(`Limite de ${formatBytes(maxTotalSize)} excedido. Você só pode adicionar mais ${formatBytes(maxTotalSize - newTotalSize)}.`);
-             return; // Rejeita o lote inteiro
+            setError(`Limite de ${formatBytes(maxTotalSize)} excedido. Você só pode adicionar mais ${formatBytes(maxTotalSize - newTotalSize)}.`);
+            return; // Rejeita o lote inteiro
         }
 
         setIsUploading(true);
@@ -75,10 +78,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
                 const uploadedDoc = await uploadDocument(analysisId, file, purpose);
                 onUploadSuccess(uploadedDoc); // Notifica o pai
                 // Atualiza o total para a próxima iteração do loop
-                newTotalSize += uploadedDoc.fileSize; 
+                newTotalSize += uploadedDoc.fileSize;
             } catch (err) {
                 setError(`Erro ao enviar o arquivo: ${file.name}. Tente novamente.`);
-                break; 
+                break;
             }
         }
         setIsUploading(false);
@@ -109,16 +112,37 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
     return (
         <div className={styles.uploaderContainer}>
-            <h3 className={styles.uploaderTitle}>{title}</h3>
-            <div 
-                {...getRootProps({ 
+            <div className={styles.headerContainer}>
+                <h3 className={styles.uploaderTitle}>{title}</h3>
+                {/* Wrapper do Ícone com Tooltip */}
+                <div
+                    className={styles.infoWrapper}
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    role="tooltip"
+                    aria-label="Informações sobre armazenamento"
+                >
+                    <InfoOutlinedIcon className={styles.infoIcon} />
+                    {/* Tooltip Flutuante */}
+                    {showTooltip && (
+                        <div className={styles.tooltip}>
+                            <div className={styles.tooltipArrow} />
+                            Devido a processamentos internos,
+                            alguns documentos podem ocupar mais espaço do que o original.
+                            Acompanhe o medidor de armazenamento.
+                        </div>
+                    )}
+                </div>
+            </div>
+            <div
+                {...getRootProps({
                     // Desabilita o dropzone se o armazenamento estiver cheio
-                    disabled: isStorageFull 
+                    disabled: isStorageFull
                 })}
                 className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''}`}
             >
                 <input {...getInputProps({ disabled: isStorageFull })} />
-                
+
                 {isUploading ? (
                     <p>Enviando arquivos...</p>
                 ) : isStorageFull ? (

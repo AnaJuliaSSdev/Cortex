@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { handleApiError, type ApiErrorMap } from "../utils/errorUtils.ts";
+import MiniLoader from "../components/MiniLoader.tsx";
 
 const loginErrorMap: ApiErrorMap = {
     byStatusCode: {
@@ -30,10 +31,13 @@ export default function LoginPage() {
 	const navigate = useNavigate();
 	const auth = useAuth();
 	const [error, setError] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
+		setIsLoading(true);
 
 		const userDTO: UserLoginDto = {
 			email: email,
@@ -56,6 +60,8 @@ export default function LoginPage() {
 			} else {
 				setError(loginErrorMap.default);
 			}
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -75,7 +81,13 @@ export default function LoginPage() {
                                 {error}
                             </div>
                         )}
-						<FormButton text="Entrar"></FormButton>
+
+						 <div style={{ marginTop: '1rem' }}>
+			
+							<FormButton disabled={isLoading} text="Entrar">
+								{isLoading ? <MiniLoader /> : "Entrar"}
+							</FormButton>				   
+                    	</div>
 
 						<div className="register-link">
 							<a href="/register">Cadastre-se</a>
