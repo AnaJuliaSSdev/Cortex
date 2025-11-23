@@ -154,8 +154,10 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
         setIsDeleting(true);
         try {
             await deleteIndex(indexToDelete.id);
+            console.log(indexToDelete.id);
             onIndexDeleted(indexToDelete.id); // Notifica o pai
             setIndexToDelete(null); // Fecha o modal
+            onShowToast("Índice excluído com sucesso!", "success");
         } catch (err) {
             onShowToast("Falha ao excluir o índice. Tente novamente.", "error");
         } finally {
