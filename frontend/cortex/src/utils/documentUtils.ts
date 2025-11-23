@@ -34,3 +34,24 @@ export const formatDisplayFileName = (fileName: string, fileType: DocumentType):
 
     return fileName;
 };
+
+/**
+ * Retorna o número da página para exibição.
+ * - Se for TXT: Retorna sempre "1" (pois visualmente é contínuo).
+ * - Se for PDF: Retorna o número real da página.
+ * * @param uri URI do documento no GCS
+ * @param page O número da página original salvo na referência
+ * @param documents Lista de documentos para verificar o tipo
+ */
+export const getReferencePageLabel = (uri: string, page: string | number, documents: UploadedDocument[]): string => {
+    const doc = documents.find(d => d.gcsFilePath === uri);
+
+    // Se o documento for do tipo TEXTO, visualmente para o usuário é tudo "Página 1"
+    // (mesmo que o backend tenha convertido para um PDF de múltiplas páginas)
+    if (doc && doc.fileType === DocumentType.Text) {
+        return "1";
+    }
+
+    // Caso contrário (PDF nativo), retorna a página real
+    return String(page);
+};

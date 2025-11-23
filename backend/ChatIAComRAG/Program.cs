@@ -63,7 +63,6 @@ class Program
             if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Arquivo não encontrado!");
                 Console.ResetColor();
                 return;
             }

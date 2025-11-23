@@ -105,6 +105,11 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
     - Índices são elementos concretos no texto (palavras, frases, expressões)
     - Unidades de registro são segmentos de texto que contêm um ou mais índices
     - Categorias são agrupamentos temáticos que emergem de múltiplas unidades de registro
+
+    ======== AVISO IMPORTANTE!============
+    Para citar as referências das unidades de registro, no trecho citado (text), utilize EXATAMENTE os textos dos documentos. NÃO ALTERE os textos dos trechos citados, 
+    nem mesmo corrija eventuais erros de escrita. Essas citações devem ser preservadas pois deverão ser identificaveis no texto pelo usuário. 
+    ================================
     
     Retorne APENAS um objeto JSON válido, sem markdown, comentários ou texto adicional:
     {{

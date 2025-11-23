@@ -116,6 +116,11 @@ namespace Cortex.Services
             - Sistemáticos: Aplicáveis de forma consistente em todo o corpus
             - Adequados ao objetivo: Quantitativos ou qualitativos conforme a necessidade
 
+            ======== IMPORTANTE!============
+            Para citar as referências dos índices, no trecho citado (quoted_content), utilize EXATAMENTE os textos dos documentos. NÃO ALTERE os textos dos trechos citados, 
+            nem mesmo corrija eventuais erros de escrita. Essas citações devem ser preservadas pois deverão ser identificaveis no texto pelo usuário. 
+            ================================
+
             Os documentos de contextualização devem ser utilizados como fontes de conceitos teóricos para embasar a análise.
             O foco central desta análise de conteúdo é responder a pergunta que move a análise, a pergunta central da pesquisa. Pode não ser necessariamente uma pergunta, mas uma tese, uma motivação de pesquisa. 
             Proceda com rigor metodológico. Sua análise deve ser replicável por outro pesquisador seguindo os mesmos critérios.          

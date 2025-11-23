@@ -7,7 +7,7 @@ import LabelIcon from '@mui/icons-material/Label';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import type { Index } from '../interfaces/Index';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
-import { getFileNameFromUri } from '../utils/documentUtils';
+import { getFileNameFromUri, getReferencePageLabel } from '../utils/documentUtils';
 
 interface CategoryDetailsModalProps {
     isOpen: boolean;
@@ -97,7 +97,7 @@ export default function CategoryDetailsModal({ isOpen, onClose, category, allDoc
                                             <FindInPageIcon sx={{ fontSize: 16, marginRight: 0.5 }}/>
                                             <span title={getFileNameFromUri(unit.sourceDocumentUri, allDocuments)}>
                                                 {getFileNameFromUri(unit.sourceDocumentUri, allDocuments)} 
-                                                {' '}(p. {unit.page})
+                                                {' '}(p. {getReferencePageLabel(unit.sourceDocumentUri, unit.page, allDocuments)})
                                             </span>
                                         </div>
                                         

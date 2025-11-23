@@ -183,6 +183,7 @@ public class PdfExportService : IExportService
         }
     }
 
+    [Obsolete]
     private void BuildCategoryDetail(PdfDocumentBuilder builder, Category category, bool includeReferences, ICollection<Document> allDocuments)
     {
         builder.AddSection($"{category.Name}");
@@ -217,12 +218,12 @@ public class PdfExportService : IExportService
                 {
                     Caption = $"Referências do índice '{firstIndex.Name}'",
                     Headers = new List<string> { "Documento", "Página", "Trecho" },
-                    Rows = firstIndex.References.Select(r => new List<string>
+                    Rows = [.. firstIndex.References.Select(r => new List<string>
                     {
-                        GetOriginalFileName(r.SourceDocumentUri, allDocuments),
-                        r.Page ?? "-",
+                        GetFormattedFileName(r.SourceDocumentUri, allDocuments),
+                        GetFormattedPage(r.SourceDocumentUri, r.Page, allDocuments),
                         r.QuotedContent ?? "-"
-                    }).ToList()
+                    })]
                 };
                 builder.AddTable(refTable);
             }
@@ -237,13 +238,13 @@ public class PdfExportService : IExportService
                 {
                     Caption = $"Unidades de Registro - {firstIndex.Name} ({unitsToShow.Count} de {unitsForThisIndex.Count})",
                     Headers = new List<string> { "Texto", "Documento", "Página", "Justificativa" },
-                    Rows = unitsForThisIndex.Select(ru => new List<string>
+                    Rows = [.. unitsForThisIndex.Select(ru => new List<string>
                     {
                         ru.Text ?? "-",
-                        GetOriginalFileName(ru.SourceDocumentUri, allDocuments),
-                        ru.Page ?? "-",
+                        GetFormattedFileName(ru.SourceDocumentUri, allDocuments),
+                        GetFormattedPage(ru.SourceDocumentUri, ru.Page, allDocuments),
                         ru.Justification ?? "-"
-                    }).ToList()
+                    })]
                 };
                 builder.AddTable(unitsTable);
             }
@@ -284,14 +285,46 @@ public class PdfExportService : IExportService
         return table;
     }
 
-    private static string GetOriginalFileName(string gcsUri, IEnumerable<Document> allDocuments)
+    /// <summary>
+    /// Retorna a página formatada.
+    /// Se for Type=Text, retorna sempre "1".
+    /// Se for Type=PDF, retorna a página original.
+    /// </summary>
+    private static string GetFormattedPage(string gcsUri, string originalPage, IEnumerable<Document> allDocuments)
+    {
+        var doc = allDocuments?.FirstOrDefault(d => d.GcsFilePath == gcsUri);
+
+        // Regra: Se for TXT, a página é sempre "1"
+        if (doc != null && doc.FileType == DocumentType.Text)
+        {
+            return "1";
+        }
+
+        return originalPage ?? "-";
+    }
+
+
+    /// <summary>
+    /// Retorna o nome do arquivo formatado.
+    /// Se for Type=Text mas extensão .pdf, converte visualmente para .txt.
+    /// </summary>
+    private static string GetFormattedFileName(string gcsUri, IEnumerable<Document> allDocuments)
     {
         if (string.IsNullOrEmpty(gcsUri) || allDocuments == null) return "-";
 
-        // Procura na lista de documentos pelo GcsFilePath correspondente
         var doc = allDocuments.FirstOrDefault(d => d.GcsFilePath == gcsUri);
 
-        // Retorna o FileName original, ou o GcsUri se não for encontrado
-        return doc?.FileName ?? gcsUri;
+        // Se não achou o doc, retorna o URI ou "-"
+        if (doc == null) return gcsUri;
+
+        string fileName = doc.FileName;
+
+        // Regra: Se for TXT mas estiver salvo como .pdf, exibe .txt
+        if (doc.FileType == DocumentType.Text && fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            return fileName.Substring(0, fileName.Length - 4) + ".txt";
+        }
+
+        return fileName;
     }
 }

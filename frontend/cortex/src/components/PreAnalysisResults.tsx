@@ -13,7 +13,7 @@ import IndexFormModal from "./IndexFormModal";
 import { deleteIndex } from "../services/analysisService";
 import Alert, { type AlertType } from "./Alert";
 import ConfirmModal from "./ConfirmModal";
-import { getFileNameFromUri } from "../utils/documentUtils";
+import { getFileNameFromUri, getReferencePageLabel } from "../utils/documentUtils";
 
 interface IndexItemProps {
     index: Index;
@@ -45,6 +45,7 @@ const IndexItem: React.FC<IndexItemProps> = ({
     onEditClick,
     onDeleteClick
 }) => {
+    const allDocs = [...analysisDocuments, ...referenceDocuments];
     return (
         <li className={styles.indexItem}>
             <div className={styles.indexContent}>
@@ -68,9 +69,10 @@ const IndexItem: React.FC<IndexItemProps> = ({
                                     key={ref.id} 
                                     className={styles.referenceItem} 
                                     onClick={() => onReferenceClick(ref)}
-                                    title={getFileNameFromUri(ref.sourceDocumentUri, [...analysisDocuments, ...referenceDocuments])}
+                                    title={getFileNameFromUri(ref.sourceDocumentUri, allDocs)}
                                 >
-                                    <FindInPageIcon/> {getFileNameFromUri(ref.sourceDocumentUri, [...analysisDocuments, ...referenceDocuments])} (p. {ref.page})
+                                    <FindInPageIcon/> {getFileNameFromUri(ref.sourceDocumentUri, allDocs)}
+                                      {' '}(p. {getReferencePageLabel(ref.sourceDocumentUri, ref.page, allDocs)})
                                     {/* Tooltip com o trecho citado */}
                                     {ref.quotedContent && (
                                         <div className={styles.tooltip}>{ref.quotedContent}</div>

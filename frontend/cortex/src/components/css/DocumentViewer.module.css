@@ -155,9 +155,14 @@
     background-color: #a04e40; /* Tom mais escuro de --primary */
 }
 
-/* Estilo do botão desabilitado */
 .paginationButton:disabled {
     background-color: #d1d5db; /* Um cinza neutro */
     color: var(--text-light, #8E8883);
     cursor: not-allowed;
+}
+
+.txtViewer {
+    scroll-behavior: smooth;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
