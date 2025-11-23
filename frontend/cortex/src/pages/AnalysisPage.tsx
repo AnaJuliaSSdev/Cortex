@@ -12,17 +12,16 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ExplorationResults from '../components/ExplorationResults';
 import { handleApiError, type ApiErrorMap } from '../utils/errorUtils';
 import { ErrorState } from '../components/ErrorState';
-import Alert, { type AlertType } from '../components/Alert';
 import type { Index } from '../interfaces/Index';
 import ConfirmModal from '../components/ConfirmModal';
-import { formatDisplayFileName } from '../utils/documentUtils';
-
+import type ToastState from '../interfaces/dto/ToastState';
+import type { AlertColor } from '@mui/material/Alert';
+import Toast from '../components/Toast';
 
 // Dicionário de erros para AÇÕES (iniciar, continuar)
 const analysisActionErrorMap: ApiErrorMap = {
     byStatusCode: {
-        500: "Ocorreu um erro interno no servidor ao processar sua análise. Tente novamente."
-        // Adicione outros erros específicos de 'start' ou 'continue'
+        500: "Ocorreu um erro interno no servidor ao processar sua análise. Tente novamente."    
     },
     default: "Uma falha inesperada ocorreu. Verifique sua conexão e tente novamente."
 };
@@ -73,9 +72,23 @@ export default function AnalysisPage() {
     const [isLoading, setIsLoading] = useState(true); // Começa carregando
     const [error, setError] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisExecutionResult | null>(null);
-    const [alertInfo, setAlertInfo] = useState<{ message: string; type: AlertType } | null>(null);
     const [docToDelete, setDocToDelete] = useState<UploadedDocument | null>(null);
     const [isDeletingDoc, setIsDeletingDoc] = useState(false);
+    const [toast, setToast] = useState<ToastState>({
+        open: false,
+        message: '',
+        type: 'info'
+    });
+
+    // Função auxiliar para mostrar o toast
+    const showToast = (message: string, type: AlertColor) => {
+        setToast({ open: true, message, type });
+    };
+
+    // Função para fechar o toast
+    const closeToast = () => {
+        setToast(prev => ({ ...prev, open: false }));
+    };
 
     useEffect(() => {
         const fetchAnalysis = async () => {
@@ -116,7 +129,6 @@ export default function AnalysisPage() {
         if (!docToDelete) return;
 
         setIsDeletingDoc(true);
-        setAlertInfo(null);
         try {
             // Chama a API
             await deleteDocument(docToDelete.id);
@@ -128,9 +140,9 @@ export default function AnalysisPage() {
                 setReferenceDocuments(prev => prev.filter(d => d.id !== docToDelete.id));
             }
 
-            setAlertInfo({ message: "Documento excluído com sucesso.", type: "success" });
+            showToast("Documento excluído com sucesso.", "success");        
         } catch (error) {
-            setAlertInfo({ message: "Falha ao excluir o documento.", type: "error" });
+            showToast("Falha ao excluir o documento.", "error");
         } finally {
             setIsDeletingDoc(false);
             setDocToDelete(null); // Fecha o modal
@@ -148,7 +160,6 @@ export default function AnalysisPage() {
         if (!isFormValid) return;
 
         setIsSubmitting(true);
-        setAlertInfo(null); // Limpa alertas anteriores
 
         try {
             // Passo 1: Enviar e salvar a pergunta central
@@ -162,13 +173,12 @@ export default function AnalysisPage() {
                 setAnalysisDocuments(result.analysisDocuments || []);
                 setReferenceDocuments(result.referenceDocuments || []);
             } else {
-                // Se o backend retornar isSuccess = false
-                setAlertInfo({ message: result.errorMessage || 'Ocorreu um erro desconhecido ao processar a análise.', type: "error" });
+                const friendlyMessage = handleApiError(result, analysisActionErrorMap);
+                showToast(friendlyMessage || 'Ocorreu um erro desconhecido ao processar a análise.', "error");
             }
-
         } catch (error) {
             const friendlyMessage = handleApiError(error, analysisActionErrorMap);
-            setAlertInfo({ message: friendlyMessage, type: "error" });
+            showToast(friendlyMessage, "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -185,11 +195,12 @@ export default function AnalysisPage() {
                 setAnalysisDocuments(result.analysisDocuments || []);
                 setReferenceDocuments(result.referenceDocuments || []);
             } else {
-                setAlertInfo({ message: result.errorMessage || 'Falha ao continuar a análise.', type: "error" });
-            }
+                const friendlyMessage = handleApiError(result, analysisActionErrorMap);
+                showToast(friendlyMessage || 'Falha ao continuar a análise.', "error");            
+        }
         } catch (error) {
             const friendlyMessage = handleApiError(error, analysisActionErrorMap);
-            setAlertInfo({ message: friendlyMessage, type: "error" });
+            showToast(friendlyMessage, "error");            
         } finally {
             setIsSubmitting(false);
         }
@@ -273,7 +284,8 @@ export default function AnalysisPage() {
 
     if (analysisResult?.explorationOfMaterialStage) {
         return (
-            <>
+            <> 
+                <Toast open={toast.open} message={toast.message} type={toast.type} onClose={closeToast} />
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
                 <p>{analysisResult.analysisQuestion}</p>
                 <ExplorationResults
@@ -289,6 +301,7 @@ export default function AnalysisPage() {
     if (analysisResult?.preAnalysisResult) {
         return (
             <>
+                <Toast open={toast.open} message={toast.message} type={toast.type} onClose={closeToast} />
                 <h1 className={styles.pageTitle}>Análise: {analysisResult.analysisTitle}</h1>
                 <PreAnalysisResults
                     preAnalysisResult={analysisResult.preAnalysisResult}
@@ -297,9 +310,8 @@ export default function AnalysisPage() {
                     onIndexAdded={handleIndexAdded}
                     onContinue={handleContinueToExploration}
                     onIndexUpdated={handleIndexUpdated}
-                    onIndexDeleted={handleIndexDeleted}
-                    alertInfo={alertInfo}
-                    onCloseAlert={() => setAlertInfo(null)}
+                    onIndexDeleted={handleIndexDeleted}         
+                    onShowToast={showToast}     
                 />
             </>
         );
@@ -307,17 +319,9 @@ export default function AnalysisPage() {
 
     return (
         <>
+            <Toast open={toast.open} message={toast.message} type={toast.type} onClose={closeToast} />
             <form onSubmit={handleStartAnalysis} className={styles.analysisForm}>
                 <h1 className={styles.pageTitle}>Configurar Análise: {analysisResult.analysisTitle}</h1>
-
-                {alertInfo && (
-                    <Alert
-                        message={alertInfo.message}
-                        type={alertInfo.type}
-                        onClose={() => setAlertInfo(null)}
-                    />
-                )}
-
                 {/* Pergunta Central */}
                 <section className={styles.formSection}>
                     <label htmlFor="question" className={styles.label}>

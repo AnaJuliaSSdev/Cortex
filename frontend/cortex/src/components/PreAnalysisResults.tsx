@@ -11,9 +11,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import IndexFormModal from "./IndexFormModal";
 import { deleteIndex } from "../services/analysisService";
-import Alert, { type AlertType } from "./Alert";
 import ConfirmModal from "./ConfirmModal";
 import { getFileNameFromUri, getReferencePageLabel } from "../utils/documentUtils";
+import Tooltip from "@mui/material/Tooltip";
+import type { AlertColor } from "@mui/material/Alert";
 
 interface IndexItemProps {
     index: Index;
@@ -32,8 +33,7 @@ interface PreAnalysisResultsProps {
     onIndexAdded: (newIndex: Index) => void;
     onIndexUpdated: (updatedIndex: Index) => void;
     onIndexDeleted: (indexId: number) => void;
-    alertInfo: { message: string; type: AlertType } | null;
-    onCloseAlert: () => void;
+    onShowToast: (message: string, type: AlertColor) => void;
 }
 
 // Um componente "filho" para renderizar cada item da lista
@@ -50,11 +50,15 @@ const IndexItem: React.FC<IndexItemProps> = ({
         <li className={styles.indexItem}>
             <div className={styles.indexContent}>
                 <div>
-                    <label className={styles.label}>Indicador</label>
+                    <Tooltip title="Medida da presença ou frequência desse índice" arrow>
+                        <label className={styles.label}>Indicador</label>
+                    </Tooltip>
                     <span className={styles.indicatorName}>{index.indicator.name}</span>
                 </div>
                 <div style={{ marginTop: '1rem' }}>
-                    <label className={styles.label}>Índice</label>
+                    <Tooltip title="Elemento textual (tema, palavra, expressão) que sinaliza um conteúdo" arrow>
+                         <label className={styles.label}>Índice</label>
+                    </Tooltip>              
                     <h3 className={styles.indexName}>{index.name}</h3>
                 </div>
                 {index.description && <p className={styles.indexDescription}>{index.description}</p>}
@@ -105,8 +109,7 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     onIndexAdded,
     onIndexUpdated,
     onIndexDeleted,
-    alertInfo,
-    onCloseAlert
+    onShowToast
 }) => {
     
     const { indexes } = preAnalysisResult;
@@ -119,7 +122,6 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
     const [indexToEdit, setIndexToEdit] = useState<Index | null>(null);
     const [indexToDelete, setIndexToDelete] = useState<Index | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
     
 
     type ViewTab = 'analysis' | 'reference';
@@ -150,13 +152,12 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
         if (!indexToDelete) return;
         
         setIsDeleting(true);
-        setDeleteError(null);
         try {
             await deleteIndex(indexToDelete.id);
             onIndexDeleted(indexToDelete.id); // Notifica o pai
             setIndexToDelete(null); // Fecha o modal
         } catch (err) {
-            setDeleteError("Falha ao excluir o índice. Tente novamente.");
+            onShowToast("Falha ao excluir o índice. Tente novamente.", "error");
         } finally {
             setIsDeleting(false);
         }
@@ -174,17 +175,6 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                          <AddCircleOutlineIcon/> <strong>Adicionar Novo Índice</strong>
                     </button>
                 </div>
-                
-                {alertInfo && (
-                    <Alert 
-                        message={alertInfo.message}
-                        type={alertInfo.type}
-                        onClose={onCloseAlert}
-                    />
-                )}
-
-                {deleteError && <Alert message={deleteError} type="error" onClose={() => setDeleteError(null)} />}
-
                 <div className={styles.scrollableContent}>
                     {indexes.length > 0 ? (
                         <ul className={styles.indexList}>
@@ -239,10 +229,12 @@ const PreAnalysisResults: React.FC<PreAnalysisResultsProps> = ({
                 indexToEdit={indexToEdit}
                 onIndexAdded={(newIndex) => {
                     onIndexAdded(newIndex);
+                    onShowToast("Índice adicionado com sucesso.", "success");
                     setIsAddModalOpen(false); // Fecha o modal
                 }}
                 onIndexUpdated={(updatedIndex) => {
                     onIndexUpdated(updatedIndex);
+                    onShowToast("Índice atualizado com sucesso.", "success");
                     setIndexToEdit(null); // Fecha o modal
                 }}
             />

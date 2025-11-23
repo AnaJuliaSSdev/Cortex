@@ -10,11 +10,13 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import CategoryDetailsModal from './CategoryDetailsModal';
 import type { UploadedDocument } from '../interfaces/dto/UploadedDocument';
 import { exportAnalysisToPdf } from '../services/exportService';
-import type { AlertType } from './Alert';
-import Alert from './Alert';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import TooltipMui from '@mui/material/Tooltip';
+import type ToastState from '../interfaces/dto/ToastState';
+import type { AlertColor } from '@mui/material/Alert';
+import Toast from './Toast';
 
 interface ExplorationResultsProps {
     explorationStage: ExplorationOfMaterialStage;
@@ -41,11 +43,22 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
 
     const [viewMode, setViewMode] = useState<ViewMode>('chart');
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-
     const [isExporting, setIsExporting] = useState(false);
-    const [exportAlert, setExportAlert] = useState<{ message: string; type: AlertType } | null>(null);
     const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
+    const [toast, setToast] = useState<ToastState>({
+        open: false,
+        message: '',
+        type: 'info'
+    });
+
+    const showToast = (message: string, type: AlertColor) => {
+        setToast({ open: true, message, type });
+    };
+
+    const closeToast = () => {
+        setToast(prev => ({ ...prev, open: false }));
+    };
 
     const handleCategoryClick = (categoryName: string) => {
         const fullCategory = explorationStage.categories.find(c => c.name === categoryName);
@@ -90,11 +103,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
             return dataUrl.split(',')[1];
 
         } catch (err) {
-            console.error("Falha ao capturar o gráfico:", err);
-            setExportAlert({
-                message: "Falha ao capturar a imagem do gráfico. A exportação pode falhar ou vir sem o gráfico.",
-                type: "warning"
-            });
+            showToast("Falha ao capturar a imagem do gráfico. A exportação pode falhar ou vir sem o gráfico", "warning");
             return null;
         }
     };
@@ -102,7 +111,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
 
     const handleExportPdf = async () => {
         setIsExporting(true);
-        setExportAlert(null);
         setIsExportMenuOpen(false);
 
         const chartImageBase64 = await captureChartImage();
@@ -117,17 +125,9 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     includeRegisterUnits: true
                 }
             });
-
-            setExportAlert({
-                message: "Seu PDF foi baixado com sucesso!",
-                type: "success"
-            });
+            showToast("Seu PDF foi baixado com sucesso!", "success");
         } catch (err) {
-            console.error("Erro na exportação PDF:", err);
-            setExportAlert({
-                message: "Falha ao gerar o PDF. Verifique sua conexão e tente novamente.",
-                type: "error"
-            });
+            showToast("Falha ao gerar o PDF. Verifique sua conexão e tente novamente.", "error");
         } finally {
             setIsExporting(false);
         }
@@ -199,6 +199,7 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
 
     return (
         <div className={styles.container}>
+        <Toast open={toast.open} message={toast.message} type={toast.type} onClose={closeToast} />
             {/* Header com controles */}
             <div className={styles.header}>
                 <div>
@@ -250,14 +251,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     )}
                 </div>
             </div>
-
-            {exportAlert && (
-                <Alert
-                    message={exportAlert.message}
-                    type={exportAlert.type}
-                    onClose={() => setExportAlert(null)}
-                />
-            )}
 
             {/* Visualização de Gráfico */}
             {viewMode === 'chart' && (
@@ -324,15 +317,21 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                     <table className={styles.tableFixed}>
                         <thead>
                             <tr>
-                                <th className={styles.thCategory} rowSpan={2}>
+                            <TooltipMui placement="bottom" title="Agrupamento temático que reúne elementos com características comuns" arrow>                             
+                                <th className={styles.thCategory} rowSpan={2}>                            
                                     Categoria
                                 </th>
+                            </TooltipMui>
+                            <TooltipMui placement="bottom" title="Segmento do texto (frase, parágrafo) que foi identificado e classificado" arrow>                             
                                 <th className={styles.thUnits} rowSpan={2}>
                                     Unidades
                                 </th>
+                            </TooltipMui>
+                            <TooltipMui placement="top" title="Elemento textual (tema, palavra, expressão) que sinaliza um conteúdo" arrow>                             
                                 <th className={styles.thIndicesGroup} colSpan={allIndexNames.length}>
                                     Índices Encontrados
                                 </th>
+                            </TooltipMui>
                             </tr>
                             <tr className={styles.indexNamesRow}>
                                 {allIndexNames.map(indexName => (

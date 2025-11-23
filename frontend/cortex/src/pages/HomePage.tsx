@@ -8,11 +8,12 @@ import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingState } from '../components/LoadingState';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import type { AlertType } from '../components/Alert';
-import Alert from '../components/Alert';
 import DeleteAnalysisModal from '../components/DeleteAnalysisModal';
 import PaginationControls from '../components/PaginationControls';
 import styles from './css/HomePage.module.css';
+import type ToastState from '../interfaces/dto/ToastState';
+import type { AlertColor } from '@mui/material/Alert';
+import Toast from '../components/Toast';
 
 const homeErrorMap: ApiErrorMap = {
     byStatusCode: {
@@ -31,15 +32,27 @@ export default function  HomePage() {
     const [error, setError] = useState<string | null>(null);
     const [analysisToDelete, setAnalysisToDelete] = useState<AnalysisDto | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [actionAlert, setActionAlert] = useState<{ message: string; type: AlertType } | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [toast, setToast] = useState<ToastState>({
+        open: false,
+        message: '',
+        type: 'info'
+    });
+
+    const showToast = (message: string, type: AlertColor) => {
+        setToast({ open: true, message, type });
+    };
+
+    const closeToast = () => {
+        setToast(prev => ({ ...prev, open: false }));
+    };
+
 
     // EFEITO PARA BUSCAR OS DADOS QUANDO A PÁGINA CARREGA
    const fetchAnalyses = useCallback(async (page: number) => {
         setIsLoading(true);
         setError(null);
-        setActionAlert(null); // Limpa alertas de ação
         try {
             const data = await getAnalyses({ pageNumber: page, pageSize: PAGE_SIZE });
             setAnalyses(data.items);
@@ -62,11 +75,10 @@ export default function  HomePage() {
         if (!analysisToDelete) return;
 
         setIsDeleting(true);
-        setActionAlert(null); // Limpa alertas antigos
         try {
             await deleteAnalysis(analysisToDelete.id);
             setAnalyses(prev => prev.filter(a => a.id !== analysisToDelete.id)); //atualiza lista no front
-            setActionAlert({ message: "Análise excluída com sucesso.", type: "success" });
+            showToast("Análise excluída com sucesso.", "success");
 
             if (analyses.length === 1 && currentPage > 1) {
                 // Se era o último item, volte uma página
@@ -76,7 +88,7 @@ export default function  HomePage() {
                 fetchAnalyses(currentPage);
             }
         } catch (err) {
-            setActionAlert({ message: "Falha ao excluir a análise.", type: "error" });
+            showToast("Falha ao excluir a análise.", "error");
         } finally {
             setIsDeleting(false);
             setAnalysisToDelete(null); // Fecha o modal
@@ -99,6 +111,7 @@ export default function  HomePage() {
 
     return (
         <>
+        <Toast open={toast.open} message={toast.message} type={toast.type} onClose={closeToast} />
              <div className={styles.pageHeader}>
                 <h2 className={styles.pageTitle}>Suas Análises</h2>
                 <button
@@ -108,14 +121,6 @@ export default function  HomePage() {
                     <AddCircleOutlineIcon />  <strong>Criar Nova Análise</strong>
                 </button>
             </div>
-
-            {actionAlert && (
-                <Alert 
-                    message={actionAlert.message}
-                    type={actionAlert.type}
-                    onClose={() => setActionAlert(null)}
-                />
-            )}
 
             {/* Conteúdo Principal agora é dinâmico */}
             {renderContent()}
