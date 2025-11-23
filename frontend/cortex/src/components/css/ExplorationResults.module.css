@@ -3,7 +3,6 @@
 /* ======================================= */
 
 .container {
-
     padding: 2rem;
     font-family: var(--font-principal, 'Roboto'), sans-serif;
     background-color: var(--background-light, #FBFBF8);
@@ -159,16 +158,6 @@
 
 /* ======================================= */
 /* Visualização de Tabela
-/* ======================================= */
-
-/* ======================================= */
-/* TABELA - COMPLETAMENTE REFEITA        */
-/* ======================================= */
-
-/* Container principal da tabela */
-
-/* ======================================= */
-/* TABELA - COMPLETAMENTE REFEITA        */
 /* ======================================= */
 
 /* Container principal da tabela */
@@ -558,4 +547,242 @@
 .summaryLabel {
     color: var(--text-light, #8E8883);
     font-size: 0.85rem;
+}
+
+
+/* ======================================= */
+/* RESPONSIVIDADE                          */
+/* ======================================= */
+
+@media (max-width: 992px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .header {
+        gap: 1rem;
+    }
+
+    .title {
+        font-size: 1.6rem;
+    }
+
+    .cardsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+
+    .summaryFooter {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    /* Header reorganizado */
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .headerInfo {
+        text-align: center;
+    }
+
+    .title {
+        font-size: 1.4rem;
+    }
+
+    .headerControls {
+        justify-content: center;
+    }
+
+    /* Botões de visualização - apenas ícones */
+    .viewButton {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .buttonText {
+        display: none;
+    }
+
+    /* Botão exportar - apenas ícone */
+    .exportButton {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .exportButtonText {
+        display: none;
+    }
+
+    .exportMenu {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Gráfico - mostrar hint e permitir scroll */
+    .chartMobileHint {
+        display: block;
+    }
+
+    .chartContainer {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .chartWrapper {
+        min-width: 600px;
+        padding: 0.5rem;
+    }
+
+    /* Tabela */
+    .thCategory, .tdCategory {
+        min-width: 140px;
+        max-width: 140px;
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .thUnits, .tdUnits {
+        left: 140px;
+        min-width: 70px;
+        max-width: 70px;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .thIndexName, .tdIndexValue, .tdIndexEmpty {
+        min-width: 90px;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Cards - coluna única */
+    .cardsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .cardsScrollContainer {
+        max-height: none;
+        padding-right: 0;
+    }
+
+    /* Footer */
+    .summaryFooter {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .summaryValue {
+        font-size: 1.4rem;
+    }
+
+    .summaryLabel {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0.75rem;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .summaryText {
+        font-size: 0.85rem;
+    }
+
+    .viewControls {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .viewButton {
+        flex: 1;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+
+    .exportContainer {
+        width: 100%;
+    }
+
+    .exportButton {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Gráfico */
+    .chartContainer {
+        padding: 0.5rem;
+        border-radius: 0;
+        margin: 0 -0.75rem;
+    }
+
+    .chartWrapper {
+        min-width: 500px;
+    }
+
+    /* Tabela */
+    .tableWrapper {
+        border-radius: 0;
+        margin: 0 -0.75rem;
+        max-height: 60vh;
+    }
+
+    .thCategory, .tdCategory {
+        min-width: 120px;
+        max-width: 120px;
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .thUnits, .tdUnits {
+        left: 120px;
+        min-width: 60px;
+        max-width: 60px;
+        font-size: 0.85rem;
+    }
+
+    /* Cards */
+    .card {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .cardTitle {
+        font-size: 1rem;
+    }
+
+    .cardIndexItem {
+        padding: 0.6rem;
+    }
+
+    .cardIndexName {
+        font-size: 0.9rem;
+    }
+
+    .cardIndexCount {
+        font-size: 1.1rem;
+    }
+
+    /* Footer em 2x2 */
+    .summaryFooter {
+        margin: 1rem -0.75rem 0;
+        border-radius: 0;
+    }
+
+    .summaryValue {
+        font-size: 1.25rem;
+    }
+
+    .summaryLabel {
+        font-size: 0.75rem;
+    }
 }

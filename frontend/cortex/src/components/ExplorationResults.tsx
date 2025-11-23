@@ -133,42 +133,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
         }
     };
 
-
-    // // Handler para LaTeX ---
-    // const handleExportLatex = async () => {
-    //     setIsExporting(true);
-    //     setExportAlert(null);
-    //     setIsExportMenuOpen(false);
-
-    //     const chartImageBase64 = await captureChartImage();
-
-    //     // Chamar o serviço de exportação
-    //     try {
-    //         await exportAnalysisToLatex(analysisId, {
-    //             chartImageBase64: chartImageBase64 || undefined,
-    //             options: {
-    //                 includeCharts: true,
-    //                 includeTables: true,
-    //                 includeRegisterUnits: true
-    //             }
-    //         });
-
-    //         setExportAlert({
-    //             message: "Seu arquivo .tex foi baixado com sucesso!",
-    //             type: "success"
-    //         });
-    //     } catch (err) {
-    //         console.error("Erro na exportação LaTeX:", err);
-    //         setExportAlert({
-    //             message: "Falha ao gerar o .tex. Verifique sua conexão e tente novamente.",
-    //             type: "error"
-    //         });
-    //     } finally {
-    //         setIsExporting(false);
-    //     }
-    // };
-
-
     const processedData = useMemo(() => {
         const data: ProcessedData[] = [];
         const allIndicesMap = new Map<string, number>();
@@ -282,9 +246,6 @@ export default function ExplorationResults({ explorationStage, analysisDocuments
                             <button onClick={handleExportPdf}>
                                 <PictureAsPdfIcon /> Exportar como PDF
                             </button>
-                            {/* <button onClick={handleExportLatex} disabled={isExporting}>
-                                <ArticleIcon /> Exportar como LaTeX (.tex)
-                            </button> */}
                         </div>
                     )}
                 </div>

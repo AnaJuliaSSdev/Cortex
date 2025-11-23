@@ -1,0 +1,63 @@
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.pageTitle {
+    font-size: 1.75rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.createButton {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.createButton:hover {
+    opacity: 0.9;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+    .pageHeader {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .pageTitle {
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    .createButton {
+        justify-content: center;
+        padding: 0.875rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageHeader {
+        margin-bottom: 1.5rem;
+    }
+
+    .pageTitle {
+        font-size: 1.25rem;
+    }
+
+    .createButton {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+    }
+}

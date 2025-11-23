@@ -104,3 +104,83 @@
     color: white;
 }
 
+/* ========== RESPONSIVIDADE MOBILE ========== */
+
+/* Labels móveis - ocultos por padrão */
+.mobileLabel {
+    display: none;
+    font-size: 0.7rem;
+    color: var(--text-light, #8E8883);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    /* Esconde o cabeçalho da tabela */
+    .tableHeader {
+        display: none;
+    }
+
+    /* Transforma cada linha em um card */
+    .tableRow {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        position: relative;
+    }
+
+    /* Mostra os labels móveis */
+    .mobileLabel {
+        display: block;
+    }
+
+    /* Ajustes das colunas */
+    .colTitle {
+        font-size: 1rem;
+        padding-right: 2.5rem; /* Espaço para o botão de ação */
+    }
+
+    .colStatus {
+        order: -1; /* Move status para cima */
+        margin-bottom: 0.25rem;
+    }
+
+    .colCount, .colDate {
+        font-size: 0.85rem;
+    }
+
+    /* Botão de ação no canto superior direito */
+    .colAction {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .actionButton {
+        padding: 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tableContainer {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .tableRow {
+        padding: 0.875rem;
+    }
+
+    .colTitle {
+        font-size: 0.95rem;
+    }
+
+    .statusBadge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+    }
+}
+

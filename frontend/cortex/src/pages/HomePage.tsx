@@ -12,6 +12,7 @@ import type { AlertType } from '../components/Alert';
 import Alert from '../components/Alert';
 import DeleteAnalysisModal from '../components/DeleteAnalysisModal';
 import PaginationControls from '../components/PaginationControls';
+import styles from './css/HomePage.module.css';
 
 const homeErrorMap: ApiErrorMap = {
     byStatusCode: {
@@ -98,15 +99,11 @@ export default function  HomePage() {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.75rem', color: 'var(--text-dark)', margin: 0 }}>Suas Análises</h2>
+             <div className={styles.pageHeader}>
+                <h2 className={styles.pageTitle}>Suas Análises</h2>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    style={{
-                        padding: '0.75rem 1.5rem', background: 'var(--primary)', color: 'white',
-                        border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500,
-                        display: 'flex', alignItems: 'center', gap: '8px'
-                    }}
+                    className={styles.createButton}
                 >
                     <AddCircleOutlineIcon />  <strong>Criar Nova Análise</strong>
                 </button>
