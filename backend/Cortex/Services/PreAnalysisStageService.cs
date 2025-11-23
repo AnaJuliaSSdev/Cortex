@@ -355,73 +355,14 @@ namespace Cortex.Services
                 {
                   "indices": [
                     {
-                      "name": "Apropriação de Elementos Estruturais do Texto (ENEM)",
-                      "description": "Refere-se à percepção dos estudantes sobre o aprendizado e a aplicação de componentes específicos da redação modelo ENEM, como a proposta de intervenção e o uso de repertório sociocultural. A plataforma RevisãoOnline é citada como um meio para compreender e incorporar esses elementos, que são frequentemente novos ou pouco trabalhados no ensino formal anterior.",
-                      "indicator": "Menção explícita ao aprendizado ou dificuldade com \"proposta de intervenção\", \"repertório\", \"citações\", \"estrutura do texto\", \"tese\", \"argumentos\" e como o RevisãoOnline auxiliou nesse processo.",
+                      "name": "Aprendizagem pela Revisão por Pares",
+                      "description": "Refere-se à percepção dos estudantes de que o ato de revisar os textos de seus colegas é uma forma eficaz de aprendizado. Ao analisar e aplicar os critérios de correção nos textos de outros, os alunos internalizam as regras, identificam erros comuns e, consequentemente, aprimoram a sua própria escrita. Este processo ativo de avaliação contribui para a qualificação da escrita.",
+                      "indicator": "Presença de menções explícitas sobre aprender ao revisar o texto de outro colega, ver os erros dos outros para não cometer os mesmos, ou a percepção de melhora na própria escrita como consequência de ter revisado outros.",
                       "references": [
                         {
-                          "document": "i02 -.txt",
-                          "page": "1",
-                          "quoted_content": "Não, eu aprendi no RevisãoOnline. O que a Sheila passou em aula foi a estrutura básica, as teses, como elaborar elas e só. Então, tudo que eu sei de redação hoje em dia, eu sei por causa do revisão, ou foi assistindo vídeo aula que estão disponíveis ou pesquisando algo que eu não sabia direito."
-                        },
-                        {
-                          "document": "i03 -.txt",
-                          "page": "1",
-                          "quoted_content": "a parte da proposta de intervenção que eu não sabia não fazia E o repertório legitimado também que eu não colocava não não sabia que precisava eu comecei a pensar comecei a estruturar foram as principais coisas a parte da proposta de intervenção que tem que marcar o quê como todas as coisinhas eu tenho uma memória meio visual assim e parece toda vez que eu escrevo a conclusão vem aquela foto das caixinhas da minha cabeça"
-                        },
-                        {
-                          "document": "i16 -.txt",
-                          "page": "1",
-                          "quoted_content": "E ela é estruturada, tem que ser feito tal coisa, \"tipo: quem é que vai fazer isso?\". Aí tu tem que botar um agente e tal. \"O que que vai ter que fazer?\", \"Para qual objetivo?\"... Foi bem com o RevisãoOnline, eu não sabia antes."
-                        },
-                        {
-                          "document": "i36 - Revisão Online - Matheus.pdf",
-                          "page": "7",
-                          "quoted_content": "Proposta de intervenção, eu acho que de certa forma é uma maneira interessante de te ajudar a concluir, por causa que as conclusões. Pelo que eu vi a revisão online ele tem cinco critérios pra proposta de intervenção, que é quem, o quê, como, o efeito e o detalhamento."
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Desenvolvimento da Consciência Metalinguística",
-                      "description": "Este índice representa o momento em que os estudantes demonstram uma reflexão sobre a própria linguagem e a dos outros, identificando e nomeando fenômenos linguísticos. O RevisãoOnline, com seus critérios e marcações automáticas (como \"queísmo\"), age como um catalisador para essa tomada de consciência, levando-os a monitorar e aprimorar o uso de conectivos, repetições e a formalidade da escrita.",
-                      "indicator": "Menção à descoberta ou ao ato de \"cuidar\", \"perceber\", \"prestar atenção\" em repetições de palavras, \"queísmo\", \"ondismo\", uso de conectivos, conjunções, e a formalidade do texto como resultado do uso da plataforma.",
-                      "references": [
-                        {
-                          "document": "i01 - .pdf",
-                          "page": "1",
-                          "quoted_content": "Acho que aconteceu com palavras difíceis, as vezes eu olhava e dizia essa palavra é um erro, mas ele não apontava ai eu jogava no google e via que era uma palavra de verdade que existia, tinha significado."
-                        },
-                        {
-                          "document": "i03 -.txt",
-                          "page": "1",
-                          "quoted_content": "o queismo, eu não sabia que existia primeiramente e aí revisando os textos quando chegava na parte do queísmo e ele mostrava todos os ques do texto ficava chocada de tanto que que o pessoal bota que eu boto também E aí isso é uma coisa que depois disso eu comecei a reparar e prestar atenção"
-                        },
-                        {
-                          "document": "i12 -Entrevista Laura (120822).pdf",
-                          "page": "7",
-                          "quoted_content": "Ah! Voltando a parte do queísmo, por que é algo que eu percebi que eu utilizava bastante e as vez utilizo também, por que é algo que a gente fala no dia-a-dia, é isso que acontece nas redações, muitas vez ocorrem erros por causa do jeito que a gente fala no dia-a-dia, então foi algo que eu li e percebi: 'Caramba! Eu tenho que arrumar alguma forma de cuidar isso..."
-                        },
-                        {
-                          "document": "i30 - Entrevista Guilherme.txt",
-                          "page": "1",
-                          "quoted_content": "bem legal a primeira vez que o que eu escutei sobre o queismo foi no próprio revisão online que daí só uns dois meses depois a gente viu isso em aula e isso ficou bastante na minha cabeça por causa que eu nunca tinha visto que até muita coisa que eu escrevi eu usava muito que e isso Ficou muito na minha cabeça de todos os tópicos o queismo ele ficou grudado o queismo e o ondismo"
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Aprendizagem por meio da Revisão por Pares",
-                      "description": "Este índice capta a percepção dos estudantes de que o ato de revisar o texto de um colega é uma poderosa ferramenta de aprendizagem para a sua própria escrita. Ao analisar e aplicar os critérios do RevisãoOnline nos textos alheios, eles internalizam as regras, identificam erros comuns e desenvolvem um olhar mais crítico que é, subsequentemente, aplicado em suas próprias produções.",
-                      "indicator": "Declarações explícitas de que \"revisar os outros\", \"corrigir outros textos\" ou \"ver os erros dos outros\" ajudou a melhorar a própria escrita, a não cometer os mesmos erros ou a entender melhor os critérios.",
-                      "references": [
-                        {
-                          "document": "i06 -Camila.txt",
-                          "page": "1",
-                          "quoted_content": "tu analisar a escrita de outra pessoa entende os teus erros muito melhor então tua escrita já vem muito melhor Então eu acho que começar a incentivando a revisão é muito melhor"
-                        },
-                        {
-                          "document": "i18-Junior.txt",
-                          "page": "1",
-                          "quoted_content": "a gente escrevia e revisava alguns textos né acho que a gente escreveu um e depois de duas ou três correções a gente corrigiu o nosso texto a gente corrigia outros também e depois que a gente corrigir esses outros era muito mais fácil escrever o nosso né"
+                          "document": "i06 -Camila.pdf",
+                          "page": "6",
+                          "quoted_content": "eu acho que eu sempre aprendi melhor daí as minhas redações consequentemente ficavam melhores porque eu já tinha revisado muito mais já tinha visto erros dos outros para cuidar para não cometer e ver se tu erros meus pensamentos eu escrevo assim mas não fica bom como eu achava que ficava ou é um erro até que eu achava que não era erro mas foi apontado pelo sugestão do revisor inline ali do texto e é um erro mesmo."
                         },
                         {
                           "document": "i38 - Bianca.pdf",
@@ -429,90 +370,134 @@ namespace Cortex.Services
                           "quoted_content": "Me ajudou em muita coisa assim, perceber os erros de outras pessoas pra conseguir, como posso dizer? Pra não fazer o mesmo erro que os das outras pessoas."
                         },
                         {
-                          "document": "i30 - Entrevista Guilherme.txt",
-                          "page": "1",
-                          "quoted_content": "Ah! Foi ótimo para o meu ego... de cara, logo, eu já vi, todas as redações eram redundância. Eu acho que todos os que eu avaliei sempre tinham a mesma coisa, redundância."
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Percepção sobre a Funcionalidade de Anonimato",
-                      "description": "Refere-se à avaliação dos estudantes sobre o anonimato no processo de revisão por pares. O índice revela uma forte valorização dessa característica, vista como essencial para garantir a imparcialidade, reduzir o receio do julgamento, evitar constrangimentos entre colegas e, consequentemente, promover um ambiente mais seguro para a escrita e a revisão.",
-                      "indicator": "Menções diretas à importância ou preferência pelo \"anonimato\", ou justificativas de que saber a identidade do autor/revisor poderia \"influenciar no julgamento\", \"deixar com vergonha\", ou criar \"preconceito\".",
-                      "references": [
-                        {
-                          "document": "i03 -.txt",
-                          "page": "1",
-                          "quoted_content": "eu acho que anonimato é melhor porque se fosse se fosse pessoal ainda mais tu mais novo né Você tá no primeiro segundo ano não sei se pode ficar triste com colegas... tem várias várias probleminhas podem surgir se tiver o nome da pessoa Acho que fica melhor assim"
-                        },
-                        {
-                          "document": "i06 -Camila.txt",
-                          "page": "1",
-                          "quoted_content": "entre colegas também é bem importante a ter imparcialidade eu acredito e no caso Anonimato né quanto o anonimato para trazer a imparcialidade."
-                        },
-                        {
-                          "document": "i08 -GIovana.txt",
-                          "page": "1",
-                          "quoted_content": "Eu acho isso importante, pois de certa formar se tu souber de quem é a redação pode influenciar no teu julgamento quanto aquela análise ali."
+                          "document": "i02 -.pdf",
+                          "page": "2",
+                          "quoted_content": "houve uma evolução da minha parte por aprender como usar mais critérios para especificar melhor os erros das pessoas."
                         },
                         {
                           "document": "i12 -Entrevista Laura (120822).pdf",
-                          "page": "9",
-                          "quoted_content": "Eu acho que até é melhor não saber quem avaliou e não saber quem você tá avaliando, por que pode... isso evita que tenham avaliações de má fé."
+                          "page": "7",
+                          "quoted_content": "Eu aprendi bastante coisa, tanto que quando você tá revisando aparece ali os números pra você vê, pra você fazê uma melhor revisão, tem os pontos de interrogação então eu aprendi bastante sobre isso de fugir do tema ou não... Sobre os direitos humanos, eu sabia uma base assim, mas me incentivou a ir procurar mais a fundo pra fazê uma melhor avaliação..."
                         }
                       ]
                     },
                     {
-                      "name": "Utilidade das Ferramentas de Revisão (Automática e Manual)",
-                      "description": "Este índice aborda a percepção dos estudantes sobre a utilidade prática das diferentes ferramentas de marcação e comentário do RevisãoOnline. Inclui a avaliação sobre as sugestões automáticas, que servem como um \"norte\" inicial, e as ferramentas manuais (marcações inline, comentários), que permitem detalhar erros e sugerir melhorias, sendo cruciais para um feedback construtivo.",
-                      "indicator": "Menções sobre como as \"marcações locais\", \"comentários\", \"sugestões automáticas\" ou a capacidade de \"marcar erros\" ajudaram a identificar problemas, a entender os erros, ou a dar um feedback mais preciso.",
+                      "name": "Desenvolvimento da Autonomia e Estudo Autodirigido",
+                      "description": "Este índice capta a forma como o RevisãoOnline funciona como uma fonte de conhecimento acessível a qualquer momento, permitindo que os estudantes busquem ativamente informações e aprendam de forma independente, para além das aulas formais. A plataforma fomenta a autonomia ao disponibilizar vídeos, dicas e outros recursos que os alunos utilizam para sanar dúvidas específicas.",
+                      "indicator": "Menções ao uso de recursos da plataforma (vídeos, pesquisas) para aprender conceitos de forma autônoma, ou declarações de que o conhecimento foi adquirido 'por causa do revisão' e não apenas em aula.",
                       "references": [
                         {
-                          "document": "i09 - Entrevista 11_08_22(Isadora_captions).txt",
+                          "document": "i02 -.pdf",
                           "page": "1",
+                          "quoted_content": "Não, eu aprendi no RevisãoOnline. O que a Sheila passou em aula foi a estrutura básica, as teses, como elaborar elas e só. Então, tudo que eu sei de redação hoje em dia, eu sei por causa do revisão, ou foi assistindo vídeo aula que estão disponíveis ou pesquisando algo que eu não sabia direito."
+                        },
+                        {
+                          "document": "i08 -GIovana.pdf",
+                          "page": "2",
+                          "quoted_content": "Não, específico assim pra redação não, eu faço mais olhando vídeo no youtube e eras isso"
+                        },
+                        {
+                          "document": "i18-Junior.pdf",
+                          "page": "2",
+                          "quoted_content": "o que eu usei naquela época foi alguma revisão assim material com a professora tinha disponibilizado ela tinha disponibilizado alguns vídeos para nós né para auxiliar na elaboração numa redação algum Google alguma coisa procurar o que que era o que que poderia ser o problema que foi apontado ali né para enquadrar eles né"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Compreensão da Estrutura Textual",
+                      "description": "O índice se refere à ajuda que a plataforma fornece para a compreensão e aplicação dos elementos estruturais da redação dissertativo-argumentativa, como a tese, o desenvolvimento dos argumentos e, especialmente, a proposta de intervenção, que é um componente específico e complexo do ENEM.",
+                      "indicator": "Menções diretas à aprendizagem sobre como estruturar a redação, a tese, a conclusão ou a proposta de intervenção, e como a plataforma auxiliou nesse entendimento.",
+                      "references": [
+                        {
+                          "document": "i03 -.pdf",
+                          "page": "5",
+                          "quoted_content": "a proposta de intervenção e revisando eu consegui começar a identificar e ver como cada partezinha da conclusão funciona isso é uma coisa que depois de usar revisão desse jeito eu comecei a ter esse olhar para as minhas redações e melhorou no meu quesito."
+                        },
+                        {
+                          "document": "i08 -GIovana.pdf",
+                          "page": "12",
+                          "quoted_content": "E o Revisão émuito bom pois eu consigo analisar bem separadinho o primeiro e já sei o que eu tenho que procurar ali. e se eu não acho, eu consigo ver.. ah.. a tese não foi totalmente ou fugiu totalmente. Isso é muito bom no revisão."
+                        },
+                        {
+                          "document": "i37 - Ana Laura.pdf",
+                          "page": "7",
+                          "quoted_content": "eu realmente definido assim que vai ter o quem o quê como . eu sempre sabia o que eu tinha que falar mais ou menos sobre isso mas não tão específico assim. eu acho eu eu gosto de da forma que está estruturado agora ali no revisão online porque de certa forma também foi como os professores do cursinho cobravam que eles cobravam que a gente tivesse na minha proposta de intervenção eu vou ter que ter essa esses itens então é um checklist até na hora de tu estou escrevendo eu preciso colocar isso"
+                        },
+                        {
+                          "document": "i01 - .pdf",
+                          "page": "1",
+                          "quoted_content": "Normalmente que eu penso no primeiro parágrafo eu explico um pouquinho o tema e dou dois exemplos, por exemplo na redação de pequenas corrupções eu dei o exemplo de furar fila e sonegar imposto, no segundo e terceiro parágrafo eu desenvolvo esses dois exemplos que eu dei e no quarto eu digo como resolver eles."
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Conscientização sobre Erros Específicos",
+                      "description": "Este índice aponta para a capacidade da ferramenta de destacar e tornar o aluno consciente de erros gramaticais e estilísticos específicos e recorrentes, como o 'queísmo', a repetição de palavras e o uso inadequado de conectivos, que muitas vezes passam despercebidos pelo próprio autor.",
+                      "indicator": "Citações sobre a descoberta ou o aumento da percepção de erros como 'queísmo', repetição de palavras, ou uso de conjunções, atribuindo essa percepção ao uso da plataforma.",
+                      "references": [
+                        {
+                          "document": "i03 -.pdf",
+                          "page": "5",
+                          "quoted_content": "o queismo, eu não sabia que existia primeiramente e aí revisando os textos quando chegava na parte do queísmo e ele mostrava todos os ques do texto ficava chocada de tanto que que o pessoal bota que eu boto também E aí isso é uma coisa que depois disso eu comecei a reparar e prestar atenção"
+                        },
+                        {
+                          "document": "i08 -GIovana.pdf",
+                          "page": "13",
+                          "quoted_content": "Eu achei o revisão muito bom pois ele tem essa opção de repetição de palavras, então eu costumo analisar primeiro cada parágrafo e depois o conjunto. Então no primeiro parágrafo eu ja consigo ver se tem muita repetição das palavras. eu me policiava nisso."
+                        },
+                        {
+                          "document": "i09 - Entrevista 11_08_22(Isadora_captions).pdf",
+                          "page": "3",
                           "quoted_content": "É muito bom enxergar visualmente a repetição de palavras, que é um erro... que é o maior erro, a principal coisa que a gente mais comete, então é bom pra ti ter uma noção de quantas vezes tu repete aquela palavra."
                         },
                         {
-                          "document": "i12 -Entrevista Laura (120822).pdf",
-                          "page": "2",
-                          "quoted_content": "Hã! Eu achei eles bem necessários, eu gostei bastante, porque permite que você mostre pra pessoa onde exatamente ela tem que melhorar."
-                        },
-                        {
-                          "document": "i06 -Camila.txt",
-                          "page": "1",
-                          "quoted_content": "eu gosto dele porque ele te dá um Norte Sempre tu recebe um texto cru assim... mas daí tu aperta assim vem aquela marca aquelas marcações sugeridas daí tu tá agora entendi que onde eu teria começado é um Norte interessante"
-                        },
-                        {
-                          "document": "i03 -.txt",
-                          "page": "1",
-                          "quoted_content": "eu notei que está bem diferente de como era ano passado para mim tem vários outros tipos de erro assim que tu pode colocar e eu achei que ficou bem mais completa agora que dá para especializar bem mais e eu gostei bastante porque ajuda a definir exatamente e quando a pessoa receber a redação ela consegue entender o que que foi mesmo que ela errou"
+                          "document": "i16 -.pdf",
+                          "page": "5",
+                          "quoted_content": "Sim!! Aquele estrangeirismo eu nem sabia que existia na vida, nem sabia que era para ficar tipo entre aspas ou em itálico e várias coisas tipo aquele \"porém\" né (tipo começar uma frase com \"mas\") não sabia também."
                         }
                       ]
                     },
                     {
-                      "name": "Críticas e Sugestões de Usabilidade da Plataforma",
-                      "description": "Este índice agrupa as percepções dos estudantes sobre as dificuldades, confusões e sugestões de melhoria relacionadas à interface e funcionamento do RevisãoOnline. São \"vestígios\" que indicam pontos de atrito na experiência do usuário, como funcionalidades escondidas, bugs, ou fluxos de navegação pouco intuitivos, que impactam indiretamente o processo de aprendizagem.",
-                      "indicator": "Menção a problemas de usabilidade, como \"site trava\", \"botão de voltar apaga tudo\", \"comentário escondido\", \"confuso\", ou sugestões diretas de melhoria, como \"ter um mini tour\", \"melhorar a marcação\" ou \"mudar a disposição dos critérios\".",
+                      "name": "Valorização do Anonimato para Feedback Honesto",
+                      "description": "O anonimato no processo de revisão por pares é identificado como um fator crucial para a qualidade e honestidade do feedback. Os alunos sentem-se mais à vontade para apontar erros sem medo de retaliação social e para receber críticas de forma menos pessoal, o que resulta em uma avaliação percebida como mais 'verdadeira' e focada no texto.",
+                      "indicator": "Menções à importância ou ao benefício do anonimato, seja para dar ou para receber a revisão, contrastando com a dificuldade de avaliar ou ser avaliado por conhecidos.",
                       "references": [
                         {
-                          "document": "i02 -.txt",
-                          "page": "1",
-                          "quoted_content": "Creio que só mudaria o botão de comentário, pois ele é muito escondido, deixá-lo fixo na página."
+                          "document": "i16 -.pdf",
+                          "page": "9",
+                          "quoted_content": "Eu acho que é bom porque tipo assim num grupo da turma ali vai que a pessoa tem vergonha \"Nossa, não vou botar, avaliar certo que a pessoa foi tão ruim, então vou botar pelo menos alguma coisa que ela foi boa\". Eu acho que é um ponto bom porque daí a pessoa pode realmente marcar e não se preocupar \"Nossa, a pessoa vai me bater amanhã no recreio\", ela vai sem medo e ela marca e a outra já tem uma coisa mais \"verdadeira\"."
                         },
                         {
-                          "document": "i30 - Entrevista Guilherme.txt",
-                          "page": "1",
-                          "quoted_content": "Então já eu também eu queria muito falar sobre essa opção de voltar que eu acho que foi a coisa mais frustrante do revisãoonline para mim quando tu volta tu não ele apaga as informações que tu botou"
+                          "document": "i08 -GIovana.pdf",
+                          "page": "6",
+                          "quoted_content": "Eu acho isso importante, pois de certa formar se tu souber de quem é a redação pode influenciar no teu julgamento quanto aquela análise ali. Por exemplo, tipo se eu pegar de uma amiga minha é claro que eu ia tentar entender tem mais compensa o jeito que ela quis trazer o termo, então como é anônimo eu acabo tipo deixando isso de lado eu vou analisar realmente o que está escrito"
                         },
                         {
-                          "document": "i36 - Revisão Online - Matheus.pdf",
-                          "page": "10",
-                          "quoted_content": "Talvez o que eu mais me confundi eu diria foi nos botões, mas eu acho que é porque eles eram novos, tipo era a primeira vez que eu tava usando essa versão, né? Então tinha ali o de esconder, o de editar, de marcar e eu tava tentando descobrir como eu deletava porque eu tinha feito uma correção meio errada e daí eu não tava achando"
+                          "document": "i03 -.pdf",
+                          "page": "8",
+                          "quoted_content": "Acho que fica melhor assim e também tem a questão de que quando ninguém sabe que é tu se sente mais confortável de fazer as coisas então uma pessoa sente melhor de escrever sem ter medo de errar pode incentivar o aluno a fazer redação"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Utilidade do Feedback Automatizado",
+                      "description": "O feedback inicial, gerado automaticamente pelo algoritmo da plataforma, é percebido como um recurso útil. Ele serve como um ponto de partida para a revisão, destacando erros objetivos (ortografia, gramática) e dando um 'norte' para o revisor humano, que pode então focar em aspectos mais complexos da escrita.",
+                      "indicator": "Declarações que avaliam positivamente a correção automática, mencionando sua assertividade, sua ajuda para encontrar erros de ortografia, ou sua função como um guia inicial para a revisão.",
+                      "references": [
+                        {
+                          "document": "i02 -.pdf",
+                          "page": "2",
+                          "quoted_content": "Nunca atrapalhou, já teve vezes que trocou por sinônimos, geralmente ajuda pois acha vários erros ortográficos logo de cara, que ele acaba sendo mais assertivo."
                         },
                         {
-                          "document": "i25 - Gabriela.txt",
-                          "page": "1",
-                          "quoted_content": "quando marcava assim por cima não dava para marcar por cima né eu marcava uma palavra daí depois eu queria marcar o parágrafo eu não consegui Daí tive uma dificuldade de marcar"
+                          "document": "i08 -GIovana.pdf",
+                          "page": "8",
+                          "quoted_content": "Achei importante, pois já mostra no primeiro momento o que tu vai ver, então pelo menos pra mim eu acabo focando em outras partes do texto porque se aquilo ali já foi mostrado, claro que depois eu vou dar uma olhada também mas eu vou focar em outras partes, esse já mostrou."
+                        },
+                        {
+                          "document": "i06 -Camila.pdf",
+                          "page": "3",
+                          "quoted_content": "eu gosto dele porque ele te dá um Norte Sempre tu recebe um texto cru assim dá uma olhada tá"
                         }
                       ]
                     }
