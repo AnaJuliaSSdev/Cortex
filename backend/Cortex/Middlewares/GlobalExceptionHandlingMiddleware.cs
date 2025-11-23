@@ -1,4 +1,6 @@
 ﻿using Cortex.Exceptions;
+using GenerativeAI.Exceptions;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 
@@ -12,7 +14,6 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
     private static readonly IDictionary<Type, HttpStatusCode> _exceptionStatusCodeMappings =
         new Dictionary<Type, HttpStatusCode>
         {
-            { typeof(EmailAlreadyInUseException), HttpStatusCode.Conflict },
             { typeof(InvalidCredentialsException), HttpStatusCode.Unauthorized },
             { typeof(EntityNotFoundException), HttpStatusCode.NotFound },
             { typeof(AnalysisDontBelongToUserException), HttpStatusCode.BadRequest },
@@ -22,7 +23,14 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
             { typeof(AnalysisWithoutDocumentException), HttpStatusCode.InternalServerError },
             { typeof(AnalysisAlreadyCompletedException), HttpStatusCode.BadRequest },
             { typeof(JsonException), HttpStatusCode.InternalServerError },
-            { typeof(StageDontBelongToUserException), HttpStatusCode.BadRequest }
+            { typeof(StageDontBelongToUserException), HttpStatusCode.BadRequest },
+            { typeof(ArgumentNullException), HttpStatusCode.InternalServerError },
+            { typeof(ArgumentException), HttpStatusCode.InternalServerError },
+            { typeof(InvalidOperationException), HttpStatusCode.InternalServerError },
+            { typeof(ValidationException), HttpStatusCode.BadRequest },
+            { typeof(AggregateException), HttpStatusCode.InternalServerError },
+            { typeof(NotSupportedException), HttpStatusCode.BadRequest},
+            { typeof(FileTooLargeException), HttpStatusCode.RequestEntityTooLarge }
         };
 
     public async Task InvokeAsync(HttpContext context)

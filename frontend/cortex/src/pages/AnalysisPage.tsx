@@ -21,7 +21,12 @@ import Toast from '../components/Toast';
 // Dicionário de erros para AÇÕES (iniciar, continuar)
 const analysisActionErrorMap: ApiErrorMap = {
     byStatusCode: {
-        500: "Ocorreu um erro interno no servidor ao processar sua análise. Tente novamente."    
+        500: "Ocorreu um erro interno no servidor ao processar sua análise. Tente novamente.", 
+        404: "Análise não encontrada. Verifique o link ou crie uma nova análise.",
+        403: "Você não tem permissão para acessar esta análise.",
+        413: "O tamanho total dos documentos enviados excede o limite permitido. Remova alguns arquivos e tente novamente.", 
+        400: "Requisição inválida. Verifique os dados enviados e tente novamente.", 
+         
     },
     default: "Uma falha inesperada ocorreu. Verifique sua conexão e tente novamente."
 };

@@ -5,6 +5,7 @@ using Cortex.Models.DTO;
 using Cortex.Repositories.Interfaces;
 using Cortex.Services.Factories;
 using Cortex.Services.Interfaces;
+using GenerativeAI.Exceptions;
 using System.ComponentModel.DataAnnotations;
 
 namespace Cortex.Services;
@@ -102,7 +103,7 @@ public class DocumentService(IDocumentRepository repository, ILogger<DocumentSer
 
         if (existingSize + newFileSize > MAX_TOTAL_SIZE_BYTES)
         {
-            throw new ValidationException($"Limite de 100MB para documentos de '{dto.Purpose}' foi excedido.");
+            throw new FileTooLargeException($"Limite de 100MB para documentos de '{dto.Purpose}' foi excedido.");
         }
     }
 }

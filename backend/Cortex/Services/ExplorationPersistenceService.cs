@@ -26,19 +26,17 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, IIn
         if (geminiResponse == null || geminiResponse.Categories == null || !geminiResponse.Categories.Any())
         {
             _logger.LogWarning("Resposta do Gemini não contém categorias válidas para Analysis ID: {AnalysisId}.", analysisId);
-            // Decide se retorna nulo, lança exceção ou cria uma etapa vazia
-            // Vamos criar uma etapa vazia por enquanto
             var emptyStage = new ExplorationOfMaterialStage { AnalysisId = analysisId };
             await _stageRepository.AddAsync(emptyStage); // Salva a etapa vazia
             return emptyStage;
-            // throw new InvalidOperationException("A resposta do Gemini não continha categorias para processar.");
+            throw new InvalidOperationException("A resposta do Gemini não continha categorias para processar.");
         }
 
         // Cria a entidade Stage "pai" em memória (sem salvar ainda)
         var stageEntity = new ExplorationOfMaterialStage
         {
             AnalysisId = analysisId,
-            Categories = new List<Category>() // Inicializa a coleção
+            Categories = [] // Inicializa a coleção
         };
 
         // Itera e Mapeia DTOs para Entidades (em memória)
@@ -50,7 +48,7 @@ public class ExplorationPersistenceService(IStageRepository stageRepository, IIn
                 Definition = geminiCategory.Definition,
                 Frequency = geminiCategory.Frequency,
                 ExplorationOfMaterialStage = stageEntity, // Associa ao pai (EF Core usará isso para FK)
-                RegisterUnits = new List<RegisterUnit>() // Inicializa a coleção
+                RegisterUnits = [] // Inicializa a coleção
             };
 
             if (geminiCategory.RegisterUnits != null)
