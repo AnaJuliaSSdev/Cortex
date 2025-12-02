@@ -36,7 +36,11 @@ public class IndexRepository(AppDbContext context) : IIndexRepository
 
     public async Task<Models.Index?> GetByIdAsync(int id)
     {
-        return await _context.Indexes.Where(i => i.Id == id).Include(i => i.Indicator).FirstOrDefaultAsync();
+        return await _context.Indexes
+            .Where(i => i.Id == id)
+            .Include(i => i.Indicator)
+            .Include(i => i.References)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<Index?> GetByIdAAndUserIdsync(int id, int userId)
