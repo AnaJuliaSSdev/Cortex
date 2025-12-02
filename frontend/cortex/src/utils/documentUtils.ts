@@ -10,7 +10,11 @@ import { DocumentType } from '../interfaces/enum/DocumentType';
 export const getFileNameFromUri = (uri: string, documents: UploadedDocument[]): string => {
     if (!uri) return "Documento desconhecido";
     
-    const doc = documents.find(d => d.gcsFilePath === uri);
+
+    const targetUri = normalizeUri(uri);
+
+    const doc = documents.find(d => normalizeUri(d.gcsFilePath) === targetUri);
+    console.log("Busca normalizada:", targetUri, doc);
     
     if (doc) {
         return formatDisplayFileName(doc.fileName, doc.fileType);
@@ -54,4 +58,16 @@ export const getReferencePageLabel = (uri: string, page: string | number, docume
 
     // Caso contrário (PDF nativo), retorna a página real
     return String(page);
+};
+
+
+/**
+ * Normaliza caminhos de URI para garantir comparação segura.
+ * Substitui todas as barras invertidas (\) por barras normais (/).
+ * MEDIDA PALIATIVA PARA SALVAR A APRESENTÇÃO.
+ */
+const normalizeUri = (uri: string): string => {
+    if (!uri) return "";
+    // O regex /\\/g substitui todas as ocorrências de \ por /
+    return uri.replace(/\\/g, '/');
 };

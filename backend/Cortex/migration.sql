@@ -307,5 +307,13 @@ ALTER TABLE "IndexReferences" ALTER COLUMN "QuotedContent" SET DEFAULT '';
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251109012342_AddQuotedContentRemoveLine', '9.0.9');
 
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251120200250_RemoveMandatoryFilePath', '9.0.9');
+
+ALTER TABLE "Documents" ALTER COLUMN "FilePath" DROP NOT NULL;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251120200913_MakeFilePathNullable', '9.0.9');
+
 COMMIT;
 

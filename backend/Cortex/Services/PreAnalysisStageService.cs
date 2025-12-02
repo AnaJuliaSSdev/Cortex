@@ -283,61 +283,40 @@ namespace Cortex.Services
 
             AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos separados para montar o prompt       
 
-            try
-            {
-                string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass);
-                IEnumerable<Cortex.Models.Document> allDocumentsEnumerable = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-                List<Cortex.Models.Document> allDocuments = [.. allDocumentsEnumerable];
+            string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass);
+            IEnumerable<Cortex.Models.Document> allDocumentsEnumerable = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+            List<Cortex.Models.Document> allDocuments = [.. allDocumentsEnumerable];
 
-                List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
+            List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
-                _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
-                //peguei a ultima resposta e mockei pra n ficar gastando crédito
-                //string jsonResponse = GetMockedGeminiResponse();
-                //deixei comentado por enquanto pra não gastar recurso
-                string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
+            _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
+            //peguei a ultima resposta e mockei pra n ficar gastando crédito
+            //string jsonResponse = GetMockedGeminiResponse();
+            //deixei comentado por enquanto pra não gastar recurso
+            string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
-                _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
+            _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
-                GeminiIndexResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiIndexResponse>(jsonResponse);
+            GeminiIndexResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiIndexResponse>(jsonResponse);
 
-                _logger.LogInformation("Resposta processada: {Count} índices identificados.", geminiResponse.Indices.Count);
+            _logger.LogInformation("Resposta processada: {Count} índices identificados.", geminiResponse.Indices.Count);
 
-                PreAnalysisStage savedStage = await _preAnalysisPersistenceService.SavePreAnalysisAsync(analysis.Id);
+            PreAnalysisStage savedStage = await _preAnalysisPersistenceService.SavePreAnalysisAsync(analysis.Id);
 
-                var indexes = await _stageBuilder.BuildIndexesAsync(
-                geminiResponse,
-                savedStage,
-                allDocuments
-                 );
+            var indexes = await _stageBuilder.BuildIndexesAsync(
+            geminiResponse,
+            savedStage,
+            allDocuments
+             );
 
-                await _preAnalysisPersistenceService.SaveIndexesAsync(indexes);
-                resultBaseClass.AnalysisDocuments = resultBaseClass.AnalysisDocuments.ToList();
-                resultBaseClass.ReferenceDocuments = resultBaseClass.ReferenceDocuments.ToList();
-                resultBaseClass.IsSuccess = true;
-                resultBaseClass.PreAnalysisResult = savedStage;
-                resultBaseClass.AnalysisTitle = analysis.Title;
-                resultBaseClass.AnalysisQuestion = analysis.Question;
-                _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Resposta inválida do serviço de IA.");
-                resultBaseClass.ErrorMessage = ex.Message;
-                resultBaseClass.IsSuccess = false;
-            }
-            catch (System.Text.Json.JsonException ex)
-            {
-                _logger.LogError(ex, "Erro ao processar resposta JSON.");
-                resultBaseClass.ErrorMessage = $"Erro ao processar resposta: {ex.Message}";
-                resultBaseClass.IsSuccess = false;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Falha crítica ao executar pré análise.");
-                resultBaseClass.ErrorMessage = $"Erro na etapa de pré análise: {ex.Message}";
-                resultBaseClass.IsSuccess = false;
-            }
+            await _preAnalysisPersistenceService.SaveIndexesAsync(indexes);
+            resultBaseClass.AnalysisDocuments = resultBaseClass.AnalysisDocuments.ToList();
+            resultBaseClass.ReferenceDocuments = resultBaseClass.ReferenceDocuments.ToList();
+            resultBaseClass.IsSuccess = true;
+            resultBaseClass.PreAnalysisResult = savedStage;
+            resultBaseClass.AnalysisTitle = analysis.Title;
+            resultBaseClass.AnalysisQuestion = analysis.Question;
+            _logger.LogInformation("========== PRÉ-ANÁLISE CONCLUÍDA COM SUCESSO ==========");
 
             return resultBaseClass;
         }

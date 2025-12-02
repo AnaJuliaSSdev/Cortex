@@ -644,57 +644,32 @@ public class ExplorationOfMaterialStageService(IDocumentRepository documentRepos
         _logger.LogInformation("Iniciando === 'ExplorationOfMaterialStageService' === para a Análise ID: {AnalysisId}...", analysis.Id);
         AnalysisExecutionResult resultBaseClass = await base.ExecuteStageAsync(analysis); // pega os documentos separados para montar o prompt
 
-        try
-        {
-            string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass, null);
-            IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
-            List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
+        string finalPrompt = base.CreateFinalPrompt(analysis, resultBaseClass, null);
+        IEnumerable<Cortex.Models.Document> allDocuments = resultBaseClass.ReferenceDocuments.Concat(resultBaseClass.AnalysisDocuments);
+        List<DocumentInfo> documentInfos = _documentService.MapDocumentsToDocumentsInfo(allDocuments);
 
-            _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
-            //peguei a ultima resposta e mockei pra n ficar gastando crédito
-            //string jsonResponse = GetMockedGeminiResponse();
-            //deixei comentado por enquanto pra não gastar recurso
-            string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema,documentInfos, finalPrompt);
+        _logger.LogInformation("Enviando {Count} documentos e prompt para o Vertex AI (Gemini)...", documentInfos.Count);
+        //peguei a ultima resposta e mockei pra n ficar gastando crédito
+        //string jsonResponse = GetMockedGeminiResponse();
+        //deixei comentado por enquanto pra não gastar recurso
+        string jsonResponse = await _geminiService.GenerateContentWithDocuments(responseSchema, documentInfos, finalPrompt);
 
-            _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
+        _logger.LogInformation("Resposta recebida do Gemini com sucesso.");
 
-            resultBaseClass.PromptResult = jsonResponse;
+        resultBaseClass.PromptResult = jsonResponse;
 
-            GeminiCategoryResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiCategoryResponse>(jsonResponse);
-          
-            ExplorationOfMaterialStage stageEntity = await _explorationPersistenceService.MapAndSaveExplorationResultAsync(analysis.Id, geminiResponse, allDocuments);
+        GeminiCategoryResponse geminiResponse = _geminiResponseHandler.ParseResponse<GeminiCategoryResponse>(jsonResponse);
 
-            resultBaseClass.AnalysisQuestion = analysis.Question;
-            resultBaseClass.AnalysisTitle = analysis.Title;
-            resultBaseClass.ExplorationOfMaterialStage = stageEntity;
-            resultBaseClass.PromptResult = jsonResponse;
-            resultBaseClass.IsSuccess = true;
-            _logger.LogInformation("========== EXPLORAÇÃO DO MATERIAL CONCLUÍDA COM SUCESSO ==========");
+        ExplorationOfMaterialStage stageEntity = await _explorationPersistenceService.MapAndSaveExplorationResultAsync(analysis.Id, geminiResponse, allDocuments);
 
-            return resultBaseClass;
-        }
-        catch (System.Text.Json.JsonException jsonEx)
-        {
-            _logger.LogError(jsonEx, "Falha ao desserializar a resposta JSON da Exploração de Material.");
-            resultBaseClass.ErrorMessage = "Erro ao processar a resposta da IA (formato inválido).";
-            resultBaseClass.IsSuccess = false;
-            // Retorne ou trate o erro
-            return resultBaseClass;
-        }
-        catch (ArgumentNullException argNullEx)
-        {
-            _logger.LogError(argNullEx, "A resposta JSON recebida estava vazia.");
-            resultBaseClass.ErrorMessage = "O serviço de IA retornou uma resposta vazia.";
-            resultBaseClass.IsSuccess = false;
-            return resultBaseClass;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Falha genérica na exploração de material.");
-            resultBaseClass.ErrorMessage = ex.Message;
-            resultBaseClass.IsSuccess = false;
-            return resultBaseClass;
-        }
+        resultBaseClass.AnalysisQuestion = analysis.Question;
+        resultBaseClass.AnalysisTitle = analysis.Title;
+        resultBaseClass.ExplorationOfMaterialStage = stageEntity;
+        resultBaseClass.PromptResult = jsonResponse;
+        resultBaseClass.IsSuccess = true;
+        _logger.LogInformation("========== EXPLORAÇÃO DO MATERIAL CONCLUÍDA COM SUCESSO ==========");
+
+        return resultBaseClass;
     }
 
     private static string FormatIndicesForPrompt(ICollection<Models.Index> indices)
